@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('apellidos_cliente', 100);
             $table->string('documento_cliente', 10)->unique();
             $table->string('telefono_contacto', 10)->nullable();
-            $table->string('correo_electronico', 150)->unique();
+            $table->string('correo_electronico', 150);
             $table->integer('codigo_membresia')->nullable();
             $table->enum('tipo_membresia', ['Normal','Platinum','Elite']);
             $table->date('fecha_nacimiento');

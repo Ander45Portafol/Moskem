@@ -22,10 +22,10 @@ return new class extends Migration
                   ->constrained('medidas', 'id_medidas')
                   ->onDelete('cascade');
 
-            $table->date('fecha_asignacion')->nullable();
-            $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado'])->nullable();
-            $table->time('tiempo_sastre')->nullable();
-            $table->string('imagen_diseño',255);
+            $table->date('fecha_asignacion');
+            $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado']);
+            $table->time('tiempo_sastre');
+            $table->string('imagen_diseño',255)->nullable();
             $table->timestamps();
         });
     }

@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('pedidos', function (Blueprint $table) {
             $table->id('id_pedido');
             $table->foreignId('id_cliente')->constrained('clientes', 'id_cliente')->onDelete('cascade');
-            $table->integer('cantidad_pedido')->nullable();
-            $table->enum('tipo_pedido', ['Prenda Unica','Traje completo'])->nullable(); // Ej: "Traje completo", "Saco ejecutivo"
-            $table->enum('estado_pedido', ['Anotado','Revisado','En proceso','Finalizado','Entregado'])->nullable();
+            $table->integer('cantidad_pedido');
+            $table->enum('tipo_pedido', ['Prenda Unica','Traje completo']); // Ej: "Traje completo", "Saco ejecutivo"
+            $table->enum('estado_pedido', ['Anotado','Revisado','En proceso','Finalizado','Entregado']);
             $table->string('nota_pedido')->nullable();
-            $table->string('imagen_referencia', 255);
+            $table->string('imagen_referencia', 255)->nullable();
             $table->decimal('anticipo',10,2);
             $table->decimal('costo_total',10,2);
             $table->decimal('restante',10,2);

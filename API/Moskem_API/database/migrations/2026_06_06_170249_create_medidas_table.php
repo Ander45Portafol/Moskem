@@ -15,23 +15,23 @@ return new class extends Migration
             $table->id('id_medidas');
             // Aquí agregan los campos específicos según el Excel de muestras
             //aun falta color mas
-            $table->integer('largo');
-            $table->integer('pecho');
-            $table->integer('cintura');
-            $table->integer('cadera') ;
-            $table->integer('talle');
-            $table->integer('sisa');
-            $table->integer('hombro');
-            $table->integer('entrepecho');
-            $table->integer('largo_manga');
-            $table->integer('ancho_manga');
-            $table->integer('punio');
-            $table->integer('escote');
-            $table->integer('cuello');
-            $table->integer('largo_pant');
-            $table->integer('campana');
-            $table->integer('rodilla');
-            $table->integer('tiro');
+            $table->integer('largo')->nullable();
+            $table->integer('pecho')->nullable();
+            $table->integer('cintura')->nullable();
+            $table->integer('cadera')->nullable();
+            $table->integer('talle')->nullable();
+            $table->integer('sisa')->nullable();
+            $table->integer('hombro')->nullable();
+            $table->integer('entrepecho')->nullable();
+            $table->integer('largo_manga')->nullable();
+            $table->integer('ancho_manga')->nullable();
+            $table->integer('punio')->nullable();
+            $table->integer('escote')->nullable();
+            $table->integer('cuello')->nullable();
+            $table->integer('largo_pant')->nullable();
+            $table->integer('campana')->nullable();
+            $table->integer('rodilla')->nullable();
+            $table->integer('tiro')->nullable();
             $table->timestamps();
         });
     }

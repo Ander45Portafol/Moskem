@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('orden_compra',function(Blueprint $table){
             $table->id('id_orden_compra');
             $table->foreignId('id_merceria')->constrained('merceria','id_merceria');
-            $table->integer('cantidad_faltante')->nullable();
+            $table->integer('cantidad_faltante');
             $table->integer('cantidad_comprada')->nullable();
             $table->date('fecha_compra')->nullable();
-            $table->date('fecha_orden')->nullable();
-            $table->enum('estado_compra',['En camino','Entregado','Sin realizar'])->nullable();
+            $table->date('fecha_orden');
+            $table->enum('estado_compra',['En camino','Entregado','Sin realizar']);
             $table->foreignId('id_tela')->constrained('telas','id_tela');
             $table->timestamps();
         });

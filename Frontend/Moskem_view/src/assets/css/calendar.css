@@ -1,0 +1,130 @@
+/* ==========================================================================
+    🧩 ULTRA CUSTOM CALENDAR (ESTILO FIGMA PARA MOSKEM)
+   ========================================================================== */
+
+/* 1. Limpieza total del contenedor base */
+.custom-calendar-container .react-calendar {
+    font-family: 'Poppins', sans-serif !important;
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+}
+
+/* 2. Estilizar la barra de navegación superior (Mes y Año) */
+.custom-calendar-container .react-calendar__navigation {
+    margin-bottom: 1.5rem !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* 🔵 LAS FLECHAS LATERALES: Les asignamos un color diferente (Azul Turquesa) */
+.custom-calendar-container .react-calendar__navigation__arrow {
+    font-size: 2.4rem !important; /* Las hacemos un poquitito más grandes para que se vean nítidas */
+    color: #009BAE !important; /* ¡Color Turquesa Moskem para las flechas! */
+    background: transparent !important;
+    border: none !important;
+    transition: transform 0.2s ease !important;
+}
+
+/* Efecto opcional: un mini brinco sutil si pones el mouse sobre las flechas */
+.custom-calendar-container .react-calendar__navigation__arrow:enabled:hover {
+    color: #004B57 !important; /* Cambian al azul oscuro al pasar el cursor */
+    transform: scale(1.15) !important;
+    cursor: pointer !important;
+}
+
+/* Hover suave en las flechas de navegación */
+.custom-calendar-container .react-calendar__navigation button:enabled:hover,
+.custom-calendar-container .react-calendar__navigation button:enabled:focus {
+    background-color: rgba(0, 75, 87, 0.05) !important;
+}
+
+/* Hide flechas dobles innecesarias de la librería para dejarlo limpio como Figma */
+.custom-calendar-container .react-calendar__navigation__prev2-button,
+.custom-calendar-container .react-calendar__navigation__next2-button {
+    display: none !important;
+}
+
+/* 3. Estilizar los días de la semana (Do, Lu, Ma...) */
+.custom-calendar-container .react-calendar__month-view__weekdays {
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    color: #9CA3AF !important; /* Gris sutil de Figma */
+    margin-bottom: 0.5rem !important;
+}
+
+/* Quitar la línea fea que subraya los días de la semana por defecto */
+.custom-calendar-container .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none !important;
+    cursor: default !important;
+}
+
+/* 4. Estilizar las celdas de los números (Días) */
+.custom-calendar-container .react-calendar__tile {
+    padding: 0.75rem 0.5rem !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    color: #004B57 !important; /* Gris oscuro para los números */
+    background: transparent !important;
+    border-radius: 9999px !important; /* Círculos perfectos */
+    transition: all 0.15s ease !important;
+    aspect-ratio: 1 / 1 !important; /* Forzar que sean cuadrados perfectos antes de redondear */
+}
+
+/* Días de otros meses (hacerlos semi-transparentes) */
+.custom-calendar-container .react-calendar__month-view__days__day--neighboringMonth {
+    color: #D1D5DB !important;
+}
+
+/* Hover sobre cualquier día normal */
+.custom-calendar-container .react-calendar__tile:enabled:hover,
+.custom-calendar-container .react-calendar__tile:enabled:focus {
+    background-color: rgba(0, 155, 174, 0.1) !important; /* Turquesa muy clarito de fondo */
+    color: #009BAE !important; /* Texto turquesa */
+}
+
+/* 5. El Gran Día Seleccionado (Estilo Activo de Figma) */
+.custom-calendar-container .react-calendar__tile--active {
+    background: #BCCF00 !important; /* Turquesa brillante de Moskem */
+    color: white !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0, 155, 174, 0.3) !important; /* Sombrita elegante debajo del día */
+}
+
+.custom-calendar-container .react-calendar__tile--active:enabled:hover,
+.custom-calendar-container .react-calendar__tile--active:enabled:focus {
+    background: #BCCF00 !important; /* Si pasan el mouse sobre el seleccionado, cambia al azul oscuro */
+    color: white !important;
+}
+
+/* 6. Indicador del día actual (Hoy) */
+.custom-calendar-container .react-calendar__tile--now {
+    background: transparent !important;
+    border: 2px solid #BCCF00 !important; /* Solo un anillo azul oscuro alrededor del día de hoy */
+    color: #004B57 !important;
+    font-weight: 700 !important;
+}
+
+/* 🔥 EL MES CENTRAL UNIFICADO CON EL NUEVO TAMAÑO COMPACTO 🔥 */
+.custom-calendar-container .react-calendar__navigation__label {
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;        /* 🌟 Texto más fino y estético */
+    text-transform: capitalize !important;
+    text-align: center !important;
+    cursor: default !important;
+    pointer-events: none !important;       /* Desactiva que actúe como botón interactivo */
+    
+    background-color: #B4D333 !important;  /* Verde limón Moskem */
+    color: white !important;               /* Texto blanco que resalta */
+    
+    /* 🌟 EL CAMBIO CLAVE: Óvalo más ajustado y pequeño */
+    padding: 7px 14px !important;         
+    border-radius: 999px !important;      /* Óvalo perfecto */
+    
+    /* Resplandor/Aura permanente */
+    box-shadow: 0 0 14px rgba(180, 211, 51, 0.5) !important; 
+}

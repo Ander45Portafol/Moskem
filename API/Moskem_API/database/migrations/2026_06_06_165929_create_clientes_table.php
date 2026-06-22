@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id('id_cliente');
-            $table->string('nombres_cliente', 100)->nullable();
-            $table->string('apellidos_cliente', 100)->nullable();
-            $table->string('documento_cliente', 10)->unique()->nullable();
-            $table->string('telefono_contacto', 10)->nullable()->nullable();
-            $table->string('correo_electronico', 150)->unique()->nullable();
+            $table->string('nombres_cliente', 100);
+            $table->string('apellidos_cliente', 100);
+            $table->string('documento_cliente', 10)->unique();
+            $table->string('telefono_contacto', 10)->nullable();
+            $table->string('correo_electronico', 150)->unique();
             $table->integer('codigo_membresia')->nullable();
-            $table->string('tipo_membresia', 75)->nullable();
-            $table->date('fecha_nacimiento')->nullable();
+            $table->enum('tipo_membresia', ['Normal','Platinum','Elite']);
+            $table->date('fecha_nacimiento');
             $table->timestamps();
         });
     }

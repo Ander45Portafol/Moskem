@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('telas', function (Blueprint $table) {
             $table->id('id_tela');
             $table->string('codigo_tela', 50)->unique();
-            $table->string('color_tela', 50)->nullable();
-            $table->integer('cantidad_stock')->nullable();
-            $table->enum('categoria_tela',['Elite','Elite +','Premium'])->nullable();
+            $table->string('color_tela', 50);
+            $table->integer('cantidad_stock');
+            $table->enum('categoria_tela',['Elite','Elite +','Premium']);
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->timestamps();
         });

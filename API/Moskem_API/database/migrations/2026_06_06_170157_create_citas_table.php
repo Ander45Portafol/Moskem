@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('citas', function (Blueprint $table) {
             $table->id('id_citas');
             $table->foreignId('id_cliente')->constrained('clientes', 'id_cliente')->onDelete('cascade');
-            $table->date('fecha_cita')->nullable();
-            $table->time('hora_cita')->nullable();
+            $table->date('fecha_cita');
+            $table->time('hora_cita');
             $table->string('motivo_cita',250)->nullable();
             $table->timestamps();
         });

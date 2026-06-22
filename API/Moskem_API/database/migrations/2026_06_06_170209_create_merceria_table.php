@@ -13,11 +13,11 @@ return new class extends Migration
     {
 Schema::create('merceria', function (Blueprint $table) {
             $table->id('id_merceria');
-            $table->enum('tipo_merceria', ['Botones','Ganchos','Zipper','Agujas','Hilos'])->nullable();
-            $table->string('codigo_merceria',14)->nullable();
-            $table->integer('stock')->nullable();
-            $table->string('color', 30)->nullable();
-            $table->integer('tamanio_merceria')->nullable();
+            $table->enum('tipo_merceria', ['Botones','Ganchos','Zipper','Agujas','Hilos']);
+            $table->string('codigo_merceria',14)->unique();
+            $table->integer('stock');
+            $table->string('color', 30);
+            $table->integer('tamanio_merceria');
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->timestamps();
         });

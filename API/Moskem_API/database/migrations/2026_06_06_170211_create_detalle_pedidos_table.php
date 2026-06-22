@@ -19,7 +19,7 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
             $table->unsignedBigInteger('id_empleado');
             //LUEGO CREAMOS LAS DEMAS COLUMNAS QUE SERAN PARTE DE LA TABLA
             $table->decimal('cantidad_tela',8,2)->nullable();
-            $table->date('evento_traje')->nullable();
+            $table->date('evento_traje');
             $table->enum('prenda',['Camisa','Chaleco','Saco','Pantalón']);
             //POR ULTIMO REALIZAMOS LA RELACIONES ENTRE LAS TABLAS
             $table->foreign('id_pedido')->references('id_pedido')->on('pedidos')->onDelete('cascade');

@@ -28,7 +28,7 @@ export function Sidebar() {
         <div className="absolute left-0 w-full bg-[#009BAE] rounded-xl shadow-md transition-all duration-300 ease-out z-0 pointer-events-none" />
 
         {/* Dashboard */}
-        <Link to="/admin" className="" onClick={()=>setActive("dashboard")}>
+        <Link to="/admin" className="" onClick={() => setActive("dashboard")}>
           <div
             className={
               active === "dashboard"
@@ -42,7 +42,7 @@ export function Sidebar() {
         </Link>
 
         {/* Clientes */}
-        <Link to="/admin/cliente" onClick={()=>setActive("cliente")}>
+        <Link to="/admin/cliente" onClick={() => setActive("cliente")}>
           <div
             className={
               active === "cliente"
@@ -55,8 +55,14 @@ export function Sidebar() {
           </div>
         </Link>
         {/* Empleados */}
-        <Link to="/">
-          <div className="p-3 rounded-xl flex items-center ml-6 mr-2 gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-transparent text-white font-normal translate-x-1 hover:bg-[#009BAE] hover:text-[#004053] hover:font-bold">
+        <Link to="/admin/empleado" onClick={() => setActive("empleado")}>
+          <div
+            className={
+              active === "empleado"
+                ? "p-3 rounded-xl flex items-center ml-6 mr-2 gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-[#009BAE] text-[#004053] font-bold translate-x-1"
+                : "p-3 rounded-xl flex items-center ml-6 mr-2 gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-transparent text-white font-normal translate-x-1 hover:bg-[#009BAE] hover:text-[#004053] hover:font-bold"
+            }
+          >
             <UsersIcon className="size-6" />
             <span className="text-md">Empleados</span>
           </div>

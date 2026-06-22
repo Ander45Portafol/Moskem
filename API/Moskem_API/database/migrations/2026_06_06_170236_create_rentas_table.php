@@ -20,9 +20,9 @@ return new class extends Migration
                   
             $table->foreignId('id_empleado')->constrained('empleados', 'id_empleado'); // Asumiendo que ya existe 'empleados'
             
-            $table->date('fecha_inicio')->nullable();
-            $table->date('fecha_devolucion')->nullable();
-            $table->decimal('monto_total', 10, 2)->nullable();
+            $table->date('fecha_inicio');
+            $table->date('fecha_devolucion');
+            $table->decimal('monto_total', 10, 2);
             $table->decimal('deposito', 10, 2)->default(0.00);
             $table->enum('estado_renta', ['Entregado','En proceso','Finalizado']);
             $table->string('notas_descripcion',300)->nullable();

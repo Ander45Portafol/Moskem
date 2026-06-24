@@ -2,34 +2,13 @@ import { useState } from "react";
 import { ModalCliente } from "../components/Modals/ModalCliente";
 import { ModalListaCitas } from "../components/Modals/ModalListaCitas";
 import {MagnifyingGlassIcon, PlusCircleIcon,CalendarDaysIcon,InformationCircleIcon,CalendarIcon,TrashIcon} from "@heroicons/react/24/solid";
+import { useGet } from "../assets/js/useGet";
 
 export function Clientes() {
   const [modalActivo, setModalActivo] = useState(null);
-  const clientesIniciales = [
-    {
-      id: 1,
-      nombres: "Anderson Isaac",
-      apellidos: "Aguilar Ramos",
-      membresia: "Platinum",
-      correo: "aguilaranderson434@gmail.com",
-    },
-    {
-      id: 2,
-      nombres: "Diego Alberto",
-      apellidos: "Vasconcelos Baiza",
-      membresia: "Platinum",
-      correo: "DiegoXD234@gmail.com",
-    },
-    {
-      id: 3,
-      nombres: "María Fernanda",
-      apellidos: "Hernández Guardado",
-      membresia: "Platinum",
-      correo: "aguilaranderson434@gmail.com",
-    },
-  ];
+  const { data, message, setData } = useGet("clientes");
   return (
-    <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+    <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
       {/* Título de la sección */}
       <div>
         <h1 className="text-5xl font-black text-[#004053]">CLIENTES</h1>
@@ -43,7 +22,7 @@ export function Clientes() {
         {/* Buscador Gris */}
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
-            <MagnifyingGlassIcon className="size-6"/>
+            <MagnifyingGlassIcon className="size-6" />
           </span>
           <input
             type="text"
@@ -73,51 +52,72 @@ export function Clientes() {
       {/* ==========================================
                     TABLA DE DATOS DE CLIENTES
                    ========================================== */}
-      <div className="overflow-x-auto mt-8">
+      {/* 1. Quitamos h-4/6 y ponemos una altura máxima al contenedor con scroll */}
+      <div className="mt-8 max-h-2/3 overflow-y-auto rounded-xl ">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black ">
-              <th className="pb-3 font-bold">Nombres</th>
-              <th className="pb-3 font-bold">Apellidos</th>
-              <th className="pb-3 font-bold">Tipo Membresía</th>
-              <th className="pb-3 font-bold">Correo Electrónico</th>
-              <th className="pb-3 text-center font-bold"></th>
+          {/* 2. Hacemos que la cabecera se quede fija arriba usando sticky y bg-white */}
+          <thead className="sticky top-0 bg-white z-10 ">
+            <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black">
+              <th className="pb-4 pt-4 font-bold">Nombres</th>
+              <th className="pb-4 pt-4 font-bold">Apellidos</th>
+              <th className="pb-4 pt-4 font-bold">Tipo Membresía</th>
+              <th className="pb-4 pt-4 font-bold">Correo Electrónico</th>
+              <th className="pb-4 pt-4 text-center font-bold w-44">Acciones</th>
             </tr>
           </thead>
+
+          {/* 3. El tbody vuelve a ser el nativo (sin block ni h-96), el contenedor de arriba hace el scroll */}
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
-            {clientesIniciales.map((cliente) => (
-              <tr
-                key={cliente.id}
-                className="hover:bg-gray-50/50 transition-colors"
-              >
-                <td className="py-4">{cliente.nombres}</td>
-                <td className="py-4">{cliente.apellidos}</td>
-                <td className="py-4">{cliente.membresia}</td>
-                <td className="py-4">{cliente.correo}</td>
-                <td className="py-4">
-                  {/* Botones de acción alineados a la derecha de la fila */}
-                  <div className="flex items-center justify-center gap-2">
-                    {/* Botón Info (Verde Limón) */}
-                    <button className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10">
-                      <InformationCircleIcon className="size-7"/>
-                    </button>
+            {data ? (
+              data &&
+              data.map((cliente) => (
+                <tr
+                  key={cliente.id}
+                  className="hover:bg-gray-200 transition-colors"
+                >
+                  <td className="py-4">{cliente.nombres}</td>
 
-                    {/* Botón Agenda (Turquesa) -> ¡Ahora también abre las citas! */}
-                    <button
-                      onClick={() => setModalActivo("citas")}
-                      className="bg-[#009BAE] text-white rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10"
-                    >
-                        <CalendarIcon className="size-7"/>
-                    </button>
+                  <td className="py-4">{cliente.apellidos}</td>
 
-                    {/* Botón Eliminar (Gris Oscuro) */}
-                    <button className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10">
-                        <TrashIcon className="size-7"/>
-                    </button>
-                  </div>
+                  <td className="py-4">{cliente.tipo_membresia}</td>
+
+                  <td className="py-4">{cliente.correo}</td>
+
+                  <td className="py-4">
+                    {/* Botones de acción alineados a la derecha de la fila */}
+
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Botón Info (Verde Limón) */}
+
+                      <button className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10">
+                        <InformationCircleIcon className="size-7" />
+                      </button>
+
+                      {/* Botón Agenda (Turquesa) -> ¡Ahora también abre las citas! */}
+
+                      <button
+                        onClick={() => setModalActivo("citas")}
+                        className="bg-[#009BAE] text-white rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10"
+                      >
+                        <CalendarIcon className="size-7" />
+                      </button>
+
+                      {/* Botón Eliminar (Gris Oscuro) */}
+
+                      <button className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10">
+                        <TrashIcon className="size-7" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr className="h-14 bg-blue border-b text-md flex justify-center items-center font-bold dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td className="w-56 ml-2">
+                  <p>{mess}</p>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -127,6 +127,8 @@ export function Clientes() {
         isOpen={modalActivo === "agregar"}
         onClose={() => setModalActivo(null)}
         tipo="agregar"
+        id_cliente={'null'}
+        setCliente={setData}
       />
 
       {/* Modal para ver la lista de citas */}

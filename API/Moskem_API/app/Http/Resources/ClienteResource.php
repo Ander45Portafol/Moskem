@@ -22,7 +22,8 @@ return [
             'nombre_completo' => "{$this->nombres_cliente} {$this->apellidos_cliente}",
             'tipo_membresia' => $this->tipo_membresia,
             'correo' => $this->correo_electronico,
-            'fecha_nacimiento'=>$this->fecha_nacimiento 
+            'fecha_nacimiento'=>$this->fecha_nacimiento,
+            'visibilidad_cliente'=>$this->visibilidad_cliente
             // Como cargar las relaciones que tiene esta tabla, no las usaremos solo quedaran como ejemplo por si se utilizan para otra tabla
             /*'rentas' => RentaResource::collection($this->whenLoaded('rentas')),
             'citas' => CitaResource::collection($this->whenLoaded('citas')),*/

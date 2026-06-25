@@ -28,10 +28,11 @@ class ClienteRequest extends FormRequest
             'apellidos_cliente'  => 'required|string|max:150',
             'tipo_membresia'     => 'required',
             'documento_cliente'  => 'required|string|max:20|unique:clientes,documento_cliente',
-            'codigo_membresia'   => 'nullable|string|max:50|unique:clientes,codigo_membresia',
+            'codigo_membresia'   => 'nullable',
             'telefono_contacto'  => 'required|string|max:20',
             'fecha_nacimiento'   => 'required|date',
-            'correo_electronico' => 'required|email|max:150'
+            'correo_electronico' => 'required|email|max:150',
+            'visibilidad_cliente'=>'required'
         ];
     }
     public function messages(){
@@ -49,7 +50,9 @@ class ClienteRequest extends FormRequest
             'telefono_contacto.required'=>'Debe ingresar un número de celular',
             'fecha_nacimiento.required'=>'Debe ingresar una fecha de nacimiento para el cliente',
             'correo_electronico.required'=>'Debe ingresar un correo electronico del cliente',
-            'correo_electronico.email'=>'El formato del correo no es el correcto'
+            'correo_electronico.email'=>'El formato del correo no es el correcto',
+            'fecha_nacimiento.date'=>'El formato de como se esta colocando la fecha no es correcto',
+            'visibilidad_cliente.required'=>'La visibilidad del usuario, es obligatoria'
        ];
     }
 }

@@ -1,10 +1,9 @@
 import Swal from "sweetalert2";
-import { API } from "./global";
+import { API } from "../global";
 import { useState } from "react";
 
 export function useClientForm({ id_cliente, setCliente }) {
   const [data, setData] = useState({
-    id_cliente: "",
     nombres_cliente: "",
     apellidos_cliente: "",
     correo_electronico: "",
@@ -30,6 +29,7 @@ export function useClientForm({ id_cliente, setCliente }) {
     try {
       const response = await fetch(`${API}clientes`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       if (response.ok) {
@@ -54,14 +54,36 @@ export function useClientForm({ id_cliente, setCliente }) {
       });
     }
   };
+  const updateData = async (formData, id) => {
+    try {
+      const response = await fetch(`${API}clientes/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          title: result.message,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        const updateClient = await fetch(`${API}clientes`);
+        const responseData = await updateClient.json();
+        setCliente(responseData.data);
+      }
+    } catch (e) {}
+  };
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      console.log(id_cliente)
-    if (id_cliente!='null') {
+    e.preventDefault();
+    console.log(id_cliente);
+    if (!id_cliente) {
+      console.log(data);
       await createData(data);
-    } /*else {
+    } else {
       await updateData(data, idEmpleado);
-    }*/
+    }
   };
 
   return { data, setData, handleSubmit };

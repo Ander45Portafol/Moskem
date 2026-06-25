@@ -127,7 +127,7 @@ export function Clientes() {
         isOpen={modalActivo === "agregar"}
         onClose={() => setModalActivo(null)}
         tipo="agregar"
-        id_cliente={'null'}
+        id_cliente={null}
         setCliente={setData}
       />
 

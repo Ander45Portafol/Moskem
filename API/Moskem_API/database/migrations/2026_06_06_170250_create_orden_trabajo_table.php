@@ -21,7 +21,7 @@ return new class extends Migration
                   ->unique() 
                   ->constrained('medidas', 'id_medidas')
                   ->onDelete('cascade');
-
+            $table->boolean('visibilidad_ordentrabajo');
             $table->date('fecha_asignacion');
             $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado']);
             $table->time('tiempo_sastre');

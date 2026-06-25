@@ -1,4 +1,4 @@
-export function InputD({ text, type, valueData, textId, updateData }) {
+export function InputD({ text, type, valueData, textId, updateData, view}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-md font-semibold text-[#004B57] ">{text}</label>
@@ -8,6 +8,7 @@ export function InputD({ text, type, valueData, textId, updateData }) {
         value={valueData}
         id={textId}
         name={textId}
+        placeholder={view}
         onChange={updateData}
       />
     </div>

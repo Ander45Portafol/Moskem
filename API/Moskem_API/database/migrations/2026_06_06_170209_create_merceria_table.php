@@ -19,6 +19,7 @@ Schema::create('merceria', function (Blueprint $table) {
             $table->string('color', 30);
             $table->integer('tamanio_merceria');
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
+            $table->boolean('visibilidad_merceria');
             $table->timestamps();
         });
     }

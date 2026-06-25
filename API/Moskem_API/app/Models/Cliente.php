@@ -19,7 +19,8 @@ class Cliente extends Model
         'telefono_contacto',
         'fecha_nacimiento',
         'correo_electronico',
-        'documento_cliente'
+        'documento_cliente',
+        'visibilidad_cliente'
     ];
     public function rentas() {
     return $this->hasMany(Renta::class, 'id_cliente', 'id_cliente');

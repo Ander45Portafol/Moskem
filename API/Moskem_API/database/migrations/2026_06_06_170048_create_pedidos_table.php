@@ -24,7 +24,8 @@ return new class extends Migration
             $table->decimal('restante',10,2);
             $table->date('fecha_tallaje1')->nullable();
             $table->date('fecha_tallaje2')->nullable();
-            $table->date('fehca_entrega')->nullable();
+            $table->date('fecha_entrega')->nullable();
+            $table->boolean('visibilidad_pedido');
             $table->timestamps();
         });
     }

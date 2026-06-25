@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_proveedor');
             $table->string('nombre_proveedor',100);
             $table->string('codigo_proveedor',10);
+            $table->boolean('visibilidad_proveedor');
             $table->timestamps();
         });
     }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('fecha_orden');
             $table->enum('estado_compra',['En camino','Entregado','Sin realizar']);
             $table->foreignId('id_tela')->constrained('telas','id_tela');
+            $table->boolean('visibilidad_ordencompra');
             $table->timestamps();
         });
     }

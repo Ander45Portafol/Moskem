@@ -12,18 +12,17 @@ const estadoInicial = {
   tipo_membresia: "",
 };
 
-export function useClientForm({ id_cliente, setCliente, isOpen }) {
+export function useClientForm({ id_cliente, setCliente, isOpen, onClose }) {
   const [data, setData] = useState(estadoInicial);
   const idCargadoRef = useRef(null);
+
   useEffect(() => {
-    // Si el modal está cerrado, limpiamos todo y no hacemos peticiones
     if (!isOpen) {
       setData(estadoInicial);
       idCargadoRef.current = null;
       return;
     }
 
-    // Si hay un ID y es diferente al que ya cargamos, hacemos la petición
     if (id_cliente && id_cliente !== idCargadoRef.current) {
       chargeData(id_cliente);
     } else if (!id_cliente) {
@@ -32,19 +31,19 @@ export function useClientForm({ id_cliente, setCliente, isOpen }) {
     }
   }, [id_cliente, isOpen]);
 
-  //funcion para cargar los datos cada que se realiza alguna acción
   const chargeData = async (id_cliente) => {
     try {
       const response = await fetch(`${API}clientes/${id_cliente}`);
       if (response.ok) {
         const responseData = await response.json();
         setData(responseData.data);
-        idCargadoRef.current = id; // Registramos que este ID ya fue cargado con éxito
+        idCargadoRef.current = id_cliente;
       }
     } catch (e) {
       console.log(e);
     }
   };
+
   const createData = async (formData) => {
     try {
       const response = await fetch(`${API}clientes`, {
@@ -57,12 +56,13 @@ export function useClientForm({ id_cliente, setCliente, isOpen }) {
         Swal.fire({
           toast: true,
           position: "top-end",
-          title: result.message,
+          title: result.message || "Cliente creado con éxito",
           icon: "success",
           showConfirmButton: false,
           timer: 3000,
         });
         setCliente((prev) => [...prev, result.data]);
+        if (onClose) onClose();
       }
     } catch (e) {
       Swal.fire({
@@ -74,6 +74,7 @@ export function useClientForm({ id_cliente, setCliente, isOpen }) {
       });
     }
   };
+
   const updateData = async (formData, id) => {
     try {
       const response = await fetch(`${API}clientes/${id}`, {
@@ -81,27 +82,55 @@ export function useClientForm({ id_cliente, setCliente, isOpen }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       if (response.ok) {
+        // 1. Convertimos la respuesta a JSON para obtener el "message" del backend
+        const result = await response.json();
+
+        // 2. Mostramos la alerta usando el mensaje real de tu API de Laravel
         Swal.fire({
           toast: true,
           position: "top-end",
-          title: result.message,
+          title: result.message || "Cliente actualizado con éxito",
           icon: "success",
           showConfirmButton: false,
           timer: 3000,
         });
+
+        // 3. Volvemos a pedir la lista completa para actualizar el componente padre
         const updateClient = await fetch(`${API}clientes`);
-        const responseData = await updateClient.json();
-        setCliente(responseData.data);
+        if (updateClient.ok) {
+          const responseData = await updateClient.json();
+          setCliente(responseData.data);
+        }
+
+        // 4. Cerramos el modal de forma segura
+        if (onClose) onClose();
+      } else {
+        // Si el backend responde con un error (ej. 500 o 422)
+        const errorResult = await response.json();
+        Swal.fire({
+          title: "Error al actualizar",
+          text: errorResult.data || "Verifica los datos enviados",
+          icon: "error",
+          showConfirmButton: true,
+        });
       }
-    } catch (e) {}
+    } catch (e) {
+      // Importante: No dejar el catch vacío para saber si algo falla en JS
+      console.error("Error en la petición de actualización:", e);
+      Swal.fire({
+        title: "Ocurrió un problema",
+        text: "No se pudo conectar con el servidor.",
+        icon: "error",
+        timer: 3000,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(id_cliente);
     if (!id_cliente) {
-      console.log(data);
       await createData(data);
     } else {
       await updateData(data, id_cliente);

@@ -20,9 +20,9 @@ export function ModalCliente({
   const { data, setData, handleSubmit } = useClientForm({
     id_cliente,
     setCliente,
-    isOpen
+    isOpen,
+    onClose
   });
-  console.log(data);
   const optionsMembresia = ["Platinum", "Normal", "Elite"];
 
   //En esta funcion se guardan los valores que tienen en ese momento cada input
@@ -164,7 +164,6 @@ export function ModalCliente({
           <div className="md:col-span-3 flex justify-end mt-4">
             <button
               type="submit"
-              onClick={onClose}
               className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
             >
               <CheckCircleIcon className="size-6" />

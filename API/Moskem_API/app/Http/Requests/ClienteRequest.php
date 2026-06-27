@@ -27,12 +27,18 @@ class ClienteRequest extends FormRequest
             'nombres_cliente'    => 'required|string|max:150',
             'apellidos_cliente'  => 'required|string|max:150',
             'tipo_membresia'     => 'required',
-            'documento_cliente'  => 'required|string|max:20|unique:clientes,documento_cliente',
             'codigo_membresia'   => 'nullable',
             'telefono_contacto'  => 'required|string|max:20',
             'fecha_nacimiento'   => 'required|date',
             'correo_electronico' => 'required|email|max:150',
+            
         ];
+        if ($this->isMethod('post')) {
+            $rules['documento_cliente']= 'required|string|max:20|unique:clientes,documento_cliente';
+        }
+        else if ($this->isMethod('put')) {
+            $rules['documento_cliente'] = 'required|string|max:20';
+        }
     }
     public function messages(){
         return[

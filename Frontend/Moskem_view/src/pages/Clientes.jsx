@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ModalCliente } from "../components/Modals/ModalCliente";
 import { ModalListaCitas } from "../components/Modals/ModalListaCitas";
 import {
@@ -14,15 +14,50 @@ import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
 
 export function Clientes() {
+  //Estado para manejar el modal
   const [modalActivo, setModalActivo] = useState(null);
+  //Estado que almacena el id para poder hacer cambios a algun registro
   const [idCliente, setIdCliente] = useState(null);
+  //Custom Hook utilizado para cargar los datos
   const { data, message, setData } = useGet("clientes");
+  //Estado utilizado para hacer reactivo lo del motor de busqueda
+  const [searchQuery, setSearchQuery] = useState("");
+
+  //Hook utilizado para el motor de busqueda, en este agregamos un tiempo para no llenar la API con peticiones y asi al pasar cierta cantidad de tiempo se hace la petición
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchClientes(searchQuery);
+    }, 400);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  //Función creada para el motor de busqueda
+  const fetchClientes = async (query = "") => {
+    try {
+      // Si hay query usamos la ruta de buscar, si no, traemos todos
+      const url = query
+        ? `${API}clientes/buscar?q=${encodeURIComponent(query)}`
+        : `${API}clientes`;
+      //Petición a la API
+      const response = await fetch(url);
+      //Validamos si la petición fue exitosa o si tuvo algun error
+      if (response.ok) {
+        //Al ser exitosa la petición la convertimos en formato JSON
+        const responseData = await response.json();
+        //Actualiza el estado de los datos
+        setData(responseData.data);
+      }
+    } catch (error) {
+      console.error("Error al traer los clientes:", error);
+    }
+  };
+  //Función utilizada para cargar el modal con la opcion de actualizar, enviandole el id
   const modalActualizar = (id) => {
     setIdCliente(id);
     setModalActivo("agregar");
   };
   //funcion para borrar los clientes de las vistas
-  const deleteClient = async(id) => {
+  const deleteClient = async (id) => {
     try {
       Swal.fire({
         title: "Eliminar Usuario",
@@ -34,29 +69,30 @@ export function Clientes() {
         confirmButtonColor: "#31b65c",
         confirmButtonText: "Eliminar",
         showConfirmButton: true,
-      }).then(async(result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
-          const response = await fetch(`${API}clientes/${id}`, { method: "DELETE" })
+          const response = await fetch(`${API}clientes/${id}`, {
+            method: "DELETE",
+          });
           if (response.ok) {
             const responseData = await response.json();
             Swal.fire({
               toast: true,
-              position: 'top-end',
+              position: "top-end",
               title: responseData.message,
-              icon: 'success',
+              icon: "success",
               showConfirmButton: false,
-              timer: 3000
-            })
+              timer: 3000,
+            });
           }
-          setData((prevData) =>
-            prevData.filter((data) => data.id !== id),
-          );
+          setData((prevData) => prevData.filter((data) => data.id !== id));
         }
       });
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
       {/* Título de la sección */}
@@ -78,6 +114,8 @@ export function Clientes() {
             type="text"
             placeholder="Buscar"
             className="w-full bg-[#D9D9D9] border-none rounded-xl py-4 pl-12 pr-4 text-gray-700 placeholder-gray-500 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
@@ -118,7 +156,9 @@ export function Clientes() {
 
           {/* 3. El tbody vuelve a ser el nativo (sin block ni h-96), el contenedor de arriba hace el scroll */}
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
-            {data ? (
+            {
+              //Se valida si en los datos que extrajimos se encuentran datos, de no ser asi, se salta esta parte
+              data.length != 0 ? (
               data &&
               data.map((cliente) => (
                 <tr
@@ -157,7 +197,12 @@ export function Clientes() {
 
                       {/* Botón Eliminar (Gris Oscuro) */}
 
-                      <button className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10" onClick={() => { deleteClient(cliente.id)}}>
+                      <button
+                        className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
+                        onClick={() => {
+                          deleteClient(cliente.id);
+                        }}
+                      >
                         <TrashIcon className="size-7" />
                       </button>
                     </div>
@@ -165,9 +210,10 @@ export function Clientes() {
                 </tr>
               ))
             ) : (
-              <tr className="h-14 bg-blue border-b text-md flex justify-center items-center font-bold dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                //Si no existen registros, solo mostramos ese mensaje
+              <tr className="h-14  text-md flex justify-center items-center font-semibold hover:bg-gray-200 ">
                 <td className="w-56 ml-2">
-                  <p>{message}</p>
+                  <p>No existen registros</p>
                 </td>
               </tr>
             )}

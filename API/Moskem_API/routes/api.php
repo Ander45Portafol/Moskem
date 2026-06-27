@@ -7,4 +7,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('clientes', ClienteController::class);   
+
+//Metodo para el motor de busqueda
+Route::get('clientes/buscar', [ClienteController::class, 'search']);
+Route::apiResource('clientes', ClienteController::class);

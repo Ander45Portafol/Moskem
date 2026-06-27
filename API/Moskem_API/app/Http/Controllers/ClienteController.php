@@ -31,8 +31,8 @@ class ClienteController extends Controller
     {
         try {
             $validate = $request->validated();
+            $validate['visibilidad_cliente']=true;
             $client = Cliente::create($validate);
-
             $membresia = $client->tipo_membresia;
             if ($membresia === 'Platinum') {
                 $añoActual = now()->format('y'); // Obtiene "26" (por el año 2026)
@@ -57,7 +57,7 @@ class ClienteController extends Controller
                 // Guardamos el cambio en la base de datos
                 $client->save();
             } else {
-                $client->codigo_membresia;
+                $client->codigo_membresia = null;
                 $client->save();
             }
             //Guardamos el proceso, para hacer efectiva la actualización del estado
@@ -75,12 +75,34 @@ class ClienteController extends Controller
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
         }
     }
-    public function update(ClienteRequest $request, $id): JsonResponse
+    public function update(ClienteRequest $request, $id_cliente): JsonResponse
     {
         try {
-            $client = Cliente::findOrFail($id);
+            $client = Cliente::findOrFail($id_cliente);
             $validaciones = $request->validated();
-            $client->update($validaciones);
+            if ($client->tipo_membresia != $validaciones->tipo_membresia) {
+                if ($validaciones->tipo_membresia === 'Platinum') {
+                    $añoActual = now()->format('y'); // Obtiene "26" (por el año 2026)
+
+                    // Rellenamos el ID con ceros a la izquierda hasta completar 6 dígitos
+                    $idConCeros = str_pad($validaciones->id_cliente, 6, '0', STR_PAD_LEFT);
+
+                    // Asignamos el formato final al campo 'codigo' (asumiendo que se llama 'codigo')
+                    $validaciones->codigo_membresia = 'PT' . $añoActual . $idConCeros; // Resultado: PT26000001
+
+                } else if ($validaciones->tipo_membresia  === 'Elite') {
+                    $añoActual = now()->format('y'); // Obtiene "26" (por el año 2026)
+
+                    // Rellenamos el ID con ceros a la izquierda hasta completar 6 dígitos
+                    $idConCeros = str_pad($validaciones->id_cliente, 6, '0', STR_PAD_LEFT);
+
+                    // Asignamos el formato final al campo 'codigo' (asumiendo que se llama 'codigo')
+                    $validaciones->codigo_membresia = 'EL' . $añoActual . $idConCeros; // Resultado: El26000001
+                } else {
+                    $validaciones->codigo_membresia = null;
+                }
+                $client->save($validaciones);
+            }
             return ApiResponse::success('Cliente actualizado con exito', 200, new ClienteResource($client));
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intenttar actualizar el regsitro', 500, $ex->getMessage());
@@ -90,10 +112,10 @@ class ClienteController extends Controller
             return ApiResponse::error('Error en validaciones', 422, $ve->getMessage());
         }
     }
-    public function destroy($id)
+    public function destroy($id_cliente)
     {
         try {
-            $client = Cliente::findOrFail($id);
+            $client = Cliente::findOrFail($id_cliente);
             //No se elimina el registro, solo se cambia el estado a false para siempre mantener un control de todos los usuarios que se tendrán en el sistema
             $client->visibilidad_cliente = false;
             //Guardamos el proceso, para hacer efectiva la actualización del estado

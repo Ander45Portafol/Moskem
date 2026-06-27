@@ -1,18 +1,37 @@
 import Swal from "sweetalert2";
 import { API } from "../global";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export function useClientForm({ id_cliente, setCliente }) {
-  const [data, setData] = useState({
-    nombres_cliente: "",
-    apellidos_cliente: "",
-    correo_electronico: "",
-    fecha_nacimiento: "",
-    telefono_contacto: "",
-    documento_cliente: "",
-    tipo_membresia: "",
-    codigo_membresia: "",
-  });
+const estadoInicial = {
+  nombres_cliente: "",
+  apellidos_cliente: "",
+  correo_electronico: "",
+  fecha_nacimiento: "",
+  telefono_contacto: "",
+  documento_cliente: "",
+  tipo_membresia: "",
+};
+
+export function useClientForm({ id_cliente, setCliente, isOpen }) {
+  const [data, setData] = useState(estadoInicial);
+  const idCargadoRef = useRef(null);
+  useEffect(() => {
+    // Si el modal está cerrado, limpiamos todo y no hacemos peticiones
+    if (!isOpen) {
+      setData(estadoInicial);
+      idCargadoRef.current = null;
+      return;
+    }
+
+    // Si hay un ID y es diferente al que ya cargamos, hacemos la petición
+    if (id_cliente && id_cliente !== idCargadoRef.current) {
+      chargeData(id_cliente);
+    } else if (!id_cliente) {
+      setData(estadoInicial);
+      idCargadoRef.current = null;
+    }
+  }, [id_cliente, isOpen]);
+
   //funcion para cargar los datos cada que se realiza alguna acción
   const chargeData = async (id_cliente) => {
     try {
@@ -20,6 +39,7 @@ export function useClientForm({ id_cliente, setCliente }) {
       if (response.ok) {
         const responseData = await response.json();
         setData(responseData.data);
+        idCargadoRef.current = id; // Registramos que este ID ya fue cargado con éxito
       }
     } catch (e) {
       console.log(e);
@@ -58,6 +78,7 @@ export function useClientForm({ id_cliente, setCliente }) {
     try {
       const response = await fetch(`${API}clientes/${id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       if (response.ok) {
@@ -75,6 +96,7 @@ export function useClientForm({ id_cliente, setCliente }) {
       }
     } catch (e) {}
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(id_cliente);
@@ -82,7 +104,7 @@ export function useClientForm({ id_cliente, setCliente }) {
       console.log(data);
       await createData(data);
     } else {
-      await updateData(data, idEmpleado);
+      await updateData(data, id_cliente);
     }
   };
 

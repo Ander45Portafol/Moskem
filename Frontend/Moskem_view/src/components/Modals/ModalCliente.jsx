@@ -17,7 +17,12 @@ export function ModalCliente({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { data, setData, handleSubmit } = useClientForm({id_cliente, setCliente});
+  const { data, setData, handleSubmit } = useClientForm({
+    id_cliente,
+    setCliente,
+    isOpen
+  });
+  console.log(data);
   const optionsMembresia = ["Platinum", "Normal", "Elite"];
 
   //En esta funcion se guardan los valores que tienen en ese momento cada input
@@ -25,6 +30,7 @@ export function ModalCliente({
     const { name, value } = e.target;
     setData({ ...data, [name]: value });
   };
+
   //Funcionalidad el useEffect es controlar los estados del modal
   useEffect(() => {
     if (isOpen) {
@@ -127,19 +133,19 @@ export function ModalCliente({
             updateData={inputsUpdate}
           />
           <InputD
-            text="Código de Mmembresía"
-            type="text"
-            textId="codigo_membresia"
-            view=""
-            valueData={data.codigo_membresia}
-            updateData={inputsUpdate}
-          />
-          <InputD
             text="N° Documento"
             type="text"
             textId="documento_cliente"
             view="00000000-0"
             valueData={data.documento_cliente}
+            updateData={inputsUpdate}
+          />
+          <InputD
+            text="Fecha Nacimiento"
+            type="date"
+            textId="fecha_nacimiento"
+            view=""
+            valueData={data.fecha_nacimiento}
             updateData={inputsUpdate}
           />
 
@@ -150,14 +156,6 @@ export function ModalCliente({
             textId="correo_electronico"
             view=""
             valueData={data.correo_electronico}
-            updateData={inputsUpdate}
-          />
-          <InputD
-            text="Fecha Nacimiento"
-            type="date"
-            textId="fecha_nacimiento"
-            view=""
-            valueData={data.fecha_nacimiento}
             updateData={inputsUpdate}
           />
 

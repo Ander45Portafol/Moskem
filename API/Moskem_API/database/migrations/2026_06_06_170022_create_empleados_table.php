@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('tipo_empleado', ['Administrador', 'Sastre','Vendedor','root','Diseñador','Pasantes']); // Ej: Administrador, Sastre, Vendedor
             $table->string('documentos_empleados', 10); // Ruta de archivos
             $table->string('correo_empleado',200);
-            $table->boolean('visibilidad_empleado');
+            $table->boolean('visibilidad_empleado')->default(true);
             $table->string('codigo_empleado',8)->nullable();
             $table->timestamps();
         });

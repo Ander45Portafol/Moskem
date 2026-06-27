@@ -1,12 +1,62 @@
 import { useState } from "react";
 import { ModalCliente } from "../components/Modals/ModalCliente";
 import { ModalListaCitas } from "../components/Modals/ModalListaCitas";
-import {MagnifyingGlassIcon, PlusCircleIcon,CalendarDaysIcon,InformationCircleIcon,CalendarIcon,TrashIcon} from "@heroicons/react/24/solid";
+import {
+  MagnifyingGlassIcon,
+  PlusCircleIcon,
+  CalendarDaysIcon,
+  InformationCircleIcon,
+  CalendarIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
 import { useGet } from "../assets/js/useGet";
+import Swal from "sweetalert2";
+import { API } from "../assets/js/global";
 
 export function Clientes() {
   const [modalActivo, setModalActivo] = useState(null);
+  const [idCliente, setIdCliente] = useState(null);
   const { data, message, setData } = useGet("clientes");
+  const modalActualizar = (id) => {
+    setIdCliente(id);
+    setModalActivo("agregar");
+  };
+  //funcion para borrar los clientes de las vistas
+  const deleteClient = async(id) => {
+    try {
+      Swal.fire({
+        title: "Eliminar Usuario",
+        text: "¿Estas seguro?",
+        icon: "warning",
+        showCancelButton: true,
+        cancelButtonColor: "#cc4224",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#31b65c",
+        confirmButtonText: "Eliminar",
+        showConfirmButton: true,
+      }).then(async(result) => {
+        if (result.isConfirmed) {
+          const response = await fetch(`${API}clientes/${id}`, { method: "DELETE" })
+          if (response.ok) {
+            const responseData = await response.json();
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              title: responseData.message,
+              icon: 'success',
+              showConfirmButton: false,
+              timer: 3000
+            })
+          }
+          setData((prevData) =>
+            prevData.filter((data) => data.id !== id),
+          );
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
       {/* Título de la sección */}
@@ -89,7 +139,10 @@ export function Clientes() {
                     <div className="flex items-center justify-center gap-2">
                       {/* Botón Info (Verde Limón) */}
 
-                      <button className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10">
+                      <button
+                        className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10"
+                        onClick={() => modalActualizar(cliente.id)}
+                      >
                         <InformationCircleIcon className="size-7" />
                       </button>
 
@@ -104,7 +157,7 @@ export function Clientes() {
 
                       {/* Botón Eliminar (Gris Oscuro) */}
 
-                      <button className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10">
+                      <button className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10" onClick={() => { deleteClient(cliente.id)}}>
                         <TrashIcon className="size-7" />
                       </button>
                     </div>
@@ -114,7 +167,7 @@ export function Clientes() {
             ) : (
               <tr className="h-14 bg-blue border-b text-md flex justify-center items-center font-bold dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td className="w-56 ml-2">
-                  <p>{mess}</p>
+                  <p>{message}</p>
                 </td>
               </tr>
             )}
@@ -125,9 +178,12 @@ export function Clientes() {
       {/* Modal para agregar cliente */}
       <ModalCliente
         isOpen={modalActivo === "agregar"}
-        onClose={() => setModalActivo(null)}
-        tipo="agregar"
-        id_cliente={null}
+        onClose={() => {
+          setModalActivo(null);
+          setIdCliente(null); // <-- IMPORTANTE: Limpiamos el ID al cerrar
+        }}
+        tipo={idCliente ? "actualizar" : "agregar"} // <-- Dinámico según si hay ID o no
+        id_cliente={idCliente} // <-- Pasamos el estado real del ID
         setCliente={setData}
       />
 

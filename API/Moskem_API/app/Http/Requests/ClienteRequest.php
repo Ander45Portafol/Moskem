@@ -32,7 +32,6 @@ class ClienteRequest extends FormRequest
             'telefono_contacto'  => 'required|string|max:20',
             'fecha_nacimiento'   => 'required|date',
             'correo_electronico' => 'required|email|max:150',
-            'visibilidad_cliente'=>'required'
         ];
     }
     public function messages(){
@@ -51,8 +50,7 @@ class ClienteRequest extends FormRequest
             'fecha_nacimiento.required'=>'Debe ingresar una fecha de nacimiento para el cliente',
             'correo_electronico.required'=>'Debe ingresar un correo electronico del cliente',
             'correo_electronico.email'=>'El formato del correo no es el correcto',
-            'fecha_nacimiento.date'=>'El formato de como se esta colocando la fecha no es correcto',
-            'visibilidad_cliente.required'=>'La visibilidad del usuario, es obligatoria'
+            'fecha_nacimiento.date'=>'El formato de como se esta colocando la fecha no es correcto'
        ];
     }
 }

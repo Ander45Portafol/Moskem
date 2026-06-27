@@ -25,7 +25,7 @@ return new class extends Migration
             $table->date('fecha_tallaje1')->nullable();
             $table->date('fecha_tallaje2')->nullable();
             $table->date('fecha_entrega')->nullable();
-            $table->boolean('visibilidad_pedido');
+            $table->boolean('visibilidad_pedido')->default(true);
             $table->timestamps();
         });
     }

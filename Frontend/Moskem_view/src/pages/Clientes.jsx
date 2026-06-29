@@ -150,7 +150,6 @@ export function Clientes() {
               <th className="pb-4 pt-4 font-bold">Apellidos</th>
               <th className="pb-4 pt-4 font-bold">Tipo Membresía</th>
               <th className="pb-4 pt-4 font-bold">Correo Electrónico</th>
-              <th className="pb-4 pt-4 text-center font-bold w-44">Acciones</th>
             </tr>
           </thead>
 

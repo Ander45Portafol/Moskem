@@ -4,6 +4,8 @@ import { MainLayout } from "./layout/MainLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Clientes } from "./pages/Clientes";
 import { Empleados } from "./pages/Empleados";
+import { Rentas } from "./pages/Rentas";
+import Productos from "./pages/Productos";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="cliente" element={<Clientes />} />
         <Route path="empleado" element={<Empleados />} />
+        <Route path="renta" element={<Rentas />} />
+        <Route path="producto" element={<Productos/>}/>
       </Route>
     </Routes>
   );

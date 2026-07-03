@@ -150,11 +150,11 @@ export function Empleados() {
 
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 text-sm font-medium text-gray-700">
+          <tbody className="divide-y divide-gray-200 text-md font-normal text-gray-700">
             {empleados.map((empleado) => (
               <tr
                 key={empleado.id}
-                className="hover:bg-gray-50/50 transition-colors"
+                className="hover:bg-gray-200 transition-colors"
               >
                 <td className="py-4 text-black">{empleado.nombres}</td>
                 <td className="py-4 text-black">{empleado.apellidos}</td>

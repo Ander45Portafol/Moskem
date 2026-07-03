@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('detalle_mercerias', function (Blueprint $table) {
             $table->id('id_detalle_merceria');
-            $table->foreignId('id_detalle_pedido')->constrained('detalle_pedidos', 'id_detalle_pedido');
-            $table->foreignId('id_merceria')->constrained('merceria', 'id_merceria');
+            $table->foreignId('id_detalle_pedidos')->constrained('detalle_pedidos', 'id_detalle_pedido');
+            $table->foreignId('id_mercerias')->constrained('mercerias', 'id_merceria');
             $table->integer('cantidad_merceria');            
             $table->timestamps();
         });

@@ -17,11 +17,13 @@ export function ModalCliente({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const ruta="clientes"
   const { data, setData, handleSubmit } = useClientForm({
-    id_cliente,
-    setCliente,
+   id: id_cliente,
+    setForm: setCliente,
     isOpen,
-    onClose
+    onClose,
+    ruta
   });
   const optionsMembresia = ["Platinum", "Normal", "Elite"];
 

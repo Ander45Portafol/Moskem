@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class detalle_merceria extends Model
+class Detalle_Merceria extends Model
 {
     //
 }

@@ -26,6 +26,6 @@ class Cliente extends Model
     return $this->hasMany(Renta::class, 'id_cliente', 'id_cliente');
     }
     public function citas(){
-        return $this->hasMany(Cita::class, foreignKey:'id_cliente');
+        return $this->hasMany(Cita::class, 'id_cliente','id_cliente');
     }
 }

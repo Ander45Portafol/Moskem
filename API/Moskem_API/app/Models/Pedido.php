@@ -29,6 +29,6 @@ class Pedido extends Model
         return $this->belongsTo(Cliente::class,'id_cliente','id_cliente');
     }
     protected function detalle_pedido(){
-        return $this->hasMany(Detalle_Pedido::class,'id_pedido','id_pedido');
+        return $this->hasMany(DetallePedido::class,'id_pedido','id_pedido');
     }
 }

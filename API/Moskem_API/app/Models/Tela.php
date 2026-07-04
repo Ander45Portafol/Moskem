@@ -20,10 +20,10 @@ class Tela extends Model
     ];
     public function detalle_pedidos()
     {
-        return $this->hasMany(Detalle_Pedido::class, 'id_tela', 'id_tela');
+        return $this->hasMany(DetallePedido::class, 'id_tela', 'id_tela');
     }
     public function orden_compra(){
-        return $this->hasMany(orden_compra::class,'id_tela','id_tela');
+        return $this->hasMany(ordenCompra::class,'id_tela','id_tela');
     }
     public function proveedor(){
         return $this->belongsTo(Proveedore::class,'id_proveedor','id_proveedor');

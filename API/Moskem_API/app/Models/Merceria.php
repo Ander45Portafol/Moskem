@@ -23,6 +23,6 @@ class Merceria extends Model
         return $this->belongsTo(Proveedore::class,'id_proveedor','id_proveedor');
     }
     public function detalle_merceria(){
-        return $this->hasMany(Detalle_Merceria::class,'id_detalle-');
+        return $this->hasMany(DetalleMerceria::class,'id_detalle_merceria','id_detalle_merceria');
     }
 }

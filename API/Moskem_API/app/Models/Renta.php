@@ -22,12 +22,12 @@ class Renta extends Model
         'visibilidad_renta'
     ];
     public function detalle_orden(){
-        return $this->hasMany(Detalle_Renta::class,foreignKey:'id_renta');
+        return $this->hasMany(DetalleRenta::class,foreignKey:'id_renta');
     }
     public function clientes(){
         return $this->belongsTo(Cliente::class,'id_cliente','id_cliente');
     }
     public function empleados(){
-        return $this->belongsTo(Empleados::class,'id_empleado','id_empleado');
+        return $this->belongsTo(Empleado::class,'id_empleado','id_empleado');
     }
 }

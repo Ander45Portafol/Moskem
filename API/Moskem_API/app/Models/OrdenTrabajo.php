@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Orden_Trabajo extends Model
+class OrdenTrabajo extends Model
 {
     //
     protected $primaryKey = 'id_orden';
@@ -21,10 +21,10 @@ class Orden_Trabajo extends Model
         'imagen_diseño',
     ];
     public function detalle_pedido(){
-        return $this->belongsTo(Detalle_Pedido::class,'id_detalle_pedido','id_detalle_pedido');
+        return $this->belongsTo(DetallePedido::class,'id_detalle_pedido','id_detalle_pedido');
     }
     public function empleado(){
-        return $this->belongsTo(Empleados::class,'id_empleado','id_empleado');
+        return $this->belongsTo(Empleado::class,'id_empleado','id_empleado');
     }
     public function medida() {
     return $this->belongsTo(Medida::class, 'id_medidas', 'id_medidas');

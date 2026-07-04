@@ -23,16 +23,25 @@ class ClienteRequest extends FormRequest
     //En esta funcion se configuran todas las validaciones que debe cumplir el paquete de datos que viene en formato json
     public function rules(): array
     {
-        return [
+        $rules = [
             'nombres_cliente'    => 'required|string|max:150',
             'apellidos_cliente'  => 'required|string|max:150',
             'tipo_membresia'     => 'required',
-            'documento_cliente'  => 'required|string|max:20|unique:clientes,documento_cliente',
-            'codigo_membresia'   => 'nullable|string|max:50|unique:clientes,codigo_membresia',
+            'codigo_membresia'   => 'nullable',
             'telefono_contacto'  => 'required|string|max:20',
             'fecha_nacimiento'   => 'required|date',
-            'correo_electronico' => 'required|email|max:150'
+            'correo_electronico' => 'required|email|max:150',
         ];
+
+        // 2. Agregamos la regla de documento_cliente condicionalmente
+        if ($this->isMethod('post')) {
+            $rules['documento_cliente'] = 'required|string|max:20|unique:clientes,documento_cliente';
+        } else if ($this->isMethod('put')) {
+            $rules['documento_cliente'] = 'required|string|max:20';
+        }
+
+        // 3. RETORNAMOS todo el array ya completo al final
+        return $rules;
     }
     public function messages(){
         return[
@@ -43,13 +52,14 @@ class ClienteRequest extends FormRequest
             'apellidos_cliente.string' => 'Verificar los datos que se están ingresando',
             'apellidos_cliente.max' => 'Ha sobrepasado la cantidad maxima de caracteres',
             'tipo_membresia.required'=>'Debe seleccionar una opción',
-            'documento_cliente.required'=>'De ingresar el documento del cliente',
+            'documento_cliente.required'=>'Debe ingresar el documento del cliente',
             'documento_cliente.unique'=>'Documento repetido',
             'codigo_membresia.unique'=>'No se puede repetir el codigo',
             'telefono_contacto.required'=>'Debe ingresar un número de celular',
             'fecha_nacimiento.required'=>'Debe ingresar una fecha de nacimiento para el cliente',
             'correo_electronico.required'=>'Debe ingresar un correo electronico del cliente',
-            'correo_electronico.email'=>'El formato del correo no es el correcto'
+            'correo_electronico.email'=>'El formato del correo no es el correcto',
+            'fecha_nacimiento.date'=>'El formato de como se esta colocando la fecha no es correcto'
        ];
     }
 }

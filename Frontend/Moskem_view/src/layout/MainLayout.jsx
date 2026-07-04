@@ -13,7 +13,7 @@ export function MainLayout() {
         {/* 2. ÁREA DE PÁGINAS DINÁMICAS (Derecha) */}
         {/* Este contenedor tiene scroll independiente para que el Sidebar nunca se mueva */}
         <div className="flex-1 h-full overflow-y-hidden bg-white">
-          <main className="p-8 max-w-[1600px] mx-auto w-full ">
+          <main className="p-8 mx-auto w-full ">
             <Outlet />
           </main>
         </div>

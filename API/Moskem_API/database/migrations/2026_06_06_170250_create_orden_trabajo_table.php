@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orden_trabajo', function (Blueprint $table) {
+        Schema::create('orden_trabajos', function (Blueprint $table) {
             $table->id('id_orden');
             $table->foreignId('id_detalle_pedido')->constrained('detalle_pedidos', 'id_detalle_pedido'); // Asumiendo que ya existe 'pedidos'
             $table->foreignId('id_empleado')->constrained('empleados', 'id_empleado');
@@ -21,7 +21,7 @@ return new class extends Migration
                   ->unique() 
                   ->constrained('medidas', 'id_medidas')
                   ->onDelete('cascade');
-
+            $table->boolean('visibilidad_ordentrabajo');
             $table->date('fecha_asignacion');
             $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado']);
             $table->time('tiempo_sastre');

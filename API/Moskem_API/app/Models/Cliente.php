@@ -19,12 +19,13 @@ class Cliente extends Model
         'telefono_contacto',
         'fecha_nacimiento',
         'correo_electronico',
-        'documento_cliente'
+        'documento_cliente',
+        'visibilidad_cliente'
     ];
     public function rentas() {
     return $this->hasMany(Renta::class, 'id_cliente', 'id_cliente');
     }
     public function citas(){
-        return $this->hasMany(Cita::class, foreignKey:'id_cliente');
+        return $this->hasMany(Cita::class, 'id_cliente','id_cliente');
     }
 }

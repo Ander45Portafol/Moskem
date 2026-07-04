@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('cantidad_stock');
             $table->enum('categoria_tela',['Elite','Elite +','Premium']);
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
+            $table->boolean('visibilidad_tela');
             $table->timestamps();
         });
     }

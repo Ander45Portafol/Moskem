@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('id_tela')->constrained('telas', 'id_tela')->onDelete('cascade');
             $table->decimal('costo', 10, 2);
             $table->enum('estado_producto', ['Disponible','Agotado']); // Ej: "Disponible", "Rentado", "Mantenimiento"
+            $table->boolean('visibilidad_producto');
             $table->timestamps();
         });
     }

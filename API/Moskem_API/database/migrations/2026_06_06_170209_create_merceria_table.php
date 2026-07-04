@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('merceria', function (Blueprint $table) {
+Schema::create('mercerias', function (Blueprint $table) {
             $table->id('id_merceria');
             $table->enum('tipo_merceria', ['Botones','Ganchos','Zipper','Agujas','Hilos']);
             $table->string('codigo_merceria',14)->unique();
@@ -19,6 +19,7 @@ Schema::create('merceria', function (Blueprint $table) {
             $table->string('color', 30);
             $table->integer('tamanio_merceria');
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
+            $table->boolean('visibilidad_merceria')->default(true);
             $table->timestamps();
         });
     }

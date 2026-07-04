@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cita extends Model
 {
-    use HasFactory;
     protected $primaryKey='id_cita';
     protected $keyType='int';
     protected $fillable=[

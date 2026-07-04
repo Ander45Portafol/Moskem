@@ -26,7 +26,6 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
             $table->foreign('id_tela')->references('id_tela')->on('telas');
             $table->foreign('id_empleado')->references('id_empleado')->on('empleados');
             $table->timestamps();
-
         });
     }
 

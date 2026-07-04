@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orden_compra',function(Blueprint $table){
+        Schema::create('orden_compras',function(Blueprint $table){
             $table->id('id_orden_compra');
-            $table->foreignId('id_merceria')->constrained('merceria','id_merceria');
+            $table->foreignId('id_merceria')->constrained('mercerias','id_merceria');
             $table->integer('cantidad_faltante');
             $table->integer('cantidad_comprada')->nullable();
             $table->date('fecha_compra')->nullable();

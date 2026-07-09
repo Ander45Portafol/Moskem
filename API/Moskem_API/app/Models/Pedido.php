@@ -23,6 +23,7 @@ class Pedido extends Model
         'fecha_tallaje1',
         'fecha_tallaje2',
         'fecha_entrega',
+        'tipo_evento',
         'visibilidad_pedido'
     ];
     protected function cliente(){

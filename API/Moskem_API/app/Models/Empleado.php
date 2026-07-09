@@ -16,10 +16,11 @@ class Empleado extends Model
         'usuario_empleado',
         'clave_empleado',
         'tipo_empleado',
-        'documentos_empleado',
+        'documentos_empleados',
         'correo_empleado',
         'visibilidad_empleado',
-        'codigo_empleado'
+        'codigo_empleado',
+        'estado_empleado'
     ];
     public function detalle_pedido(){
         return $this->hasMany(DetalleMerceria::class,'id_empleado','id_empleado');

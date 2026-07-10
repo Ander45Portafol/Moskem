@@ -3,8 +3,9 @@ import {
   CheckCircleIcon,
   ChevronDownIcon,
   CalendarIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
-import { useClientForm } from "../../assets/js/Forms/useClientForm";
+import { useForm } from "../../assets/js/Forms/useForm";
 import { InputD } from "../InputD";
 import { SelectD } from "../SelectD";
 
@@ -17,13 +18,23 @@ export function ModalCliente({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const ruta="clientes"
-  const { data, setData, handleSubmit } = useClientForm({
+  const ruta = "clientes"
+  const estadoInicial = {
+    nombres_cliente: "",
+    apellidos_cliente: "",
+    correo_electronico: "",
+    fecha_nacimiento: "",
+    telefono_contacto: "",
+    documento_cliente: "",
+    tipo_membresia: "",
+  };
+  const { data, setData, handleSubmit } = useForm({
    id: id_cliente,
     setForm: setCliente,
     isOpen,
     onClose,
-    ruta
+    ruta,
+    estadoInicial
   });
   const optionsMembresia = ["Platinum", "Normal", "Elite"];
 
@@ -73,20 +84,7 @@ export function ModalCliente({
           onClick={onClose}
           className="absolute top-6 right-6 text-[#004B57] hover:bg-gray-100 p-2 rounded-full transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18 18 6M6 6l12 12"
-            />
-          </svg>
+          <XMarkIcon className="size-7"/>
         </button>
 
         {/* Encabezado Principal */}

@@ -150,9 +150,9 @@ export function Clientes() {
               <th className="pb-4 pt-4 font-bold">Apellidos</th>
               <th className="pb-4 pt-4 font-bold">Tipo Membresía</th>
               <th className="pb-4 pt-4 font-bold">Correo Electrónico</th>
+              <th></th>
             </tr>
           </thead>
-
           {/* 3. El tbody vuelve a ser el nativo (sin block ni h-96), el contenedor de arriba hace el scroll */}
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
             {

@@ -14,6 +14,7 @@ class DetallePedido extends Model
         'id_pedido',
         'id_tela',
         'id_empleado',
+        'id_paquete',
         'cantidad_tela',
         'evento_traje',
         'prenda'
@@ -30,5 +31,8 @@ class DetallePedido extends Model
     }
     public function detalle_merceria(){
         return $this->hasMany(DetalleMerceria::class,'id_detalle_pedido','id_detalle_pedido');
+    }
+    public function paquetes(){
+        return $this->belongsTo(Paquete::class,'id_paquete','id_paquete');
     }
 }

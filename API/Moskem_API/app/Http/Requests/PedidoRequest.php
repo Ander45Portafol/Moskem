@@ -33,7 +33,8 @@ class PedidoRequest extends FormRequest
             'restante'=>'required|decimal:0,2',
             'fecha_tallaje1'=>'required|date',
             'fecha_tallaje2'=>'required|date',
-            'fecha_entrega'=>'required|date'
+            'fecha_entrega'=>'required|date',
+            'tipo_evento' => 'required'
         ];
     }
     public function messages(){
@@ -56,7 +57,8 @@ class PedidoRequest extends FormRequest
             'fecha_tallaje2.required' => 'Debe colocar una fecha para el primer tallaje',
             'fecha_tallaje2.date' => 'El registro no cumple con el formato correcto para las fechas',
             'fecha_entrega.required' => 'Debe colocar una fecha para el segundo tallaje',
-            'fecha_entrega.date' => 'El registro no cumple con el formato correcto para las fechas'
+            'fecha_entrega.date' => 'El registro no cumple con el formato correcto para las fechas',
+            'tipo_evento.required'=>'Debe seleccionar un tipo de evento'
         ];
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id_pedido');
             $table->foreignId('id_cliente')->constrained('clientes', 'id_cliente')->onDelete('cascade');
             $table->integer('cantidad_pedido');
-            $table->enum('tipo_pedido', ['Prenda unica','Traje completo']); // Ej: "Traje completo", "Saco ejecutivo"
+            $table->enum('tipo_pedido', ['Prenda unica','Traje completo','Paquete']); // Ej: "Traje completo", "Saco ejecutivo"
             $table->enum('estado_pedido', ['Anotado','Revisado','En proceso','Finalizado','Entregado']);
             $table->string('nota_pedido')->nullable();
             $table->string('imagen_referencia', 255)->nullable();
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->date('fecha_tallaje1');
             $table->date('fecha_tallaje2');
             $table->date('fecha_entrega');
+            $table->enum('tipo_evento',['Boda','Graduación', 'Bautizo','Cumpleaños','otro']);
             $table->boolean('visibilidad_pedido')->default(true);
             $table->timestamps();
         });

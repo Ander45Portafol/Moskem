@@ -2,17 +2,9 @@ import Swal from "sweetalert2";
 import { API } from "../global";
 import { useEffect, useRef, useState } from "react";
 
-const estadoInicial = {
-  nombres_cliente: "",
-  apellidos_cliente: "",
-  correo_electronico: "",
-  fecha_nacimiento: "",
-  telefono_contacto: "",
-  documento_cliente: "",
-  tipo_membresia: "",
-};
 
-export function useClientForm({ id, setForm, isOpen, onClose,ruta }) {
+
+export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
   const [data, setData] = useState(estadoInicial);
   const idCargadoRef = useRef(null);
 

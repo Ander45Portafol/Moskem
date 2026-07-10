@@ -17,6 +17,7 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
             $table->unsignedBigInteger('id_pedido');
             $table->unsignedBigInteger('id_tela');
             $table->unsignedBigInteger('id_empleado');
+            $table->unsignedBigInteger('id_paquete');
             //LUEGO CREAMOS LAS DEMAS COLUMNAS QUE SERAN PARTE DE LA TABLA
             $table->decimal('cantidad_tela',8,2)->nullable();
             $table->date('evento_traje');
@@ -25,6 +26,7 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
             $table->foreign('id_pedido')->references('id_pedido')->on('pedidos')->onDelete('cascade');
             $table->foreign('id_tela')->references('id_tela')->on('telas');
             $table->foreign('id_empleado')->references('id_empleado')->on('empleados');
+            $table->foreign('id_paquete')->references('id_paquete')->on('paquetes');
             $table->timestamps();
         });
     }

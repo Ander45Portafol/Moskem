@@ -13,6 +13,7 @@ Route::get('/user', function (Request $request) {
 
 //Metodo para el motor de busqueda
 Route::get('clientes/buscar', [ClienteController::class, 'search']);
+Route::get('empleados/buscar',[EmpleadoController::class,'search']);
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('pedidos',PedidosController::class);
 

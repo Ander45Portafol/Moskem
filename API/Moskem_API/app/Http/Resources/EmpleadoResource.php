@@ -15,7 +15,8 @@ class EmpleadoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return[
-            'Nombre_completo'=>$this->nombres_empleado.' '.$this->apellidos_empleado,
+            'id'=>$this->id_empleado,
+            'nombres'=>$this->nombres_empleado,'apellidos'=>$this->apellidos_empleado,
             'tipo_empleado'=>$this->tipo_empleado,
             'codigo_empleado'=>$this->codigo_empleado,
             'estado_empleado'=>$this->estado_empleado

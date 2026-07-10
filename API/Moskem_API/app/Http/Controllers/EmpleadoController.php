@@ -107,4 +107,28 @@ class EmpleadoController extends Controller
             return ApiResponse::error('Error al eliminar', 500, $e->getMessage());
             }
     }
+    //Metodo para el motor de busqueda
+    public function search(Request $request)
+    {
+        try {
+            $search = $request->query('q');
+
+            if (empty($search)) {
+                $empleados = Empleado::where('visibilidad_empleado', true)->get();
+                return ApiResponse::success('Lista de clientes', 200, EmpleadoResource::collection($empleados));
+            }
+            $search = trim($search);
+            $empleados = Empleado::where('visibilidad_empleado', true)->where(function ($query) use ($search) {
+                // 1. Concatenamos nombres y apellidos con un espacio en medio
+                $query->whereRaw("CONCAT(nombres_empleado, ' ', apellidos_empleado) ILIKE ?", ["%{$search}%"])
+
+
+                    // 2. Mantenemos las búsquedas individuales por codigo
+                    ->orWhere('codigo_empleado', 'ILIKE', "%{$search}%");
+            })->get();
+            return ApiResponse::success('Resultados de búsqueda', 200, EmpleadoResource::collection($empleados));
+        } catch (\Exception $ex) {
+            return ApiResponse::error('Error al buscar', 500, $ex->getMessage());
+        }
+    }
 }

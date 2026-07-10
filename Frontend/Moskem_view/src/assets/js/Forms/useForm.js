@@ -16,7 +16,6 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
     }
 
     if (id && id !== idCargadoRef.current) {
-      console.log(id)
       chargeData(id);
     } else if (!id) {
       setData(estadoInicial);
@@ -126,6 +125,7 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
     if (!id) {
       await createData(data);
     } else {
+      console.log(id)
       await updateData(data, id);
     }
   };

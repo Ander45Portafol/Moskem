@@ -1,21 +1,61 @@
 import React, { useEffect, useState } from "react";
 import {
   CheckCircleIcon,
-    ChevronDownIcon,
-  XMarkIcon
+  ChevronDownIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { InputD } from "../InputD";
+import { useForm } from "../../assets/js/Forms/useForm";
+import { SelectD } from "../SelectD";
+import { SwitchD } from "../SwitchD";
 
 export default function ModalEmpleado({
   isOpen,
   onClose,
-  formData,
-  onChange,
-  onSave,
+  tipo,
+  id_empleado,
+  setEmpleado,
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const ruta = "empleados";
+  const estadoInicial = {
+    nombres_empleado: "",
+    apellidos_empleado: "",
+    usuario_empleado: "",
+    tipo_empleado: "",
+    documentos_empleados: "",
+    correo_empleado: "",
+    estado_empleado: "",
+  };
+  const { data, setData, handleSubmit } = useForm({
+    id: id_empleado,
+    setForm: setEmpleado,
+    isOpen,
+    onClose,
+    ruta,
+    estadoInicial,
+  });
+  const tipos_empleados = [
+    "Administrador",
+    "Sastre",
+    "Vendedor",
+    "root",
+    "Diseñador",
+    "Pasantes",
+  ];
+  const inputsUpdate = (e) => {
+    const name = e.target.name;
 
+    // Si el elemento es un checkbox o el evento simulado dice que es checkbox, usamos 'checked'
+    const inputValue =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+
+    setData({
+      ...data,
+      [name]: inputValue,
+    });
+  };
   useEffect(() => {
     if (isOpen) {
       setRender(true);
@@ -49,7 +89,7 @@ export default function ModalEmpleado({
           onClick={onClose}
           className="absolute top-8 right-8 text-[#004B57] hover:scale-110 transition-transform"
         >
-            <XMarkIcon className="size-7"/>
+          <XMarkIcon className="size-7" />
         </button>
 
         {/* Encabezado del Modal */}
@@ -60,130 +100,79 @@ export default function ModalEmpleado({
         </div>
 
         {/* Formulario estructurado en Grid de 3 columnas */}
-        <form onSubmit={onSave} className="flex flex-col gap-8">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
-            {/* Nombres */}
-            <div className="flex flex-col gap-2">
+            <InputD
+              type="text"
+              text="Nombres"
+              valueData={data.nombres_empleado}
+              textId="nombres_empleado"
+              view=""
+              updateData={inputsUpdate}
+            />
 
-              <InputD type="text" text="Nombres"/>
-              <input
-                type="text"
-                name="nombres"
-                value={formData.nombres || ""}
-                onChange={onChange}
-                required
-                className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
-              />
-            </div>
+            <InputD
+              type="text"
+              text="Apellidos"
+              valueData={data.apellidos_empleado}
+              textId="apellidos_empleado"
+              view=""
+              updateData={inputsUpdate}
+            />
 
-            {/* Apellidos */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[#004B57] font-bold text-base">
-                Apellidos
-              </label>
-              <input
-                type="text"
-                name="apellidos"
-                value={formData.apellidos || ""}
-                onChange={onChange}
-                required
-                className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
-              />
-            </div>
-
-            {/* Código Empleado */}
             <div className="flex flex-col gap-2">
               <label className="text-[#004B57] font-bold text-base">
                 Código Empleado
               </label>
               <input
                 type="text"
-                name="codigo"
-                value={formData.codigo || ""}
-                onChange={onChange}
+                name="codigo_empleado"
+                value={data.codigo_empleado || ""}
+                readOnly
+                onChange={inputsUpdate}
                 className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
               />
             </div>
 
-            {/* Tipo Empleado */}
-            <div className="flex flex-col gap-2 relative">
-              <label className="text-[#004B57] font-bold text-base">
-                Tipo Empleado
-              </label>
-              <div className="relative">
-                <select
-                  name="tipo"
-                  value={formData.tipo || ""}
-                  onChange={onChange}
-                  required
-                  className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 pl-4 pr-10 text-gray-500 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none appearance-none"
-                >
-                  <option value="" disabled hidden>
-                    Seleccione una opción
-                  </option>
-                  <option value="Sastre">Sastre</option>
-                  <option value="Vendedor">Vendedor</option>
-                  <option value="Administrador">Administrador</option>
-                </select>
-                <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-[#004B57]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </div>
+            <SelectD
+              text="Tipo Empleado"
+              textId="tipo_empleado"
+              options={tipos_empleados}
+              valueData={data.tipo_empleado}
+              updateData={inputsUpdate}
+            />
+            <InputD
+              text="DUI"
+              type="text"
+              textId="documentos_empleados"
+              view="00000000-0"
+              valueData={data.documentos_empleados}
+              updateData={inputsUpdate}
+            />
 
-            {/* DUI */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[#004B57] font-bold text-base">DUI</label>
-              <input
-                type="text"
-                name="dui"
-                placeholder="00000000-0"
-                value={formData.dui || ""}
-                onChange={onChange}
-                className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
-              />
-            </div>
+            <InputD
+              text="Usuario"
+              type="text"
+              textId="usuario_empleado"
+              view=""
+              valueData={data.usuario_empleado}
+              updateData={inputsUpdate}
+            />
 
-            {/* Usuario */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[#004B57] font-bold text-base">
-                Usuario
-              </label>
-              <input
-                type="text"
-                name="usuario"
-                value={formData.usuario || ""}
-                onChange={onChange}
-                className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
-              />
-            </div>
-
-            {/* Correo Electrónico */}
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-[#004B57] font-bold text-base">
-                Correo Electronico
-              </label>
-              <input
-                type="email"
-                name="correo"
-                value={formData.correo || ""}
-                onChange={onChange}
-                className="w-full bg-[#D9D9D9]/50 border-none rounded-xl py-3 px-4 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
-              />
-            </div>
+            <InputD
+              text="Correo Electrónico"
+              type="email"
+              textId="correo_empleado"
+              view=""
+              valueData={data.correo_empleado}
+              updateData={inputsUpdate}
+            />
+            <SwitchD
+              text="Estado"
+              textId="estado_empleado"
+              valueData={data.estado_empleado}
+              updateData={inputsUpdate}
+            />
           </div>
 
           {/* Botón Guardar / Editar */}

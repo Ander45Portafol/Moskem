@@ -33,7 +33,8 @@ class EmpleadoRequest extends FormRequest
                 'regex:/^\d{8}-\d$/'
             ],
             'correo_empleado' => 'required|email|max:200',
-            'codigo_empleado' => 'string'
+            'codigo_empleado' => 'string',
+            'estado_empleado'=>'required'
         ];
     }
     public function messages()
@@ -48,7 +49,8 @@ class EmpleadoRequest extends FormRequest
             'tipo_empleado.required' => 'Debe seleccionar un tipo de empleado',
             'documentos_empleados.required' => 'Debe ingresar un documento de identificación del empleado',
             'documentos_empleados.regex' => 'El documento del empleado, no cumple con el formato indicado',
-            'codigo_empleado.string' => 'El formato ingresado para el codigo de empelado, no es el correcto'
+            'codigo_empleado.string' => 'El formato ingresado para el codigo de empelado, no es el correcto',
+            'estado_empleado.required'=>'Debe ingresar un valor'
         ];
     }
 }

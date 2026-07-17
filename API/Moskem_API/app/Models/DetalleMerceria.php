@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class DetalleMerceria extends Model
@@ -20,5 +21,11 @@ class DetalleMerceria extends Model
     }
     public function mercerias(){
         return $this->belongsTo(Merceria::class,'id_merceria','id_merceria');
+    }
+    protected function nombreCompleto(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => trim("{$this->nombres_cliente} {$this->apellidos_cliente}"),
+        );
     }
 }

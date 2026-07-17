@@ -8,6 +8,7 @@ import {
 import { useForm } from "../../assets/js/Forms/useForm";
 import { InputD } from "../InputD";
 import { SelectD } from "../SelectD";
+import { InputDate } from "../inputDate";
 
 export function ModalCliente({
   isOpen,
@@ -18,7 +19,7 @@ export function ModalCliente({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const ruta = "clientes"
+  const ruta = "clientes";
   const estadoInicial = {
     nombres_cliente: "",
     apellidos_cliente: "",
@@ -29,12 +30,12 @@ export function ModalCliente({
     tipo_membresia: "",
   };
   const { data, setData, handleSubmit } = useForm({
-   id: id_cliente,
+    id: id_cliente,
     setForm: setCliente,
     isOpen,
     onClose,
     ruta,
-    estadoInicial
+    estadoInicial,
   });
   const optionsMembresia = ["Platinum", "Normal", "Elite"];
 
@@ -84,7 +85,7 @@ export function ModalCliente({
           onClick={onClose}
           className="absolute top-6 right-6 text-[#004B57] hover:bg-gray-100 p-2 rounded-full transition-colors"
         >
-          <XMarkIcon className="size-7"/>
+          <XMarkIcon className="size-7" />
         </button>
 
         {/* Encabezado Principal */}
@@ -125,13 +126,14 @@ export function ModalCliente({
           />
 
           {/* --- FILA 2 --- */}
-          <SelectD
-            text="Tipo Membresia"
-            textId="tipo_membresia"
-            options={optionsMembresia}
-            valueData={data.tipo_membresia}
-            updateData={inputsUpdate}
-          />
+            <SelectD
+              text="Tipo Membresia"
+              textId="tipo_membresia"
+              options={optionsMembresia}
+              valueData={data.tipo_membresia}
+              updateData={inputsUpdate}
+            />
+
           <InputD
             text="N° Documento"
             type="text"
@@ -140,11 +142,10 @@ export function ModalCliente({
             valueData={data.documento_cliente}
             updateData={inputsUpdate}
           />
-          <InputD
+          <InputDate
             text="Fecha Nacimiento"
             type="date"
             textId="fecha_nacimiento"
-            view=""
             valueData={data.fecha_nacimiento}
             updateData={inputsUpdate}
           />

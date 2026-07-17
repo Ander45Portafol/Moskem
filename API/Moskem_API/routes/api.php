@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\DetallePedidoController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\MerseriaController;
 use App\Http\Controllers\PedidosController;
@@ -21,4 +22,5 @@ Route::apiResource('pedidos',PedidosController::class);
 Route::apiResource('mercerias',MerseriaController::class);
 
 Route::apiResource('empleados',EmpleadoController::class);
+Route::apiResource('detalle_pedido',DetallePedidoController::class);
 Route::apiResource('telas',TelaController::class);

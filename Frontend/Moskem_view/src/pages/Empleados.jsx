@@ -113,41 +113,53 @@ export function Empleados() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-md font-normal text-gray-700">
-            {data.map((empleado) => (
-              <tr
-                key={empleado.id}
-                className="hover:bg-gray-200 transition-colors"
-              >
-                <td className="py-4 text-black">{empleado.nombres}</td>
-                <td className="py-4 text-black">{empleado.apellidos}</td>
-                <td className="py-4 text-black">{empleado.tipo_empleado}</td>
-                <td className="py-4 text-black">{empleado.codigo_empleado}</td>
-                <td className="py-4">
-                  <div className="flex items-center justify-center gap-2">
-                    {/* 💡 Botón Info (Verde Limón) - AHORA ABRE EL MODAL DE PEDIDOS */}
-                    <button
-                      onClick={() => modalActualizar(empleado.id)}
-                      className="bg-[#B4D333] text-[#004B57] p-2 rounded-lg font-bold hover:bg-[#a3c02b] transition-all active:scale-95 flex items-center justify-center w-11 h-10"
-                    >
-                      <InformationCircleIcon className="size-7" />
-                    </button>
+            {data.length != 0 ? (
+              data &&
+              data.map((empleado) => (
+                <tr
+                  key={empleado.id}
+                  className="hover:bg-gray-200 transition-colors"
+                >
+                  <td className="py-4 text-black">{empleado.nombres}</td>
+                  <td className="py-4 text-black">{empleado.apellidos}</td>
+                  <td className="py-4 text-black">{empleado.tipo_empleado}</td>
+                  <td className="py-4 text-black">
+                    {empleado.codigo_empleado}
+                  </td>
+                  <td className="py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* 💡 Botón Info (Verde Limón) - AHORA ABRE EL MODAL DE PEDIDOS */}
+                      <button
+                        onClick={() => modalActualizar(empleado.id)}
+                        className="bg-[#B4D333] text-[#004B57] p-2 rounded-lg font-bold hover:bg-[#a3c02b] transition-all active:scale-95 flex items-center justify-center w-11 h-10"
+                      >
+                        <InformationCircleIcon className="size-7" />
+                      </button>
 
-                    {/* Botón Editar/Ver Lista (Turquesa) */}
-                    <button className="bg-[#009BAE] text-white p-2 rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10">
-                      <ClipboardDocumentListIcon className="size-7" />
-                    </button>
+                      {/* Botón Editar/Ver Lista (Turquesa) */}
+                      <button className="bg-[#009BAE] text-white p-2 rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10">
+                        <ClipboardDocumentListIcon className="size-7" />
+                      </button>
 
-                    {/* Botón Eliminar (Gris Oscuro) */}
-                    <button
-                      className="bg-[#6B7280] text-white p-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
-                      onClick={() => deleteRecord(empleado.id)}
-                    >
-                      <TrashIcon className="size-7" />
-                    </button>
-                  </div>
+                      {/* Botón Eliminar (Gris Oscuro) */}
+                      <button
+                        className="bg-[#6B7280] text-white p-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
+                        onClick={() => deleteRecord(empleado.id)}
+                      >
+                        <TrashIcon className="size-7" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              //Si no existen registros, solo mostramos ese mensaje
+              <tr className="h-14  text-md flex justify-center items-center font-semibold hover:bg-gray-200 ">
+                <td className="w-56 ml-2">
+                  <p>No existen registros</p>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

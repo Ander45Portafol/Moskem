@@ -15,7 +15,8 @@ class DetalleRenta extends Model
         'id_producto',
         'cantidad',
         'fecha_renta',
-        'estado_producto_renta'
+        'estado_producto_renta',
+        'id_paquete'
     ];
     public function renta(){
         return $this->belongsTo(Renta::class,'id_renta','id_renta');
@@ -23,5 +24,7 @@ class DetalleRenta extends Model
     public function producto(){
         return $this->belongsTo(Productos::class,'id_producto','id_producto');
     }
-    
+    public function paquetes(){
+        return $this->belongsTo(Paquete::class,'id_paquete','id_paquete');
+    }
 }

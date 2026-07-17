@@ -3,6 +3,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\MerseriaController;
 use App\Http\Controllers\PedidosController;
+use App\Http\Controllers\TelaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,4 @@ Route::apiResource('pedidos',PedidosController::class);
 Route::apiResource('mercerias',MerseriaController::class);
 
 Route::apiResource('empleados',EmpleadoController::class);
+Route::apiResource('telas',TelaController::class);

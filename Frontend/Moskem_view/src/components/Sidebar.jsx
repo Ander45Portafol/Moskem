@@ -155,7 +155,7 @@ export function Sidebar() {
         </Link>
 
         {/* Accesorios */}
-        <Link href="/admin/merceria">
+        <Link to="/admin/merceria">
           <div
             className={
               active === "merceria"

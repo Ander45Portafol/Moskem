@@ -12,6 +12,7 @@ export function DataList({text,textId,dataList,valueData,updateData}){
           list="lista-telas"
           value={valueData}
                 onChange={updateData}
+                name={textId}
                 id={textId}
           placeholder="Escribe el codigo de tela."
           style={{
@@ -27,8 +28,8 @@ export function DataList({text,textId,dataList,valueData,updateData}){
           {dataList.map((tela) => (
             // Al poner el código y el nombre en el "value", el usuario puede buscar por cualquiera de los dos
             <option
-              key={tela.codigo_tela}
-              value={`${tela.codigo_tela} - ${tela.nombre_tela}`}
+              key={tela.id}
+              value={"#"+tela.nombre}
             />
           ))}
         </datalist>

@@ -87,10 +87,20 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
     }
   }, [isOpen]);
 
-  const guardarDatos = () => {
-    handleSubmit();
-    setModalActivo(true)
+const guardarDatos = async (e) => {
+  e.preventDefault();
+  try {
+    // Esperamos a que Laravel responda que todo se guardó bien
+    await handleSubmit(e);
+
+    // Si todo sale bien, hacemos el cambio de modales
+    setModalActivo(true);
+    onClose();
+  } catch (error) {
+    console.error("Error al guardar el pedido:", error);
+    // Aquí podrías manejar el error para que no se cierre el modal si algo falla
   }
+};
   if (!render) return null;
   return (
     <div
@@ -121,7 +131,7 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
         </div>
 
         {/* Formulario estructurado en Grid de 3 columnas */}
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={guardarDatos} className="flex flex-col">
           <div className="flex justify-between gap-x-6 ">
             <SelectWD
               text="Cliente"

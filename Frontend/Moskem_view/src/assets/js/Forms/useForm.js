@@ -37,6 +37,7 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
   };
 
   const createData = async (formData) => {
+    console.log(formData)
     try {
       const response = await fetch(`${API}${ruta}`, {
         method: "POST",
@@ -55,6 +56,8 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
         });
         setForm((prev) => [...prev, result.data]);
         if (onClose) onClose();
+      } else {
+        console.log(response)
       }
     } catch (e) {
       Swal.fire({

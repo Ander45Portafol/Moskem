@@ -23,7 +23,8 @@ class ClienteController extends Controller
             if ($cliente->isEmpty()) {
                 return response()->json([
                     'message'=>'No existen registros',
-                    'code'=>200
+                    'code'=>200,
+                    'data'=>[]
                 ]);
             } else {
                 return ApiResponse::success('¡Exito!', 200, ClienteResource::collection($cliente));

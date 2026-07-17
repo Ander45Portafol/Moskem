@@ -17,10 +17,14 @@ class PedidoResource extends JsonResource
         return[
             'id'=>$this->id_pedido,
             'cliente'=>$this->cliente->nombres_cliente.' '.$this->cliente->apellidos_cliente,
-            'tipo_pedido'=>$this->tipo_pedido,
             'cantidad_total'=>$this->costo_total,
             'anticipo'=>$this->anticipo,
-            'restante'=>$this->restante
+            'restante'=>$this->restante,
+            'fecha_entrega'=>$this->fecha_entrega,
+            'estado_pedido'=>$this->estado_pedido,
+            'tipo_pedido' => $this->whenLoaded('detalle_pedidos', function () {
+                return $this->detalle_pedido->tipo_pedido;
+            }),
         ];
     }
 }

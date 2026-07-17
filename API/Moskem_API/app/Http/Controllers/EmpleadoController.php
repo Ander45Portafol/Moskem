@@ -24,7 +24,8 @@ class EmpleadoController extends Controller
             if ($empleado->isEmpty()) {
                 return response()->json([
                     'message' => 'No existen registros',
-                    'code' => 200
+                    'code' => 200,
+                    'data'=>[]
                 ]);
             } else {
                 return ApiResponse::success('¡Exito!', 200, EmpleadoResource::collection($empleado));
@@ -85,6 +86,16 @@ class EmpleadoController extends Controller
         try {
             $empleado=Empleado::findOrFail($id);
             $validaciones=$request->validated();
+            if ($empleado->nombres_empleado!=$validaciones['nombres_empleado']||$empleado->apellidos_empleado!=$validaciones['apellidos_empleado']) {
+                $primerNombre = explode(' ', trim($validaciones['nombres_empleado']))[0];
+                $primerApellido = explode(' ', trim($validaciones['apellidos_empleado']))[0];
+                $inicialNombre = strtoupper(substr($primerNombre, 0, 1));
+                $inicialApellido = strtoupper(substr($primerApellido, 0, 1));
+                $idConCeros = str_pad($empleado->id_empleado, 6, '0', STR_PAD_LEFT);
+
+                // 4. Concatenamos las iniciales con el ID formateado (Ej: AA000001)
+                $validaciones['codigo_empleado'] = $inicialNombre . $inicialApellido . $idConCeros;
+            }
             $empleado->update($validaciones);
             return ApiResponse::success('Empleado actualizado con exito', 200, new EmpleadoResource($empleado));
         } catch (ModelNotFoundException $me) {

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_medidas');
             // Aquí agregan los campos específicos según el Excel de muestras
             //aun falta color mas
+            $table->string('codigo_medida');
             $table->integer('largo')->nullable();
             $table->integer('pecho')->nullable();
             $table->integer('cintura')->nullable();

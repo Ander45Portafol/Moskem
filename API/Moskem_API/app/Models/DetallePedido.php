@@ -16,8 +16,9 @@ class DetallePedido extends Model
         'id_empleado',
         'id_paquete',
         'cantidad_tela',
-        'evento_traje',
-        'prenda'
+        'tipo_pedido',
+        'numero_pedido',
+        'prenda',
     ];
 
     public function pedidos(){

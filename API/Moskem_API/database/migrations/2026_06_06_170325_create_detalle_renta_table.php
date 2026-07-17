@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('cantidad')->default(1);
             $table->date('fecha_renta');
             $table->enum('estado_producto_renta', ['Solicitado','Entregado','Devuelto']);
+            $table->foreignId('id_paquete')->constrained('paquetes', 'id_paquete')->onDelete('cascade');
             $table->timestamps();
         });
     }

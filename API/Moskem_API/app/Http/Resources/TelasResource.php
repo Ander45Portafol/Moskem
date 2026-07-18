@@ -15,9 +15,9 @@ class TelasResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'=>$this->id,
+            'id'=>$this->id_tela,
             'codigo'=>$this->codigo_tela,
-            'color'=>$this->color,
+            'color'=>$this->color_tela,
             'cantidad'=>$this->cantidad_stock,
             'proveedor'=>$this->proveedor->nombre_proveedor,
             'fecha_ingreso'=>$this->created_at,

@@ -50,10 +50,17 @@ export function ModalDetallePedido({
     : [];
 
   // 4. Lógica de filtrado: Si no hay categoría, muestra todas las telas
-  const telasFiltradas = categoriaSeleccionada
-    ? telas?.filter((tela) => tela.categoria_tela === categoriaSeleccionada) ||
-      []
-    : telas || [];
+  // Filtramos las telas (por categoría o todas) y mapeamos para estructurar el ID y Nombre
+  const telasFiltradas = (
+    categoriaSeleccionada
+      ? telas?.filter(
+          (tela) => tela.categoria_tela === categoriaSeleccionada,
+        ) || []
+      : telas || []
+  ).map((tela) => ({
+    id: tela.codigo_tela || tela.id_tela, // Usa el nombre exacto de tu PK en la DB (id_tela o codigo_tela)
+    nombre: `${tela.codigo_tela} - ${tela.nombre_tela}`, // Esto es lo que el usuario verá y buscará escribiendo
+  }));
 
   const prenda = ["Camisa", "Saco", "Chaleco", "Pantalón"];
   const tipo_pedido = ["Prenda unica", "Traje completo", "Paquete"];

@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id('id_paquete');
             $table->enum('tipo_paquete',['Boda','Graducación','Bautizo']);
             $table->string('nombre_paquete');
-            $table->string('detalles_paquete');
+            $table->integer('cantidad_prendas')->nullable();
+            $table->enum('categoria_paquete',['Niño', 'Adulto', 'Tercera edad']);
+            $table->enum('seccion_paquete',['Menswear','Renta']);
+            $table->string('descripcion_paquete');
+            $table->decimal('precio_paquete', 10, 2);
             $table->timestamps();
         });
     }

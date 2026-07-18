@@ -1,8 +1,8 @@
 import React from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export default function Login() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="font-poppins flex h-screen overflow-hidden">
       <div className="h-full w-1/2 rounded-r-4xl bg-[#006272] pt-32 pl-10 text-start">
@@ -36,9 +36,11 @@ export default function Login() {
             </p>
           </div>
           <div className="flex h-30 w-full items-center justify-center">
-            <button className="h-12 w-54 rounded-xl bg-[#00A29B] text-xl font-extrabold text-[#004053]">
-              Iniciar sesion
-            </button>
+            <Link to="/admin">
+              <button className="h-12 w-54 rounded-xl bg-[#00A29B] text-xl font-extrabold text-[#004053]">
+                Iniciar sesion
+              </button>
+            </Link>
           </div>
         </form>
       </div>

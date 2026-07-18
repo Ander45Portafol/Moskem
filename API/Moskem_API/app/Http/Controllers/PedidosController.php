@@ -24,7 +24,8 @@ class PedidosController extends Controller
             if ($pedido->isEmpty()) {
                 return response()->json([
                     'message' => 'No existen registros',
-                    'code' => 200
+                    'code' => 200,
+                    'data'=>$pedido
                 ]);
             } else {
                 return ApiResponse::success('¡Exito!', 200, PedidoResource::collection($pedido));
@@ -51,8 +52,29 @@ class PedidosController extends Controller
     }
     public function show($id):JsonResponse{
         try {
-            $pedido=Pedido::findOrFail($id);
-            return ApiResponse::success('Pedido encontrado correctamente', 200, $pedido);
+            $pedido=Pedido::with('cliente')->findOrFail($id);
+            $data = [
+                'id_pedido'          => $pedido->id_pedido,
+                'id_cliente'         => $pedido->id_cliente,
+                // Si el pedido tiene cliente, obtenemos su 'nombre_completo'. Si no, devolvemos null o un string alternativo.
+                'cliente'            => $pedido->cliente ? $pedido->cliente->nombres_cliente.' '.$pedido->cliente->apellidos_cliente : 'Cliente no asignado',
+                'estado_pedido'      => $pedido->estado_pedido,
+                'nota_pedido'        => $pedido->nota_pedido,
+                'imagen_referencia'  => $pedido->imagen_referencia,
+                'evento_traje'       => $pedido->evento_traje,
+                'tipo_entalle'       => $pedido->tipo_entalle,
+                'anticipo'           => $pedido->anticipo,
+                'costo_total'        => $pedido->costo_total,
+                'restante'           => $pedido->restante,
+                'fecha_tallaje1'     => $pedido->fecha_tallaje1,
+                'fecha_tallaje2'     => $pedido->fecha_tallaje2,
+                'fecha_entrega'      => $pedido->fecha_entrega,
+                'tipo_evento'        => $pedido->tipo_evento,
+                'visibilidad_pedido' => $pedido->visibilidad_pedido,
+                'created_at'         => $pedido->created_at,
+                'updated_at'         => $pedido->updated_at,
+            ];
+            return ApiResponse::success('Pedido encontrado correctamente', 200, $data);
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro',404,$me->getMessage());
         }

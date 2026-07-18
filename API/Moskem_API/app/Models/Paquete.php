@@ -15,7 +15,10 @@ class Paquete extends Model
         'detalles_paquete'
     ];
 
-    public function detalle_pedido(){
-        return $this->hasMany(DetallePedido::class,'id_detalle_pedido','id_detalle_pedido');
+    public function detalle_pedidos(){
+        return $this->hasMany(Pedido::class,'id_paquete','id_paquete');
+    }
+    public function detalle_rentas(){
+        return $this->hasMany(DetalleRenta::class,'id_paquete','id_paquete');
     }
 }

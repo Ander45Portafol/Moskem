@@ -11,6 +11,7 @@ class Medida extends Model
     protected $keyType = 'int';
     protected $fillable = [
         'id_medida',
+        'codigo_medida',
         'largo',
         'pecho',
         'cintura',

@@ -28,4 +28,8 @@ class Cliente extends Model
     public function citas(){
         return $this->hasMany(Cita::class, 'id_cliente','id_cliente');
     }
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class, 'id_cliente', 'id_cliente');
+    }
 }

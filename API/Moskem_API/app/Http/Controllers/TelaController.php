@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TelasRequest;
 use APP\Http\Resources\TelasResource;
+use App\Http\Resources\TelasResource as ResourcesTelasResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Tela;
 use Exception;
@@ -25,7 +26,7 @@ class TelaController extends Controller
                     'code' => 200
                 ]);
             } else {
-                return ApiResponse::success('¡Exito!', 200, TelasResource::collection($telas));
+                return ApiResponse::success('¡Exito!', 200, ResourcesTelasResource::collection($telas));
             }
         } catch (Exception $ex) {
             return ApiResponse::error('Error', 500, $ex->getMessage());

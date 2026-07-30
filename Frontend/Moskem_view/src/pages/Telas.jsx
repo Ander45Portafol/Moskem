@@ -9,6 +9,7 @@ import {
 import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
+import { ModalTelas } from "../components/Modals/ModalTelas";
 
 export function Telas() {
   // Estado para manejar los futuros modales (agregar, proveedores, etc.)
@@ -200,8 +201,16 @@ export function Telas() {
           </tbody>
         </table>
       </div>
-
-      {/* Los modales se incorporarán en esta sección más adelante */}
+      <ModalTelas
+        isOpen={modalActivo === "agregar"}
+        onClose={() => {
+          setModalActivo(null);
+          setIdTela(null);
+        }}
+        tipo={idTela ? "actualizar" : "agregar"}
+        id_tela={idTela}
+        setTela={setData}
+      />
     </div>
   );
 }

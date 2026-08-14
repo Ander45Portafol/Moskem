@@ -52,7 +52,7 @@ class PedidosController extends Controller
     }
     public function show($id):JsonResponse{
         try {
-            $pedido=Pedido::with('cliente')->findOrFail($id);
+            $pedido=Pedido::with('cliente','detalle_pedido')->findOrFail($id);
             $data = [
                 'id_pedido'          => $pedido->id_pedido,
                 'id_cliente'         => $pedido->id_cliente,
@@ -69,6 +69,7 @@ class PedidosController extends Controller
                 'fecha_tallaje1'     => $pedido->fecha_tallaje1,
                 'fecha_tallaje2'     => $pedido->fecha_tallaje2,
                 'fecha_entrega'      => $pedido->fecha_entrega,
+                'detalles'=>$pedido->detalle_pedido,
                 'tipo_evento'        => $pedido->tipo_evento,
                 'visibilidad_pedido' => $pedido->visibilidad_pedido,
                 'created_at'         => $pedido->created_at,

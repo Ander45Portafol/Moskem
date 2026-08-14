@@ -97,7 +97,7 @@ class ClienteController extends Controller
         }
     }
     //Metodo utilizado para cargar un registro en especifico
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         try {
             $client = Cliente::findOrFail($id);

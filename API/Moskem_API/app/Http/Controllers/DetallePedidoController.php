@@ -8,6 +8,7 @@ use App\Http\Responses\ApiResponse;
 use App\Models\DetallePedido;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -43,7 +44,7 @@ class DetallePedidoController extends Controller
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
     }
-    public function show($id)
+    public function show(int $id)
     {
         try {
             $detalle_pedido = DetallePedido::findOrFail($id);
@@ -52,7 +53,7 @@ class DetallePedidoController extends Controller
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
         }
     }
-    public function update(DetallePedidoRequest $request,$id){
+    public function update(DetallePedidoRequest $request,int $id){
         try {
             $detalle_pedido=DetallePedido::findOrFail($id);
             $validaciones=$request->validated();
@@ -64,6 +65,22 @@ class DetallePedidoController extends Controller
             return ApiResponse::error('Error en validaciones', 422, $ve->getMessage());
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar actualizar el registro', 500, $ex->getMessage());
+        }
+    }
+    public function getByPedido(int $id_pedido): JsonResponse
+    {
+        try {
+            // Buscamos los detalles que pertenezcan al id_pedido recibido
+            $detalles = DetallePedido::where('id_pedido', $id_pedido)->get();
+
+            // Opcional: Si quieres verificar si el pedido tiene detalles o devolver un arreglo vacío
+            if ($detalles->isEmpty()) {
+                return ApiResponse::success('No se encontraron detalles para este pedido', 200, []);
+            }
+
+            return ApiResponse::success('Detalles del pedido obtenidos correctamente', 200, $detalles);
+        } catch (Exception $e) {
+            return ApiResponse::error('Error al obtener los detalles del pedido', 500, $e->getMessage());
         }
     }
 }

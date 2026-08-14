@@ -18,7 +18,9 @@ class DetallePedido extends Model
         'cantidad_tela',
         'tipo_pedido',
         'numero_pedido',
+        'categoria_pedido',
         'prenda',
+        'precio_detalle'
     ];
 
     public function pedidos(){

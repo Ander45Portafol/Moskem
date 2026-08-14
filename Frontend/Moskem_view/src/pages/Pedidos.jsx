@@ -11,16 +11,25 @@ import {
 import { useGet } from "../assets/js/useGet";
 import { useState } from "react";
 import { ModalPedido } from "../components/Modals/ModalPedido";
+import { ModalDetallePedido } from "../components/Modals/ModalDetallePedido";
+import { ModalPaquetes } from "../components/Modals/ModalPaquete";
 
 export function Pedidos() {
   //Estado para gestionar el modal
   const [modalActivo, setModalActivo] = useState(null);
   const [idPedido, setIdPedido] = useState(null);
+  // NUEVO: estado para el modal de detalle
+  const [detalleAbierto, setDetalleAbierto] = useState(false);
+  const [paquetes, SetPaquetes] = useState(false);
+  const [idPedidoDetalle, setIdPedidoDetalle] = useState(null);
   const { data, message, setData } = useGet("pedidos");
-    const modalActualizar = (id) => {
-      setIdPedido(id);
-      setModalActivo("agregar");
-    };
+    const { data:detalles, setData:setDetalle } = useGet("detalle_pedidos");
+  const [idPaquete, SetIdPaquete] = useState(null);
+console.log(idPaquete)
+  const modalActualizar = (id) => {
+    setIdPedido(id);
+    setModalActivo("agregar");
+  };
   //Funcion creada para administrar los cambios en el estado de un pedido
   const renderEstado = (estado) => {
     switch (estado) {
@@ -90,14 +99,14 @@ export function Pedidos() {
           <input
             type="text"
             placeholder="Buscar"
-            className="w-full bg-[#D9D9D9] border-none rounded-xl py-4 pl-12 pr-4 text-gray-700 placeholder-gray-500 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
+            className="w-full bg-[#D9D9D9] border-none rounded-xl py-3 pl-12 pr-4 text-gray-700 placeholder-gray-500 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none"
           />
         </div>
-        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-14 w-38 rounded-xl flex items-center justify-center text-lg  gap-2 transition-all active:scale-95">
+        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-12 w-38 rounded-xl flex items-center justify-center text-lg  gap-2 transition-all active:scale-95">
           <CurrencyDollarIcon className="size-7" />
           Cotización
         </button>
-        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-14 w-38 rounded-xl flex items-center justify-center text-lg  gap-2 transition-all active:scale-95">
+        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-12 py-2 w-38 rounded-xl flex items-center justify-center text-lg  gap-2 transition-all active:scale-95">
           <DocumentIcon className="size-7" />
           Reportes
         </button>
@@ -105,17 +114,13 @@ export function Pedidos() {
         {/* Botón Añadir (+) */}
         <button
           onClick={() => setModalActivo("agregar")}
-          className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-semibold h-14 w-18 rounded-xl flex items-center justify-center  transition-all active:scale-95"
+          className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-semibold h-12 w-18 rounded-xl flex items-center justify-center  transition-all active:scale-95"
         >
           <PlusCircleIcon className="size-7" />
         </button>
       </div>
-
-      {/* ==========================================
-                    TABLA DE DATOS DE CLIENTES
-                   ========================================== */}
       {/* 1. Quitamos h-4/6 y ponemos una altura máxima al contenedor con scroll */}
-      <div className="mt-8 max-h-2/3 overflow-y-auto rounded-xl ">
+      <div className="mt-5 max-h-2/3 overflow-y-auto rounded-xl ">
         <table className="w-full text-left border-collapse">
           {/* 2. Hacemos que la cabecera se quede fija arriba usando sticky y bg-white */}
           <thead className="sticky top-0 bg-white z-10 ">
@@ -137,10 +142,10 @@ export function Pedidos() {
                 data &&
                 data.map((pedido) => (
                   <tr
-                    key={pedido.id}
+                    key={pedido.id_pedido}
                     className="hover:bg-gray-200 transition-colors"
                   >
-                    <td className="py-4">{pedido.id}</td>
+                    <td className="py-4">{pedido.id_pedido}</td>
 
                     <td className="py-4 pl-6">{pedido.cliente}</td>
                     <td className="py-4">{pedido.fecha_entrega}</td>
@@ -164,7 +169,7 @@ export function Pedidos() {
 
                         <button
                           className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10"
-                          onClick={() => modalActualizar(pedido.id)}
+                          onClick={() => modalActualizar(pedido.id_pedido)}
                         >
                           <InformationCircleIcon className="size-7" />
                         </button>
@@ -214,11 +219,37 @@ export function Pedidos() {
         isOpen={modalActivo === "agregar"}
         onClose={() => {
           setModalActivo(null);
-          setIdPedido(null); // <-- IMPORTANTE: Limpiamos el ID al cerrar
+          setIdPedido(null);
         }}
         tipo={idPedido ? "actualizar" : "agregar"}
         id_pedido={idPedido}
         setPedido={setData}
+        // 👇 falta esto
+        onPedidoGuardado={(id) => {
+          setIdPedido(id);
+          SetPaquetes(true)
+        }}
+      />
+      <ModalDetallePedido
+        isOpen={detalleAbierto}
+        onClose={() => {
+          setDetalleAbierto(false);
+          SetPaquetes(false)
+          setIdPedidoDetalle(null);
+        }}
+        id_pedido={idPedido}
+        id_paquete={idPaquete}
+        id_detallepedido={idPedidoDetalle}
+        detallesData={setDetalle}
+      />
+      <ModalPaquetes
+        isOpen={paquetes}
+        onClose={() => {
+          SetPaquetes(false)
+          setDetalleAbierto(true)
+        }}
+        id_paquete={idPaquete}
+        setPaquete={SetIdPaquete}
       />
     </div>
   );

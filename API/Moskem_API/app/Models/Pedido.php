@@ -24,7 +24,6 @@ class Pedido extends Model
         'fecha_tallaje2',
         'evento_traje',
         'fecha_entrega',
-        'id_paquete',
         'fecha_evento',
         'tipo_entalle',
         'tipo_evento',
@@ -33,7 +32,7 @@ class Pedido extends Model
     public function cliente():BelongsTo{
         return $this->belongsTo(Cliente::class,'id_cliente','id_cliente');
     }
-    protected function detalle_pedido(){
+    public function detalle_pedido(){
         return $this->hasMany(DetallePedido::class,'id_pedido','id_pedido');
     }
     public function paquetes()

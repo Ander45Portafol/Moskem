@@ -25,6 +25,7 @@ export function ModalTelas({
     codigo_tela: "",
     cantidad_stock: "",
     id_proveedor: "",
+    codigo_tela_proveedor: "",
   };
 
   const { data, setData } = useForm({
@@ -200,6 +201,15 @@ export function ModalTelas({
             valueData={data?.id_proveedor}
             updateData={inputsUpdate}
           />
+
+          <InputD
+            text="Código Proveedor"
+            type="text"
+            textId="codigo_tela_proveedor"
+            view=""
+            valueData={data?.codigo_tela_proveedor || ""}
+            updateData={inputsUpdate}
+          />  
 
           <div className="hidden md:block"></div>
 

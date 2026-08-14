@@ -22,4 +22,6 @@ class MerceriaResource extends JsonResource
             'proveedor'=>$this->proveedor->nombre_proveedor,
         ];
     }
-}
+} 
+
+                                  

@@ -44,6 +44,7 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
     ruta,
     estadoInicial,
     });
+    //Se usa para extraer los datos del cliente que se cargaran en el select
   const { data: clientes } = useGet("clientes");
 
   // Usamos el encadenamiento opcional (?.) por si 'clientes' aún está cargando (es undefined o null)

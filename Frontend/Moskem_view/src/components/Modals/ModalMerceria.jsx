@@ -8,45 +8,47 @@ import Swal from "sweetalert2";
 import { SelectWD } from "../SelectWD";
 import { useGet } from "../../assets/js/useGet";
 
-export function ModalTelas({
+export function ModalMerceria({
   isOpen,
   onClose,
   tipo, // "agregar" o "actualizar"
-  id_tela,
-  setTela, // setData de la vista Telas.jsx
+  id_merceria,
+  setMerceria, // setData de la vista Merceria.jsx
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const ruta = "telas";
-
+  const ruta = "mercerias";
   const estadoInicial = {
-    categoria_tela: "",
-    color_tela: "",
-    codigo_tela: "",
-    cantidad_stock: "",
+    tipo_merceria: "",
+    tamanio_merceria: "",
+    color: "",
+    codigo_merceria: "",
+    stock: "",
     id_proveedor: "",
   };
 
   const { data, setData } = useForm({
-    id: id_tela,
-    setForm: setTela,
+    id: id_merceria,
+    setForm: setMerceria,
     isOpen,
     onClose,
     ruta,
     estadoInicial,
   });
 
-   //Se usa para extraer los datos de los proveerdores que se cargaran en el select
-    const { data: proveedores } = useGet("proveedores");
-  
-    // Usamos el encadenamiento opcional (?.) por si 'clientes' aún está cargando (es undefined o null)
-    const SelectProveedores =
-      proveedores?.map((registro) => ({
-        id: registro.id_proveedor, // O el nombre exacto que tenga tu id en la base de datos
-        nombre: registro.nombre_proveedor,
-      })) || [];
+  // Se usa para extraer los datos de los proveedores
+  const { data: proveedores } = useGet("proveedores");
 
-    const SelectCategoria =["Elite", "Elite +", "Premium"];
+  const SelectProveedores =
+    proveedores?.map((registro) => ({
+      id: registro.id_proveedor,
+      nombre: registro.nombre_proveedor,
+    })) || [];
+
+  // Opciones para el Select de Tipo Mercería (puedes ajustar esta lista según tus necesidades)
+  const SelectTipoMerceria = [
+    'Botones','Ganchos','Zipper','Agujas','Hilos',
+  ];
 
   // Captura el cambio de valor de cada input dinámicamente
   const inputsUpdate = (e) => {
@@ -59,8 +61,8 @@ export function ModalTelas({
     e.preventDefault();
 
     try {
-      const isEdit = tipo === "actualizar" && id_tela;
-      const url = isEdit ? `${API}telas/${id_tela}` : `${API}telas`;
+      const isEdit = tipo === "actualizar" && id_merceria;
+      const url = isEdit ? `${API}mercerias/${id_merceria}` : `${API}mercerias`;
       const method = isEdit ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -74,7 +76,6 @@ export function ModalTelas({
       if (response.ok) {
         const responseData = await response.json();
 
-        // Notificación de éxito
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -84,16 +85,14 @@ export function ModalTelas({
           timer: 3000,
         });
 
-        // Actualizar el estado de la lista de telas en tiempo real
         if (isEdit) {
-          setTela((prev) =>
-            prev.map((item) => (item.id === id_tela ? responseData.data || data : item))
+          setMerceria((prev) =>
+            prev.map((item) => (item.id === id_merceria ? responseData.data || data : item))
           );
         } else {
-          setTela((prev) => [...prev, responseData.data || data]);
+          setMerceria((prev) => [...prev, responseData.data || data]);
         }
 
-        // Cerrar el modal
         onClose();
       } else {
         Swal.fire("Error", "No se pudo guardar la información", "error");
@@ -123,7 +122,7 @@ export function ModalTelas({
       onClose();
     }
   };
-
+  console.log("Datos en data:", data);
   return (
     <div
       onClick={handleFondoClick}
@@ -148,7 +147,7 @@ export function ModalTelas({
 
         <div>
           <h2 className="text-3xl font-black text-[#004B57] uppercase">
-            {tipo === "actualizar" ? "Editar Tela" : "Formulario – Telas"}
+            {tipo === "actualizar" ? "Editar Mercería" : "Formulario – Mercería"}
           </h2>
         </div>
 
@@ -157,39 +156,50 @@ export function ModalTelas({
           onSubmit={onSubmitForm}
         >
           <SelectD
-            text="Categoría"
-            textId="categoria_tela"
-            options={SelectCategoria}
-            valueData={data.categoria_tela}
+            text="Tipo Mercería"
+            textId="tipo_merceria"
+            options={SelectTipoMerceria}
+            valueData={data.tipo_merceria}
+            updateData={inputsUpdate}
+          />
+
+          <InputD
+            text="Tamaño"
+            type="text"
+            name="tamanio_merceria"
+            textId="tamanio_merceria"
+            view=""
+            valueData={data?.tamanio_merceria || ""}
             updateData={inputsUpdate}
           />
 
           <InputD
             text="Color"
             type="text"
-            textId="color_tela"
+            name="color"
+            textId="color"
             view=""
-            valueData={data?.color_tela || ""}
+            valueData={data?.color || ""}
             updateData={inputsUpdate}
           />
 
           <InputD
-            text="Código"
+            text="Código Mercería"
             type="text"
-            name="codigo_tela"
-            textId="codigo_tela"
+            name="codigo_merceria"
+            textId="codigo_merceria"
             view=""
-            valueData={data?.codigo_tela || ""}
+            valueData={data?.codigo_merceria || ""}
             updateData={inputsUpdate}
           />
 
           <InputD
-            text="Cantidad Stock"
+            text="Stock"
             type="number"
-            name="cantidad_stock"
-            textId="cantidad_stock"
+            name="stock"
+            textId="stock"
             view=""
-            valueData={data?.cantidad_stock || ""}
+            valueData={data?.stock || ""}
             updateData={inputsUpdate}
           />
 
@@ -200,8 +210,6 @@ export function ModalTelas({
             valueData={data?.id_proveedor}
             updateData={inputsUpdate}
           />
-
-          <div className="hidden md:block"></div>
 
           <div className="md:col-span-3 flex justify-end mt-4">
             <button

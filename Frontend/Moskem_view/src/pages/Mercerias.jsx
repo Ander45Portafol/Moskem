@@ -9,6 +9,7 @@ import {
 import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
+import { ModalMerceria } from "../components/Modals/ModalMerceria";
 
 export function Mercerias() {
   // Estado para manejar los futuros modales (agregar, proveedores, etc.)
@@ -199,7 +200,17 @@ export function Mercerias() {
         </table>
       </div>
 
-      {/* Los modales se incorporarán en esta sección más adelante */}
+      {/* Renderizado condicional del modal */}
+      <ModalMerceria
+        isOpen={modalActivo === "agregar"}
+        onClose={() => {
+          setModalActivo(null);
+          setIdArticulo(null);
+        }}
+        tipo={idArticulo ? "actualizar" : "agregar"}
+        id_merceria={idArticulo}
+        setMerceria={setData}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
             $table->enum('prenda',['Camisa','Chaleco','Saco','Pantalón']);
             //Campo para seleccionar de que tipo será el pedido y en base a eso 
             $table->enum('tipo_pedido', ['Prenda unica', 'Traje completo', 'Paquete']);
+            $table->decimal('precio_detalle', 10, 2);
             $table->enum('categoria_pedido',['Adulto','Niño','Tercera edad']);
             //Al momento de registrar el pedido se debera ingresar un numero del pedido para asi mantener la cuenta con la cantidad del pedido ingresada en la tabla de pedidos.
             $table->integer('numero_pedido');

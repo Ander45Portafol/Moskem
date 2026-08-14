@@ -168,7 +168,7 @@ export function Empleados() {
         isOpen={modalActivo === "agregar"}
         onClose={() => {
           setModalActivo(null);
-          setIdEmpleado(null); // <-- IMPORTANTE: Limpiamos el ID al cerrar
+          setIdEmpleado(null); 
         }}
         tipo={idEmpleado ? "actualizar" : "agregar"}
         id_empleado={idEmpleado}

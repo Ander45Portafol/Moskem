@@ -4,26 +4,53 @@ import { SelectD } from "../SelectD";
 import { InputN } from "../InputN";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { DataList } from "../DataList";
-import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowLeftCircleIcon,
+  ArrowRightCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  PlusCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
+import { SelectWD } from "../SelectWD";
+import { API } from "../../assets/js/global";
+import { DetallePaquete } from "../DetallePaquete";
 
 export function ModalDetallePedido({
   isOpen,
   onClose,
   tipo,
   id_pedido,
-  setPedido,
+  id_paquete,
+  id_detallepedido,
+  detallesData,
 }) {
+  console.log(id_paquete);
+  //Variable reactiva que guarda los campos de los detalle del paquete que estan ligados al paquete
+  const [detallePaquete, setDetallePaquete] = useState(null);
+  //Funcion para cargar los datos de los detalles
+  const cargarPrendasPaquete = async (paquete_id) => {
+    try {
+      const response = await fetch(`${API}paquetes/${paquete_id}`);
+      if (response.ok) {
+        const responseData = await response.json();
+        setDetallePaquete(responseData.data.detalle_paquete);
+        console.log(responseData.data.detalle_paquete);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
   const [render, setRender] = useState(isOpen);
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
 
   const ruta = "detalle_pedidos";
   const estadoInicial = {
     id_pedido: id_pedido || "",
     id_tela: "",
-    id_empleado: "",
+    id_empleado: 1,
     anticipo: "",
-    id_paquete: "",
+    id_paquete: id_paquete || "",
     cantidad_tela: "",
     prenda: "",
     tipo_pedido: "",
@@ -32,35 +59,20 @@ export function ModalDetallePedido({
   };
 
   // 1. Extraemos los datos de las telas primero
-  const { data: telas } = useGet("telas");
-
+  //Funcion para cargar toda la informacion de un detalle de pedido
+  //const cargar_de
   // 2. Activamos el formulario (descomentado)
   const { data, setData, handleSubmit } = useForm({
-    id: id_pedido,
-    setForm: setPedido,
+    id: id_detallepedido,
+    setForm: detallesData,
     isOpen,
     onClose,
     ruta,
     estadoInicial,
   });
+  console.log(data);
 
-  // 3. Obtenemos las categorías únicas de forma segura
-  const categoria_tela = telas
-    ? [...new Set(telas.map((tela) => tela.categoria_tela))]
-    : [];
 
-  // 4. Lógica de filtrado: Si no hay categoría, muestra todas las telas
-  // Filtramos las telas (por categoría o todas) y mapeamos para estructurar el ID y Nombre
-  const telasFiltradas = (
-    categoriaSeleccionada
-      ? telas?.filter(
-          (tela) => tela.categoria_tela === categoriaSeleccionada,
-        ) || []
-      : telas || []
-  ).map((tela) => ({
-    id: tela.codigo_tela || tela.id_tela, // Usa el nombre exacto de tu PK en la DB (id_tela o codigo_tela)
-    nombre: `${tela.codigo_tela} - ${tela.nombre_tela}`, // Esto es lo que el usuario verá y buscará escribiendo
-  }));
 
   const prenda = ["Camisa", "Saco", "Chaleco", "Pantalón"];
   const tipo_pedido = ["Prenda unica", "Traje completo", "Paquete"];
@@ -83,6 +95,7 @@ export function ModalDetallePedido({
 
   useEffect(() => {
     if (isOpen) {
+      cargarPrendasPaquete(id_paquete);
       setRender(true);
       setTimeout(() => setIsAnimating(true), 10);
     } else {
@@ -94,79 +107,63 @@ export function ModalDetallePedido({
 
   if (!render) return null;
 
-  return (
+ // ... resto del código igual ...
+
+return (
+  <div
+    className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 ${isAnimating ? "opacity-100" : "opacity-0"}`}
+  >
+    {/* 1. Modal contenedor */}
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 ${isAnimating ? "opacity-100" : "opacity-0"}`}
+      className={`bg-white w-[1200px] h-[650px] max-w-[100vw] rounded-[32px] p-10 shadow-2xl relative flex flex-col gap-6 transition-all duration-300 transform ${isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
     >
-      <div
-        className={`bg-white w-[1000px] max-w-[100vw] rounded-[32px] p-10 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-8 right-8 text-[#004053] hover:scale-110 transition-transform"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-8 right-8 text-[#004B57] hover:scale-110 transition-transform"
-        >
-          <XMarkIcon className="size-7" />
-        </button>
+        <XMarkIcon className="size-7" />
+      </button>
 
-        <div>
-          <h2 className="text-4xl font-black text-[#004B57] tracking-wide uppercase">
-            Formulario - Detalle Pedido
-          </h2>
-        </div>
+      {/* Encabezado */}
+      <div className="flex-col">
+        <h2 className="text-3xl font-black text-[#004053] tracking-wide uppercase">
+          Detalle - Pedido
+        </h2>
+        <p className="text-[#004B57] text-lg">
+          Completar la siguiente información del formulario
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="flex justify-between gap-x-6 ">
-            <SelectD
-              text="Tipo Pedido"
-              options={tipo_pedido}
-              textId="tipo_pedido"
-              valueData={data.tipo_pedido}
-              updateData={inputsUpdate}
-            />
-            <SelectD
-              text="Prenda"
-              options={prenda}
-              textId="prenda"
-              valueData={data.prenda}
-              updateData={inputsUpdate}
-            />
-            <InputN
-              text="Cantidad"
-              textId="numero_pedido"
-              valueData={data.numero_pedido}
-              updateData={inputsUpdate}
-            />
-            <SelectD
-              text="Categoría Tela"
-              options={categoria_tela}
-              textId="categoria_tela"
-              valueData={categoriaSeleccionada}
-              updateData={inputsUpdate}
-            />
-          </div>
-
-          <div className="flex justify-between my-5">
-            <DataList
-              text="Tela"
-              textId="id_tela"
-              dataList={telasFiltradas}
-              valueData={data.id_tela}
-              updateData={inputsUpdate}
-            />
-          </div>
-
-          <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+      {/* 2. Cuerpo con scroll (flex-1 para tomar el alto restante) */}
+      <div className="flex-1 overflow-x-auto overflow-y-auto pb-4">
+        <div className="flex min-h-full w-max items-stretch">
+          {detallePaquete?.map((paquete, index) => (
+            <div
+              key={paquete.id_detalle_paquete}
+              className="flex min-h-full items-stretch shrink-0"
             >
-              <CheckCircleIcon className="size-6" />
-              Guardar
-            </button>
-          </div>
-        </form>
+              {/* Componente DetallePaquete */}
+              <DetallePaquete
+                detalle={data}
+                update_input={inputsUpdate}
+                data_detalle={paquete}
+              />
+              {index < detallePaquete.length - 1 && (
+                <div className="w-1 mx-6 bg-[#004B57] self-stretch"></div>
+              )}{" "}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="w-full flex justify-between">
+        <button className="bg-[#004B57] text-[#B2B2B2] w-32 h-10 flex justify-center items-center rounded-xl gap-2 text-normal font-bold">
+          <ArrowLeftCircleIcon className="size-5" />
+          Regresar
+        </button>
+        <button className="bg-[#BCCF00] text-[#004B57] w-32 h-10 rounded-xl flex justify-center items-center gap-2 text-normal font-bold"><ArrowRightCircleIcon className="size-5"/>Finalizar</button>
       </div>
     </div>
-  );
+  </div>
+);
 }

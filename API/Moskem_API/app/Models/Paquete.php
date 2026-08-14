@@ -12,7 +12,11 @@ class Paquete extends Model
         'id_paquete',
         'tipo_paquete',
         'nombre_paquete',
-        'detalles_paquete'
+        'cantidad_paquete',
+        'categoria_paquete',
+        'seccion_paquete' ,
+        'descripcion_paquete',
+        'precio_paquete'
     ];
 
     public function detalle_pedidos(){
@@ -20,5 +24,8 @@ class Paquete extends Model
     }
     public function detalle_rentas(){
         return $this->hasMany(DetalleRenta::class,'id_paquete','id_paquete');
+    }
+    public function detalle_paquete(){
+        return $this->hasMany(DetallePaquete::class,'id_paquete','id_paquete');
     }
 }

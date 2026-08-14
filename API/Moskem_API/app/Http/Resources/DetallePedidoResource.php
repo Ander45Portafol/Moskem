@@ -20,7 +20,6 @@ class DetallePedidoResource extends JsonResource
             'empleado'=>$this->id_empleado,
             'paquete'=>$this->id_paquete,
             'prenda'=>$this->prenda,
-            'fecha_evento'=>$this->fecha_evento
         ];
     }
 }

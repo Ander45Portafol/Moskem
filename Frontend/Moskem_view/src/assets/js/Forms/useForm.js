@@ -1,10 +1,8 @@
-    import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 import { API } from "../global";
 import { useEffect, useRef, useState } from "react";
 
-
-
-export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
+export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
   const [data, setData] = useState(estadoInicial);
   const idCargadoRef = useRef(null);
 
@@ -37,7 +35,6 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
   };
 
   const createData = async (formData) => {
-    console.log(formData)
     try {
       const response = await fetch(`${API}${ruta}`, {
         method: "POST",
@@ -56,8 +53,7 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
         });
         setForm((prev) => [...prev, result.data]);
         if (onClose) onClose();
-      } else {
-        console.log(response)
+        return result.data; // 👈 IMPORTANTE
       }
     } catch (e) {
       Swal.fire({
@@ -101,6 +97,7 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
 
         // 4. Cerramos el modal de forma segura
         if (onClose) onClose();
+        return result.data; // 👈 IMPORTANTE
       } else {
         // Si el backend responde con un error (ej. 500 o 422)
         const errorResult = await response.json();
@@ -123,15 +120,14 @@ export function useForm({ id, setForm, isOpen, onClose,ruta,estadoInicial }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!id) {
-      await createData(data);
-    } else {
-      console.log(id)
-      await updateData(data, id);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!id) {
+    return await createData(data); // 👈 propagamos el retorno
+  } else {
+    return await updateData(data, id);
+  }
+};
 
   return { data, setData, handleSubmit };
 }

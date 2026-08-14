@@ -19,10 +19,10 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="cliente" element={<Clientes />} />
         <Route path="empleado" element={<Empleados />} />
-        <Route path="pedido" element={ <Pedidos/>} />
+        <Route path="pedido" element={<Pedidos />} />
         <Route path="renta" element={<Rentas />} />
         <Route path="producto" element={<Productos />} />
-        <Route path="orden_compra" element={<OrdenesCompra/>}/>
+        <Route path="orden_compra" element={<OrdenesCompra />} />
         <Route path="merceria" element={<Mercerias />} />
         <Route path="tela" element={<Telas />} />
       </Route>

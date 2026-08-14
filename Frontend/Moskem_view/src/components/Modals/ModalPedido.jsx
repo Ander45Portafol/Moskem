@@ -4,6 +4,7 @@ import { InputDate } from "../inputDate";
 import { SelectD } from "../SelectD";
 import { TextArea } from "../TextArea";
 import {
+  ArrowRightCircleIcon,
   ArrowsPointingInIcon,
   ArrowUpOnSquareIcon,
   CheckCircleIcon,
@@ -15,9 +16,17 @@ import { SelectWD } from "../SelectWD";
 import { InputN } from "../InputN";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { ModalDetallePedido } from "./ModalDetallePedido";
+import Swal from "sweetalert2";
 
-export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
-  const [modalActivo,setModalActivo]=useState(false)
+export function ModalPedido({
+  isOpen,
+  onClose,
+  tipo,
+  id_pedido,
+  setPedido,
+  onPedidoGuardado,
+}) {
+  const [modalActivo, setModalActivo] = useState(false);
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
   const ruta = "pedidos";
@@ -36,7 +45,7 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
     tipo_evento: "",
     tipo_entalle: "",
   };
-    const { data, setData, handleSubmit } = useForm({
+  const { data, setData, handleSubmit } = useForm({
     id: id_pedido,
     setForm: setPedido,
     isOpen,
@@ -59,7 +68,7 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
   const estado_pedido = [
     "Anotado",
     "Revisado",
-    "En Proceso",
+    "En proceso",
     "Finalizado",
     "Entregado",
   ];
@@ -88,20 +97,18 @@ export function ModalPedido({ isOpen, onClose, tipo, id_pedido, setPedido }) {
     }
   }, [isOpen]);
 
-const guardarDatos = async (e) => {
-  e.preventDefault();
-  try {
-    // Esperamos a que Laravel responda que todo se guardó bien
-    await handleSubmit(e);
-
-    // Si todo sale bien, hacemos el cambio de modales
-    setModalActivo(true);
-    onClose();
-  } catch (error) {
-    console.error("Error al guardar el pedido:", error);
-    // Aquí podrías manejar el error para que no se cierre el modal si algo falla
-  }
-};
+  const guardarDatos = async (e) => {
+    e.preventDefault();
+    try {
+      const pedidoCreado = await handleSubmit(e);
+      // solo abrimos el detalle si fue creación (no edición) y llegó bien el id
+      if (!id_pedido && pedidoCreado?.id && onPedidoGuardado) {
+        onPedidoGuardado(pedidoCreado.id);
+      }
+    } catch (error) {
+      console.error("Error al guardar el pedido:", error);
+    }
+  };
   if (!render) return null;
   return (
     <div
@@ -134,13 +141,16 @@ const guardarDatos = async (e) => {
         {/* Formulario estructurado en Grid de 3 columnas */}
         <form onSubmit={guardarDatos} className="flex flex-col">
           <div className="flex justify-between gap-x-6 ">
-            <SelectWD
-              text="Cliente"
-              options={SelectClientes}
-              textId="id_cliente"
-              valueData={data.id_cliente}
-              updateData={inputsUpdate}
-            />
+            <div className="w-66">
+              <SelectWD
+                text="Cliente"
+                options={SelectClientes}
+                textId="id_cliente"
+                valueData={data.id_cliente}
+                updateData={inputsUpdate}
+              />
+            </div>
+
             <SelectD
               text="Tipo Evento"
               options={tipo_eventos}
@@ -285,21 +295,46 @@ const guardarDatos = async (e) => {
 
           {/* Botón Guardar / Editar */}
           <div className="flex justify-end mt-4">
-            <button
-              type="submit"
-              className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
-            >
-              <CheckCircleIcon className="size-6" />
-              Guardar
-            </button>
+            <div className="flex-col">
+              <button
+                type="submit"
+                className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-6 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+              >
+                <CheckCircleIcon className="size-6" />
+                Guardar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (id_pedido) {
+                    onPedidoGuardado(id_pedido.id);
+                    onClose();
+                  } else {
+                    Swal.fire({
+                      title: "Completar",
+                      text: "No puede continuar, debe generar un pedido",
+                      icon: "error",
+                      showConfirmButton: true,
+                      timer: 3000,
+                    });
+                  }
+                }}
+                /*className={
+                  !id_pedido
+                    ? "bg-[#004053] hover:bg-[#008292] text-[#B2B2B2] font-bold px-5 py-2 mt-4 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                    : "hidden"
+                }*/
+                className={
+                  "bg-[#004053] hover:bg-[#008292] text-[#B2B2B2] font-bold px-5 py-2 mt-4 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                }
+              >
+                <ArrowRightCircleIcon className="size-6" />
+                Siguiente
+              </button>
+            </div>
           </div>
         </form>
       </div>
-      <ModalDetallePedido
-        isOpen={modalActivo}
-        onClose={() => setModalActivo(false)}
-        id_pedido={id_pedido}
-      />
     </div>
   );
 }

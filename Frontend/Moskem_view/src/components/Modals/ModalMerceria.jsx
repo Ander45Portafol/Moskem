@@ -17,12 +17,16 @@ export function ModalMerceria({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Ruta en plural para alinearse con los endpoints RESTful de Laravel
   const ruta = "mercerias";
+
+  // Mapeo inicial sincronizado con la base de datos y la tabla
   const estadoInicial = {
-    tipo_merceria: "",
-    tamanio_merceria: "",
+    tipo: "",
+    tamanio: "",
     color: "",
-    codigo_merceria: "",
+    codigo: "",
     stock: "",
     id_proveedor: "",
   };
@@ -36,21 +40,20 @@ export function ModalMerceria({
     estadoInicial,
   });
 
-  // Se usa para extraer los datos de los proveedores
+  // Carga de proveedores para el selector
   const { data: proveedores } = useGet("proveedores");
 
   const SelectProveedores =
     proveedores?.map((registro) => ({
-      id: registro.id_proveedor,
-      nombre: registro.nombre_proveedor,
+      id: registro.id_proveedor || registro.id,
+      nombre: registro.nombre_proveedor || registro.nombre,
     })) || [];
 
-  // Opciones para el Select de Tipo Mercería (puedes ajustar esta lista según tus necesidades)
   const SelectTipoMerceria = [
-    'Botones','Ganchos','Zipper','Agujas','Hilos',
+    "Botones", "Ganchos", "Zipper", "Agujas", "Hilos",
   ];
 
-  // Captura el cambio de valor de cada input dinámicamente
+  // Actualización de inputs
   const inputsUpdate = (e) => {
     const { name, value } = e.target;
     setData((prev) => ({ ...prev, [name]: value }));
@@ -79,7 +82,9 @@ export function ModalMerceria({
         Swal.fire({
           toast: true,
           position: "top-end",
-          title: responseData.message || (isEdit ? "Registro actualizado" : "Registro creado"),
+          title:
+            responseData.message ||
+            (isEdit ? "Registro actualizado" : "Registro creado"),
           icon: "success",
           showConfirmButton: false,
           timer: 3000,
@@ -87,7 +92,11 @@ export function ModalMerceria({
 
         if (isEdit) {
           setMerceria((prev) =>
-            prev.map((item) => (item.id === id_merceria ? responseData.data || data : item))
+            prev.map((item) =>
+              (item.id || item.id_merceria) === id_merceria
+                ? responseData.data || data
+                : item
+            )
           );
         } else {
           setMerceria((prev) => [...prev, responseData.data || data]);
@@ -122,7 +131,7 @@ export function ModalMerceria({
       onClose();
     }
   };
-  console.log("Datos en data:", data);
+
   return (
     <div
       onClick={handleFondoClick}
@@ -157,19 +166,19 @@ export function ModalMerceria({
         >
           <SelectD
             text="Tipo Mercería"
-            textId="tipo_merceria"
+            textId="tipo"
             options={SelectTipoMerceria}
-            valueData={data.tipo_merceria}
+            valueData={data?.tipo || data?.tipo_merceria || ""}
             updateData={inputsUpdate}
           />
 
           <InputD
             text="Tamaño"
             type="text"
-            name="tamanio_merceria"
-            textId="tamanio_merceria"
+            name="tamanio"
+            textId="tamanio"
             view=""
-            valueData={data?.tamanio_merceria || ""}
+            valueData={data?.tamanio || data?.tamanio_merceria || ""}
             updateData={inputsUpdate}
           />
 
@@ -186,10 +195,10 @@ export function ModalMerceria({
           <InputD
             text="Código Mercería"
             type="text"
-            name="codigo_merceria"
-            textId="codigo_merceria"
+            name="codigo"
+            textId="codigo"
             view=""
-            valueData={data?.codigo_merceria || ""}
+            valueData={data?.codigo || data?.codigo_merceria || ""}
             updateData={inputsUpdate}
           />
 
@@ -207,7 +216,7 @@ export function ModalMerceria({
             text="Proveedor"
             textId="id_proveedor"
             options={SelectProveedores}
-            valueData={data?.id_proveedor}
+            valueData={data?.id_proveedor || ""}
             updateData={inputsUpdate}
           />
 

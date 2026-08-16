@@ -4,7 +4,7 @@ import {
   PlusCircleIcon,
   InformationCircleIcon,
   TrashIcon,
-  BriefcaseIcon, // Icono para Proveedores
+  BriefcaseIcon,
 } from "@heroicons/react/24/solid";
 import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
@@ -12,12 +12,12 @@ import { API } from "../assets/js/global";
 import { ModalMerceria } from "../components/Modals/ModalMerceria";
 
 export function Mercerias() {
-  // Estado para manejar los futuros modales (agregar, proveedores, etc.)
+  // Estado para manejar los futuros modales
   const [modalActivo, setModalActivo] = useState(null);
-  // Estado que almacena el id del artículo de mercería seleccionado para actualizarlo
+  // Estado que almacena el id del artículo seleccionado
   const [idArticulo, setIdArticulo] = useState(null);
   // Custom Hook utilizado para cargar los datos de mercería
-  const { data, message, setData } = useGet("mercerias");
+  const { data, setData } = useGet("mercerias");
   // Estado utilizado para hacer reactivo el buscador
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -33,9 +33,9 @@ export function Mercerias() {
   const fetchMerceria = async (query = "") => {
     try {
       const url = query
-        ? `${API}merceria/buscar?q=${encodeURIComponent(query)}`
-        : `${API}merceria`;
-      
+        ? `${API}mercerias/buscar?q=${encodeURIComponent(query)}`
+        : `${API}mercerias`;
+
       const response = await fetch(url);
       if (response.ok) {
         const responseData = await response.json();
@@ -46,7 +46,7 @@ export function Mercerias() {
     }
   };
 
-  // Función para abrir la futura actualización
+  // Función para abrir la actualización
   const modalActualizar = (id) => {
     setIdArticulo(id);
     setModalActivo("agregar");
@@ -67,7 +67,7 @@ export function Mercerias() {
         showConfirmButton: true,
       }).then(async (result) => {
         if (result.isConfirmed) {
-          const response = await fetch(`${API}merceria/${id}`, {
+          const response = await fetch(`${API}mercerias/${id}`, {
             method: "DELETE",
           });
           if (response.ok) {
@@ -80,7 +80,7 @@ export function Mercerias() {
               showConfirmButton: false,
               timer: 3000,
             });
-            setData((prevData) => prevData.filter((item) => item.id !== id));
+            setData((prevData) => prevData.filter((item) => (item.id || item.id_merceria) !== id));
           }
         }
       });
@@ -91,18 +91,17 @@ export function Mercerias() {
 
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
-      
       {/* Título de la sección */}
       <div>
-        <h1 className="text-5xl font-black text-[#004053]">Merceria</h1>
+        <h1 className="text-5xl font-black text-[#004053]">Mercería</h1>
         <p className="text-[#004053] text-lg font-semibold mt-1">
           Gestión y control de inventario para los complementos de las prendas.
         </p>
       </div>
 
-      {/* Barra superior: Buscador + Botón Proveedores + Botón Agregar */}
+      {/* Barra superior */}
       <div className="flex items-center gap-4 w-full mt-4">
-        {/* Buscador Gris */}
+        {/* Buscador */}
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
             <MagnifyingGlassIcon className="size-6" />
@@ -127,19 +126,19 @@ export function Mercerias() {
 
         {/* Botón Añadir (+) */}
         <button
-          onClick={() => setModalActivo("agregar")}
+          onClick={() => {
+            setIdArticulo(null);
+            setModalActivo("agregar");
+          }}
           className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-semibold h-14 w-18 px-4 rounded-xl flex items-center justify-center transition-all active:scale-95"
         >
           <PlusCircleIcon className="size-7" />
         </button>
       </div>
 
-      {/* ==========================================
-            TABLA DE DATOS DE MERCERÍA
-         ========================================== */}
-      <div className=" max-h-2/3 overflow-y-auto rounded-xl">
+      {/* Tabla de Datos */}
+      <div className="max-h-2/3 overflow-y-auto rounded-xl">
         <table className="w-full text-left border-collapse">
-          {/* Cabecera fija */}
           <thead className="sticky top-0 bg-white z-10">
             <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black">
               <th className="pb-4 pt-4 font-bold">Tipo - Mercería</th>
@@ -150,47 +149,45 @@ export function Mercerias() {
               <th></th>
             </tr>
           </thead>
-          {/* Cuerpo de la tabla */}
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
             {data && data.length !== 0 ? (
-              data.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-gray-200 transition-colors"
-                >
-                  <td className="py-4">{item.tipo}</td>
-                  <td className="py-4">{item.color}</td>
-                  <td className="py-4">
-                    {item.stock} {item.stock === 1 ? "Unidad" : "Unidades"}
-                  </td>
-                  <td className="py-4">{item.proveedor}</td>
-                  <td className="py-4">{item.tamanio}</td>
+              data.map((item) => {
+                const itemId =item.id_merceria;
+                return (
+                  <tr
+                    key={itemId}
+                    className="hover:bg-gray-200 transition-colors"
+                  >
+                    <td className="py-4">{item.tipo || item.tipo_merceria}</td>
+                    <td className="py-4">{item.color}</td>
+                    <td className="py-4">
+                      {item.stock} {Number(item.stock) === 1 ? "Unidad" : "Unidades"}
+                    </td>
+                    <td className="py-4">{item.proveedor || item.nombre_proveedor}</td>
+                    <td className="py-4">{item.tamanio || item.tamanio_merceria}</td>
 
-                  {/* Acciones: Solo 2 botones (Información y Eliminar) */}
-                  <td className="py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Botón Info (Verde Limón) */}
-                      <button
-                        className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10"
-                        onClick={() => modalActualizar(item.id)}
-                      >
-                        <InformationCircleIcon className="size-7" />
-                      </button>
+                    <td className="py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10"
+                          onClick={() => modalActualizar(itemId)}
+                        >
+                          <InformationCircleIcon className="size-7" />
+                        </button>
 
-                      {/* Botón Eliminar (Gris Oscuro / Slate) */}
-                      <button
-                        className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
-                        onClick={() => deleteArticulo(item.id)}
-                      >
-                        <TrashIcon className="size-7" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        <button
+                          className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
+                          onClick={() => deleteArticulo(itemId)}
+                        >
+                          <TrashIcon className="size-7" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
-              /* En caso de no haber registros */
-              <tr className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200">
+              <tr key="no-data" className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200">
                 <td className="w-56 ml-2">
                   <p>No existen registros</p>
                 </td>
@@ -200,7 +197,7 @@ export function Mercerias() {
         </table>
       </div>
 
-      {/* Renderizado condicional del modal */}
+      {/* Componente Modal */}
       <ModalMerceria
         isOpen={modalActivo === "agregar"}
         onClose={() => {

@@ -15,6 +15,7 @@ class MerceriaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id_merceria'=>$this->id_merceria,
             'tipo'=>$this->tipo_merceria,
             'stock'=>$this->stock,
             'color'=>$this->color,

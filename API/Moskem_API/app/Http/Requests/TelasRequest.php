@@ -43,7 +43,7 @@ class TelasRequest extends FormRequest
             'categoria_tela.string'=>'No es el formato correcto para la categoría de la tela',
             'id_proveedor.required'=>'Es obligatorio que se defina el proveedor de la tela',
             'id_proveedor.integer'=>'No se pudo encontrar el proveedor',
-            'codigo_tela_proveedor.string'=>'No es el formato correcto para el código de la tela del proveedor'
+            'codigo_tela_proveedor.string'=>'No es el formato correcto para el código de la tela del proveedor'  
         ];
     }
 }   

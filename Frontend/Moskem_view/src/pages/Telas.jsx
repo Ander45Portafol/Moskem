@@ -137,7 +137,7 @@ export function Telas() {
       {/* ==========================================
             TABLA DE DATOS DE TELAS
          ========================================== */}
-      <div className="mt-8 max-h-2/3 overflow-y-auto rounded-xl">
+      <div className=" max-h-2/3 overflow-y-auto rounded-xl">
         <table className="w-full text-left border-collapse">
           {/* Cabecera fija */}
           <thead className="sticky top-0 bg-white z-10">

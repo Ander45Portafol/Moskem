@@ -12,21 +12,22 @@ export function ModalMerceria({
   isOpen,
   onClose,
   tipo, // "agregar" o "actualizar"
+  registroEditar,
   id_merceria,
-  setMerceria, // setData de la vista Merceria.jsx
+  setMerceria,
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Ruta en plural para alinearse con los endpoints RESTful de Laravel
   const ruta = "mercerias";
 
-  // Mapeo inicial sincronizado con la base de datos y la tabla
   const estadoInicial = {
-    tipo: "",
-    tamanio: "",
+    tipo_merceria: "Botones",
+    tamanio_merceria: "",
+    unidad_medida: "mm",
     color: "",
-    codigo: "",
+    codigo_merceria: "",
+    codigo_merceria_proveedor: "",
     stock: "",
     id_proveedor: "",
   };
@@ -40,40 +41,76 @@ export function ModalMerceria({
     estadoInicial,
   });
 
-  // Carga de proveedores para el selector
+  // EFECTO ÚNICO: Gestiona animación, desmontaje y precarga de datos al abrir/cerrar
+  useEffect(() => {
+    let timer;
+
+    if (isOpen) {
+      setRender(true);
+      timer = setTimeout(() => setIsAnimating(true), 30);
+
+      // Precarga de datos
+      if (tipo === "actualizar" && registroEditar) {
+        setData({
+          tipo_merceria: registroEditar.tipo_merceria || registroEditar.tipo || "Botones",
+          tamanio_merceria: registroEditar.tamanio_merceria ?? registroEditar.tamanio ?? "",
+          unidad_medida: registroEditar.unidad_medida || "mm",
+          color: registroEditar.color || "",
+          codigo_merceria: registroEditar.codigo_merceria || registroEditar.codigo || "",
+          codigo_merceria_proveedor: registroEditar.codigo_merceria_proveedor || "",
+          stock: registroEditar.stock ?? "",
+          id_proveedor: registroEditar.id_proveedor || registroEditar.proveedor?.id_proveedor || "",
+        });
+      } else if (tipo === "agregar") {
+        setData(estadoInicial);
+      }
+    } else {
+      setIsAnimating(false);
+      timer = setTimeout(() => setRender(false), 300);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isOpen, tipo, registroEditar]);
+
   const { data: proveedores } = useGet("proveedores");
 
   const SelectProveedores =
-    proveedores?.map((registro) => ({
-      id: registro.id_proveedor || registro.id,
-      nombre: registro.nombre_proveedor || registro.nombre,
+    proveedores?.map((reg) => ({
+      id: reg.id_proveedor || reg.id,
+      nombre: reg.nombre_proveedor || reg.nombre,
     })) || [];
 
-  const SelectTipoMerceria = [
-    "Botones", "Ganchos", "Zipper", "Agujas", "Hilos",
-  ];
+  const SelectTipoMerceria = ["Botones", "Ganchos", "Zipper", "Agujas", "Hilos"];
+  const SelectUnidadesMedida = ["pulgadas", "mm", "#"];
 
-  // Actualización de inputs
   const inputsUpdate = (e) => {
     const { name, value } = e.target;
-    setData((prev) => ({ ...prev, [name]: value }));
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  // Función para guardar (POST) o actualizar (PUT)
   const onSubmitForm = async (e) => {
     e.preventDefault();
 
     try {
-      const isEdit = tipo === "actualizar" && id_merceria;
-      const url = isEdit ? `${API}mercerias/${id_merceria}` : `${API}mercerias`;
+      const isEdit = tipo === "actualizar" && (id_merceria || registroEditar?.id_merceria);
+      const targetId = id_merceria || registroEditar?.id_merceria;
+      const url = isEdit ? `${API}mercerias/${targetId}` : `${API}mercerias`;
       const method = isEdit ? "PUT" : "POST";
+
+      const payload = {
+        ...data,
+        tamanio_merceria: parseInt(data.tamanio_merceria, 10) || 0,
+        stock: parseInt(data.stock, 10) || 0,
+        id_proveedor: parseInt(data.id_proveedor, 10) || null,
+      };
 
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -82,9 +119,7 @@ export function ModalMerceria({
         Swal.fire({
           toast: true,
           position: "top-end",
-          title:
-            responseData.message ||
-            (isEdit ? "Registro actualizado" : "Registro creado"),
+          title: responseData.message || (isEdit ? "Registro actualizado" : "Registro creado"),
           icon: "success",
           showConfirmButton: false,
           timer: 3000,
@@ -93,57 +128,38 @@ export function ModalMerceria({
         if (isEdit) {
           setMerceria((prev) =>
             prev.map((item) =>
-              (item.id || item.id_merceria) === id_merceria
-                ? responseData.data || data
+              item.id_merceria === targetId
+                ? responseData.data || { ...item, ...payload }
                 : item
             )
           );
         } else {
-          setMerceria((prev) => [...prev, responseData.data || data]);
+          setMerceria((prev) => [...prev, responseData.data || payload]);
         }
 
         onClose();
       } else {
-        Swal.fire("Error", "No se pudo guardar la información", "error");
+        const errorData = await response.json().catch(() => ({}));
+        Swal.fire("Error", errorData.message || "No se pudo guardar la información", "error");
       }
     } catch (error) {
       console.error("Error al enviar el formulario:", error);
-      Swal.fire("Error", "Ocurrió un problema con el servidor", "error");
+      Swal.fire("Error", "Ocurrió un error con la conexión al servidor", "error");
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      setRender(true);
-      const timer = setTimeout(() => setIsAnimating(true), 30);
-      return () => clearTimeout(timer);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setRender(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
 
   if (!render || !data) return null;
 
-  const handleFondoClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
     <div
-      onClick={handleFondoClick}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300 ${
         isAnimating ? "opacity-100" : "opacity-0"
       }`}
     >
       <div
         className={`bg-white rounded-[32px] shadow-2xl w-full max-w-4xl p-8 relative flex flex-col gap-6 border border-gray-100 transform transition-all duration-300 ${
-          isAnimating
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-95 translate-y-2.5"
+          isAnimating ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2.5"
         }`}
       >
         <button
@@ -160,25 +176,32 @@ export function ModalMerceria({
           </h2>
         </div>
 
-        <form
-          className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6"
-          onSubmit={onSubmitForm}
-        >
+        <form className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6" onSubmit={onSubmitForm}>
           <SelectD
             text="Tipo Mercería"
-            textId="tipo"
+            name="tipo_merceria"
+            textId="tipo_merceria"
             options={SelectTipoMerceria}
-            valueData={data?.tipo || data?.tipo_merceria || ""}
+            valueData={data.tipo_merceria || "Botones"}
             updateData={inputsUpdate}
           />
 
           <InputD
-            text="Tamaño"
-            type="text"
-            name="tamanio"
-            textId="tamanio"
+            text="Tamaño (Número)"
+            type="number"
+            name="tamanio_merceria"
+            textId="tamanio_merceria"
             view=""
-            valueData={data?.tamanio || data?.tamanio_merceria || ""}
+            valueData={data.tamanio_merceria ?? ""}
+            updateData={inputsUpdate}
+          />
+
+          <SelectD
+            text="Unidad de Medida"
+            name="unidad_medida"
+            textId="unidad_medida"
+            options={SelectUnidadesMedida}
+            valueData={data.unidad_medida || "mm"}
             updateData={inputsUpdate}
           />
 
@@ -188,17 +211,27 @@ export function ModalMerceria({
             name="color"
             textId="color"
             view=""
-            valueData={data?.color || ""}
+            valueData={data.color || ""}
             updateData={inputsUpdate}
           />
 
           <InputD
             text="Código Mercería"
             type="text"
-            name="codigo"
-            textId="codigo"
+            name="codigo_merceria"
+            textId="codigo_merceria"
             view=""
-            valueData={data?.codigo || data?.codigo_merceria || ""}
+            valueData={data.codigo_merceria || ""}
+            updateData={inputsUpdate}
+          />
+
+          <InputD
+            text="Código Proveedor"
+            type="text"
+            name="codigo_merceria_proveedor"
+            textId="codigo_merceria_proveedor"
+            view=""
+            valueData={data.codigo_merceria_proveedor || ""}
             updateData={inputsUpdate}
           />
 
@@ -208,15 +241,16 @@ export function ModalMerceria({
             name="stock"
             textId="stock"
             view=""
-            valueData={data?.stock || ""}
+            valueData={data.stock ?? ""}
             updateData={inputsUpdate}
           />
 
           <SelectWD
             text="Proveedor"
+            name="id_proveedor"
             textId="id_proveedor"
             options={SelectProveedores}
-            valueData={data?.id_proveedor || ""}
+            valueData={data.id_proveedor || ""}
             updateData={inputsUpdate}
           />
 
@@ -226,7 +260,7 @@ export function ModalMerceria({
               className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-6 py-2.5 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
             >
               <CheckCircleIcon className="size-6" />
-              Guardar
+              {tipo === "actualizar" ? "Actualizar" : "Guardar"}
             </button>
           </div>
         </form>

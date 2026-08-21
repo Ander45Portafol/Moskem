@@ -12,16 +12,13 @@ import { API } from "../assets/js/global";
 import { ModalMerceria } from "../components/Modals/ModalMerceria";
 
 export function Mercerias() {
-  // Estado para manejar los futuros modales
   const [modalActivo, setModalActivo] = useState(null);
-  // Estado que almacena el id del artículo seleccionado
-  const [idArticulo, setIdArticulo] = useState(null);
-  // Custom Hook utilizado para cargar los datos de mercería
+  // Almacena el objeto completo del elemento seleccionado para actualizar
+  const [registroEditar, setRegistroEditar] = useState(null);
+  
   const { data, setData } = useGet("mercerias");
-  // Estado utilizado para hacer reactivo el buscador
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Hook utilizado para el motor de búsqueda con debounce (400ms)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchMerceria(searchQuery);
@@ -29,7 +26,6 @@ export function Mercerias() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Función de búsqueda en la API
   const fetchMerceria = async (query = "") => {
     try {
       const url = query
@@ -46,13 +42,12 @@ export function Mercerias() {
     }
   };
 
-  // Función para abrir la actualización
-  const modalActualizar = (id) => {
-    setIdArticulo(id);
+  // Recibe el objeto completo de la fila
+  const modalActualizar = (item) => {
+    setRegistroEditar(item);
     setModalActivo("agregar");
   };
 
-  // Función para borrar un artículo de mercería
   const deleteArticulo = async (id) => {
     try {
       Swal.fire({
@@ -80,7 +75,9 @@ export function Mercerias() {
               showConfirmButton: false,
               timer: 3000,
             });
-            setData((prevData) => prevData.filter((item) => (item.id || item.id_merceria) !== id));
+            setData((prevData) =>
+              prevData.filter((item) => (item.id || item.id_merceria) !== id)
+            );
           }
         }
       });
@@ -91,7 +88,6 @@ export function Mercerias() {
 
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
-      {/* Título de la sección */}
       <div>
         <h1 className="text-5xl font-black text-[#004053]">Mercería</h1>
         <p className="text-[#004053] text-lg font-semibold mt-1">
@@ -99,9 +95,7 @@ export function Mercerias() {
         </p>
       </div>
 
-      {/* Barra superior */}
       <div className="flex items-center gap-4 w-full mt-4">
-        {/* Buscador */}
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
             <MagnifyingGlassIcon className="size-6" />
@@ -115,7 +109,6 @@ export function Mercerias() {
           />
         </div>
 
-        {/* Botón Proveedores */}
         <button
           onClick={() => setModalActivo("proveedores")}
           className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-14 px-6 rounded-xl flex items-center justify-center text-lg gap-2 transition-all active:scale-95 whitespace-nowrap"
@@ -124,10 +117,9 @@ export function Mercerias() {
           Proveedores
         </button>
 
-        {/* Botón Añadir (+) */}
         <button
           onClick={() => {
-            setIdArticulo(null);
+            setRegistroEditar(null);
             setModalActivo("agregar");
           }}
           className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-semibold h-14 w-18 px-4 rounded-xl flex items-center justify-center transition-all active:scale-95"
@@ -136,7 +128,6 @@ export function Mercerias() {
         </button>
       </div>
 
-      {/* Tabla de Datos */}
       <div className="max-h-2/3 overflow-y-auto rounded-xl">
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-white z-10">
@@ -152,7 +143,7 @@ export function Mercerias() {
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
             {data && data.length !== 0 ? (
               data.map((item) => {
-                const itemId =item.id_merceria;
+                const itemId = item.id_merceria;
                 return (
                   <tr
                     key={itemId}
@@ -161,16 +152,19 @@ export function Mercerias() {
                     <td className="py-4">{item.tipo || item.tipo_merceria}</td>
                     <td className="py-4">{item.color}</td>
                     <td className="py-4">
-                      {item.stock} {Number(item.stock) === 1 ? "Unidad" : "Unidades"}
+                      {item.stock}{" "}
+                      {Number(item.stock) === 1 ? "Unidad" : "Unidades"}
                     </td>
-                    <td className="py-4">{item.proveedor || item.nombre_proveedor}</td>
+                    <td className="py-4">
+                      {item.proveedor?.nombre_proveedor || item.nombre_proveedor || item.proveedor}
+                    </td>
                     <td className="py-4">{item.tamanio || item.tamanio_merceria}</td>
 
                     <td className="py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           className="bg-[#B4D333] text-[#004B57] rounded-lg font-bold hover:bg-[#a3c02b] transition-colors flex items-center justify-center w-11 h-10"
-                          onClick={() => modalActualizar(itemId)}
+                          onClick={() => modalActualizar(item)}
                         >
                           <InformationCircleIcon className="size-7" />
                         </button>
@@ -187,7 +181,10 @@ export function Mercerias() {
                 );
               })
             ) : (
-              <tr key="no-data" className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200">
+              <tr
+                key="no-data"
+                className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200"
+              >
                 <td className="w-56 ml-2">
                   <p>No existen registros</p>
                 </td>
@@ -198,16 +195,18 @@ export function Mercerias() {
       </div>
 
       {/* Componente Modal */}
-      <ModalMerceria
-        isOpen={modalActivo === "agregar"}
-        onClose={() => {
-          setModalActivo(null);
-          setIdArticulo(null);
-        }}
-        tipo={idArticulo ? "actualizar" : "agregar"}
-        id_merceria={idArticulo}
-        setMerceria={setData}
-      />
+<ModalMerceria
+  key={registroEditar ? `edit-${registroEditar.id_merceria}` : 'create-new'}
+  isOpen={modalActivo === "agregar"}
+  onClose={() => {
+    setModalActivo(null);
+    setRegistroEditar(null);
+  }}
+  tipo={registroEditar ? "actualizar" : "agregar"}
+  registroEditar={registroEditar}
+  id_merceria={registroEditar?.id_merceria}
+  setMerceria={setData}
+/>
     </div>
   );
 }

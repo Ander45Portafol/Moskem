@@ -27,7 +27,8 @@ class TelasRequest extends FormRequest
             'color_tela'=>'required|string',
             'cantidad_stock'=>'required|integer',
             'categoria_tela'=>'required|string',
-            'id_proveedor'=>'required|integer'
+            'id_proveedor'=>'required|integer',
+            'codigo_tela_proveedor'=>'nullable|string'
         ];
     }
     public function messages(){
@@ -41,7 +42,8 @@ class TelasRequest extends FormRequest
             'categoria_tela.required'=>'Debe colocar una categoría para la tela',
             'categoria_tela.string'=>'No es el formato correcto para la categoría de la tela',
             'id_proveedor.required'=>'Es obligatorio que se defina el proveedor de la tela',
-            'id_proveedor.integer'=>'No se pudo encontrar el proveedor'
+            'id_proveedor.integer'=>'No se pudo encontrar el proveedor',
+            'codigo_tela_proveedor.string'=>'No es el formato correcto para el código de la tela del proveedor'  
         ];
     }
 }   

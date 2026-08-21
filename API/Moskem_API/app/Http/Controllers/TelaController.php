@@ -39,7 +39,7 @@ class TelaController extends Controller
             $validate=$request->validated();
             $validate['visibilidad_tela']=true;
             $tela=Tela::create($validate);
-            return ApiResponse::success('Tela creada con exito',200,new TelasResource($tela));
+            return ApiResponse::success('Tela creada con exito',200,new ResourcesTelasResource($tela));
         } catch (\Throwable $th) {
             return ApiResponse::error('Hay un problema con el proceso para crear',504,$th->getMessage());
         }
@@ -63,7 +63,7 @@ class TelaController extends Controller
             $tela=Tela::findOrFail($id);
             $validate=$request->validated();
             $tela->update($validate);
-            return ApiResponse::success('Tela actualizada con exito',200,new TelasResource($tela));
+            return ApiResponse::success('Tela actualizada con exito',200,new ResourcesTelasResource ($tela));
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro',404,$me->getMessage());
         }
@@ -76,7 +76,7 @@ class TelaController extends Controller
             $tela=Tela::findOrFail($id);
             $tela->visibilidad_tela=false;
             $tela->save();
-            return ApiResponse::success('Tela eliminada con exito',200,new TelasResource($tela));
+            return ApiResponse::success('Tela eliminada con exito',200,new ResourcesTelasResource($tela));
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro',404,$me->getMessage());
         }

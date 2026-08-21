@@ -9,6 +9,7 @@ import Productos from "./pages/Productos";
 import { OrdenesCompra } from "./pages/OrdenesCompra";
 import { Pedidos } from "./pages/Pedidos";
 import { Mercerias} from "./pages/Mercerias";
+import { Telas } from "./pages/Telas";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="producto" element={<Productos />} />
         <Route path="orden_compra" element={<OrdenesCompra />} />
         <Route path="merceria" element={<Mercerias />} />
+        <Route path="tela" element={<Telas />} />
       </Route>
     </Routes>
   );

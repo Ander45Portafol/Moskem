@@ -36,6 +36,7 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
 
   const createData = async (formData) => {
     try {
+      console.log(formData)
       const response = await fetch(`${API}${ruta}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,8 +53,7 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
           timer: 3000,
         });
         setForm((prev) => [...prev, result.data]);
-        if (onClose) onClose();
-        return result.data; // 👈 IMPORTANTE
+        return result.data;
       }
     } catch (e) {
       Swal.fire({
@@ -120,14 +120,14 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
     }
   };
 
-const handleSubmit = async (e) => {
+const handleSubmit = async (e, overrideData) => {
   e.preventDefault();
+  const payload = overrideData || data;
   if (!id) {
-    return await createData(data); // 👈 propagamos el retorno
+    return await createData(payload);
   } else {
-    return await updateData(data, id);
+    return await updateData(payload, id);
   }
 };
-
   return { data, setData, handleSubmit };
 }

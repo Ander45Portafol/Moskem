@@ -101,7 +101,7 @@ export function Empleados() {
       </div>
 
       {/* Tabla de Empleados */}
-      <div className="max-h-2/3 overflow-y-auto mt-4">
+      <div className="max-h-2/3 overflow-y-auto">
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 bg-white z-10">
             <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black">

@@ -18,7 +18,8 @@ Schema::create('mercerias', function (Blueprint $table) {
             $table->integer('stock');
             $table->string('color', 30);
             $table->integer('tamanio_merceria');
-            $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
+            $table->foreignId('id_proveedor')
+            ->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
             $table->enum('unidad_medida',['pulgadas','mm','#']);
             $table->boolean('visibilidad_merceria')->default(true);

@@ -71,7 +71,7 @@ class DetallePedidoController extends Controller
     {
         try {
             // Buscamos los detalles que pertenezcan al id_pedido recibido
-            $detalles = DetallePedido::where('id_pedido', $id_pedido)->get();
+            $detalles = DetallePedido::where('id_pedido', $id_pedido)->with("telas")->get();
 
             // Opcional: Si quieres verificar si el pedido tiene detalles o devolver un arreglo vacío
             if ($detalles->isEmpty()) {

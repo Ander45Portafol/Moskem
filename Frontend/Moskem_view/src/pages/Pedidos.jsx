@@ -25,7 +25,6 @@ export function Pedidos() {
   const { data, message, setData } = useGet("pedidos");
     const { data:detalles, setData:setDetalle } = useGet("detalle_pedidos");
   const [idPaquete, SetIdPaquete] = useState(null);
-console.log(idPaquete)
   const modalActualizar = (id) => {
     setIdPedido(id);
     setModalActivo("agregar");
@@ -120,7 +119,7 @@ console.log(idPaquete)
         </button>
       </div>
       {/* 1. Quitamos h-4/6 y ponemos una altura máxima al contenedor con scroll */}
-      <div className="mt-5 max-h-2/3 overflow-y-auto rounded-xl ">
+      <div className="max-h-2/3 overflow-y-auto ">
         <table className="w-full text-left border-collapse">
           {/* 2. Hacemos que la cabecera se quede fija arriba usando sticky y bg-white */}
           <thead className="sticky top-0 bg-white z-10 ">
@@ -149,7 +148,7 @@ console.log(idPaquete)
 
                     <td className="py-4 pl-6">{pedido.cliente}</td>
                     <td className="py-4">{pedido.fecha_entrega}</td>
-                    <td className="py-4">{pedido.cantidad_total}</td>
+                    <td className="py-4">$ {pedido.costo_total}</td>
                     <td className="py-4">
                       {renderEstado(pedido.estado_pedido)}
                     </td>
@@ -219,7 +218,6 @@ console.log(idPaquete)
         isOpen={modalActivo === "agregar"}
         onClose={() => {
           setModalActivo(null);
-          setIdPedido(null);
         }}
         tipo={idPedido ? "actualizar" : "agregar"}
         id_pedido={idPedido}
@@ -227,15 +225,20 @@ console.log(idPaquete)
         // 👇 falta esto
         onPedidoGuardado={(id) => {
           setIdPedido(id);
-          SetPaquetes(true)
+          SetPaquetes(true);
         }}
       />
       <ModalDetallePedido
         isOpen={detalleAbierto}
         onClose={() => {
           setDetalleAbierto(false);
-          SetPaquetes(false)
+          SetPaquetes(false);
           setIdPedidoDetalle(null);
+        }}
+        onRegresar={() => {
+          // 👇 en vez de cerrar todo, volvemos al modal de paquetes
+          setDetalleAbierto(false);
+          SetPaquetes(true);
         }}
         id_pedido={idPedido}
         id_paquete={idPaquete}
@@ -245,9 +248,10 @@ console.log(idPaquete)
       <ModalPaquetes
         isOpen={paquetes}
         onClose={() => {
-          SetPaquetes(false)
-          setDetalleAbierto(true)
+          SetPaquetes(false);
+          setDetalleAbierto(true);
         }}
+        id_pedido={idPedido}
         id_paquete={idPaquete}
         setPaquete={SetIdPaquete}
       />

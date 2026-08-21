@@ -21,7 +21,7 @@ Schema::create('detalle_pedidos', function (Blueprint $table) {
 
             //LUEGO CREAMOS LAS DEMAS COLUMNAS QUE SERAN PARTE DE LA TABLA
             $table->decimal('cantidad_tela',8,2)->nullable();
-            $table->enum('prenda',['Camisa','Chaleco','Saco','Pantalón']);
+            $table->enum('prenda', ['Camisa', 'Chaleco', 'Saco', 'Pantalón', 'Accesorio', 'Complemento', 'Faja', 'Saco tipo pingüino', 'Guayabera / Camisa de Lino', 'Tirantes']);
             //Campo para seleccionar de que tipo será el pedido y en base a eso 
             $table->enum('tipo_pedido', ['Prenda unica', 'Traje completo', 'Paquete']);
             $table->decimal('precio_detalle', 10, 2);

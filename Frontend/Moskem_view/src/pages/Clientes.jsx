@@ -141,7 +141,7 @@ export function Clientes() {
                     TABLA DE DATOS DE CLIENTES
                    ========================================== */}
       {/* 1. Quitamos h-4/6 y ponemos una altura máxima al contenedor con scroll */}
-      <div className="mt-8 max-h-2/3 overflow-y-auto rounded-xl ">
+      <div className="max-h-2/3 overflow-y-auto ">
         <table className="w-full text-left border-collapse">
           {/* 2. Hacemos que la cabecera se quede fija arriba usando sticky y bg-white */}
           <thead className="sticky top-0 bg-white z-10 ">

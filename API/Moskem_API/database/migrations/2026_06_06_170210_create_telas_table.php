@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('categoria_tela',['Elite','Elite +','Premium']);
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_tela_proveedor');
+            $table->enum('tipo_prenda',['Camisa','Pantalon / Saco / Chaleco','Accesorios']);
             $table->boolean('visibilidad_tela');
             $table->timestamps();
         });

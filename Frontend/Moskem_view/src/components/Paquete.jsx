@@ -1,10 +1,10 @@
-export function Paquete({ id,guardarId,isSelected,nombre, list}) {
+export function Paquete({ id, guardarId, isSelected, nombre, list }) {
   return (
     <div
       className={
         isSelected
-          ? "flex flex-col text-center mt-4 mx-4 min-h-[9.5rem] w-68 bg-[#9E9E9E] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
-          : "flex flex-col text-center mt-4 mx-4 min-h-[9.5rem] w-68 bg-[#D9D9D9] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
+          ? "flex flex-col text-center mt-4 mx-4 min-h-[10rem] w-74 bg-[#9E9E9E] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
+          : "flex flex-col text-center mt-4 mx-4 min-h-[10.8rem] w-74 bg-[#D9D9D9] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
       }
       onClick={guardarId}
     >
@@ -16,8 +16,8 @@ export function Paquete({ id,guardarId,isSelected,nombre, list}) {
       {/*<input type="text" className="hidden" name="id_paquete" value={id} />*/}
       <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-left font-normal text-[#004053] list-disc list-inside pt-3">
         {list.map((item, index) => (
-          <li key={item.id || index} className="hitespace-nowrap ">
-            {item.descripcion || item.nombre || item}
+          <li key={index} className="hitespace-nowrap ">
+            {item}
           </li>
         ))}
       </ul>

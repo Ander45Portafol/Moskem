@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prenda', function (Blueprint $table) {
+        Schema::create('prendas', function (Blueprint $table) {
             $table->id("id_prenda");
+            $table->enum('prenda_paquete', ['Camisa', 'Chaleco', 'Saco', 'Pantalón', 'Accesorio', 'Complemento', 'Faja', 'Saco tipo pingüino', 'Guayabera / Camisa de Lino', 'Tirantes']);
+            $table->string('imagen')->nullable();;
+            $table->decimal('precio_unitario',10,2);
             $table->timestamps();
         });
     }

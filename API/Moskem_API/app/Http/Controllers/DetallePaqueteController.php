@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Responses\ApiResponse;
 use App\Models\DetallePaquete;
+use App\Models\DetallePedido;
+use App\Models\Paquete;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
@@ -35,5 +38,19 @@ class DetallePaqueteController extends Controller
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
+    }
+    public function getPaquetePedido(int $id_pedido){
+        try {
+            //code...        
+            $id_paquete = DetallePedido::where('id_pedido', $id_pedido)
+            ->distinct()
+            ->value('id_paquete');
+
+        $paquete=Paquete::findOrFail($id_paquete);
+        return response()->json(['data' => $paquete]);
+        } catch (ModelNotFoundException $me) {
+            return response()->json(['data' => []]);
+        }
+
     }
 }

@@ -20,4 +20,8 @@ class DetallePaquete extends Model
     public function paquetes(){
         return $this->belongsTo(Paquete::class,'id_paquete','id_paquete');
     }
+    public function prenda()
+    {
+        return $this->belongsTo(Prenda::class, 'id_prenda');
+    }
 }

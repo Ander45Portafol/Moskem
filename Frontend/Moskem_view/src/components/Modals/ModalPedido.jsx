@@ -97,18 +97,25 @@ export function ModalPedido({
     }
   }, [isOpen]);
 
-  const guardarDatos = async (e) => {
-    e.preventDefault();
-    try {
-      const pedidoCreado = await handleSubmit(e);
-      // solo abrimos el detalle si fue creación (no edición) y llegó bien el id
-      if (!id_pedido && pedidoCreado?.id && onPedidoGuardado) {
-        onPedidoGuardado(pedidoCreado.id);
-      }
-    } catch (error) {
-      console.error("Error al guardar el pedido:", error);
+const guardarDatos = async (e) => {
+  e.preventDefault();
+  try {
+    const pedidoCreado = await handleSubmit(e);
+
+    if (!id_pedido && pedidoCreado?.id_pedido && onPedidoGuardado) {
+      // Se creó el pedido: avanzamos al siguiente modal y cerramos este
+      onPedidoGuardado(pedidoCreado.id_pedido);
+      onClose();
+      return true;
     }
-  };
+    // Si id_pedido ya existía, es una edición: no cerramos ni avanzamos,
+    // el modal se queda abierto tal cual (los datos ya se actualizaron via handleSubmit)
+    return true;
+  } catch (error) {
+    console.error("Error al guardar el pedido:", error);
+    return false;
+  }
+};
   if (!render) return null;
   return (
     <div
@@ -224,7 +231,6 @@ export function ModalPedido({
               <div className="flex justify-start mt-5">
                 <div className="flex-col mr-14">
                   <label
-                    htmlFor=""
                     className="text-md font-semibold text-[#004B57]"
                   >
                     Tipo Entalle
@@ -232,6 +238,7 @@ export function ModalPedido({
                   <div className="flex">
                     <input
                       type="checkbox"
+                      id="slimfit"
                       className=""
                       checked={data.tipo_entalle === "Slim fit"}
                       onChange={(e) => {
@@ -241,13 +248,14 @@ export function ModalPedido({
                         });
                       }}
                     />
-                    <label htmlFor="" className="ml-2">
+                    <label htmlFor="slimfit" className="ml-2">
                       Slim Fit
                     </label>
                   </div>
                   <div className="flex">
                     <input
                       type="checkbox"
+                      id="regularfit"
                       checked={data.tipo_entalle === "Regular fit"}
                       onChange={(e) => {
                         setData({
@@ -257,7 +265,7 @@ export function ModalPedido({
                       }}
                     />
 
-                    <label htmlFor="" className="ml-2">
+                    <label htmlFor="regularfit" className="ml-2">
                       Regular Fit
                     </label>
                   </div>
@@ -275,7 +283,6 @@ export function ModalPedido({
             <div className="h-60 w-3/10 flex text-center rounded-2xl">
               <div className="h-full w-10/12">
                 <label
-                  htmlFor=""
                   className="text-md font-semibold text-[#004B57]"
                 >
                   Imagen Referencia
@@ -307,7 +314,7 @@ export function ModalPedido({
                 type="button"
                 onClick={() => {
                   if (id_pedido) {
-                    onPedidoGuardado(id_pedido.id);
+                    onPedidoGuardado(id_pedido);
                     onClose();
                   } else {
                     Swal.fire({
@@ -325,7 +332,9 @@ export function ModalPedido({
                     : "hidden"
                 }*/
                 className={
-                  "bg-[#004053] hover:bg-[#008292] text-[#B2B2B2] font-bold px-5 py-2 mt-4 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                  id_pedido
+                    ? "bg-[#004053] hover:bg-[#008292] text-[#B2B2B2] font-bold px-5 py-2 mt-4 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                    : "hidden"
                 }
               >
                 <ArrowRightCircleIcon className="size-6" />

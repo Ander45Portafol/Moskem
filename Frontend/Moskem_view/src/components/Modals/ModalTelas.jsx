@@ -5,6 +5,8 @@ import { InputD } from "../InputD";
 import { SelectD } from "../SelectD";
 import { API } from "../../assets/js/global";
 import Swal from "sweetalert2";
+import { SelectWD } from "../SelectWD";
+import { useGet } from "../../assets/js/useGet";
 
 export function ModalTelas({
   isOpen,
@@ -23,6 +25,7 @@ export function ModalTelas({
     codigo_tela: "",
     cantidad_stock: "",
     id_proveedor: "",
+    codigo_tela_proveedor: "",
   };
 
   const { data, setData } = useForm({
@@ -34,8 +37,17 @@ export function ModalTelas({
     estadoInicial,
   });
 
-  const optionsCategoria = ["Lino", "Algodón", "Lana", "Seda", "Poliéster"];
-  const optionsProveedor = ["CASRAV", "Textiles El Sol", "Distribuidora Moda"];
+   //Se usa para extraer los datos de los proveerdores que se cargaran en el select
+    const { data: proveedores } = useGet("proveedores");
+  
+    // Usamos el encadenamiento opcional (?.) por si 'clientes' aún está cargando (es undefined o null)
+    const SelectProveedores =
+      proveedores?.map((registro) => ({
+        id: registro.id_proveedor, // O el nombre exacto que tenga tu id en la base de datos
+        nombre: registro.nombre_proveedor,
+      })) || [];
+
+    const SelectCategoria =["Elite", "Elite +", "Premium"];
 
   // Captura el cambio de valor de cada input dinámicamente
   const inputsUpdate = (e) => {
@@ -147,20 +159,18 @@ export function ModalTelas({
         >
           <SelectD
             text="Categoría"
-            name="categoria"
-            textId="categoria"
-            options={optionsCategoria}
-            valueData={data?.categoria || ""}
+            textId="categoria_tela"
+            options={SelectCategoria}
+            valueData={data.categoria_tela}
             updateData={inputsUpdate}
           />
 
           <InputD
             text="Color"
             type="text"
-            name="color"
-            textId="color"
+            textId="color_tela"
             view=""
-            valueData={data?.color || ""}
+            valueData={data?.color_tela || ""}
             updateData={inputsUpdate}
           />
 
@@ -184,14 +194,22 @@ export function ModalTelas({
             updateData={inputsUpdate}
           />
 
-          <SelectD
+          <SelectWD
             text="Proveedor"
-            name="id_proveedor"
             textId="id_proveedor"
-            options={optionsProveedor}
-            valueData={data?.id_proveedor || ""}
+            options={SelectProveedores}
+            valueData={data?.id_proveedor}
             updateData={inputsUpdate}
           />
+
+          <InputD
+            text="Código Proveedor"
+            type="text"
+            textId="codigo_tela_proveedor"
+            view=""
+            valueData={data?.codigo_tela_proveedor || ""}
+            updateData={inputsUpdate}
+          />  
 
           <div className="hidden md:block"></div>
 

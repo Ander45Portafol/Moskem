@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('detalle_paquetes', function (Blueprint $table) {
             $table->id('id_detalle_paquete');
             $table->foreignId('id_paquete')->constrained('paquetes', 'id_paquete');
-            $table->enum('prenda_paquete',['Camisa', 'Chaleco', 'Saco', 'Pantalón','Accesorio','Complemento','Faja', 'Saco tipo pingüino','Guayabera / Camisa de Lino','Tirantes']);
-            $table->string('imagen')->nullable();
+            $table->foreignId('id_prenda')->constrained('prendas','id_prenda');
             $table->timestamps();
         });
     }

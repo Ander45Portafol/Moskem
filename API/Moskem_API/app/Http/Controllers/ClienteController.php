@@ -108,7 +108,7 @@ class ClienteController extends Controller
     }
 
     //Metodo utilizado para actualizar registros
-    public function update(ClienteRequest $request, $id_cliente): JsonResponse
+    public function update(ClienteRequest $request, int $id_cliente): JsonResponse
     {
         try {
             // 1. Buscamos al cliente

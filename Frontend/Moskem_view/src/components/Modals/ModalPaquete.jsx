@@ -10,20 +10,47 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { Paquete } from "../Paquete";
+import { API } from "../../assets/js/global";
 
 export function ModalPaquetes({
   isOpen,
   onClose,
   tipo,
   id_paquete,
+  id_pedido,
   setPaquete,
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { data } = useGet("paquetes");
+  const { data, setData } = useGet("paquetes");
+
+  const cargarPaquetes = async (id) => {
+    try {
+      const response = await fetch(`${API}getPaquete/${id}`);
+      if (response.ok) {
+        const responseData = await response.json();
+        if (responseData?.data?.id_paquete) {
+          setPaquete(responseData.data.id_paquete);
+        } else {
+          setPaquete(null); // 👈 nos aseguramos de limpiar selección previa
+        }
+      } else {
+        setPaquete(null);
+      }
+    } catch (error) {
+      console.log(error);
+      setPaquete(null);
+    }
+  };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && id_pedido) {
+      cargarPaquetes(id_pedido);
+      setRender(true);
+      setTimeout(() => setIsAnimating(true), 10);
+    } else if (isOpen && !id_pedido) {
+      // pedido nuevo: no hay nada que buscar, limpiamos selección
+      setPaquete(null);
       setRender(true);
       setTimeout(() => setIsAnimating(true), 10);
     } else {
@@ -31,7 +58,7 @@ export function ModalPaquetes({
       const timer = setTimeout(() => setRender(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, id_pedido]);
 
   //Funcion para guardar el Id del paquete elegido
 
@@ -73,8 +100,8 @@ export function ModalPaquetes({
                       setPaquete(paquete.id_paquete);
                     }}
                     nombre={paquete.nombre_paquete}
-                    list={paquete.detalle_paquete.map(
-                      (detalle) => detalle.prenda_paquete,
+                    list={paquete.detalle_paquete?.map(
+                      (detalle) => detalle.prenda.prenda_paquete,
                     )}
                   />
                 ))

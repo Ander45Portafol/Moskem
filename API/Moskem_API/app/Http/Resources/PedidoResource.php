@@ -31,7 +31,7 @@ class PedidoResource extends JsonResource
             'fecha_tallaje1'     => $this->fecha_tallaje1,
             'fecha_tallaje2'     => $this->fecha_tallaje2,
             'fecha_entrega'      => $this->fecha_entrega,
-            'detalles'           => $this->detalle_pedido, // Muestra la lista de detalles
+            'detalles'           => $this->detalle_pedido, // Muestra la lista de detalles          
             'tipo_evento'        => $this->tipo_evento,
             'visibilidad_pedido' => $this->visibilidad_pedido,
             'created_at'         => $this->created_at,

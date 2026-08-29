@@ -44,11 +44,12 @@ class MerceriaRequest extends FormRequest
             'tamanio_merceria' => 'required|integer|min:0',
             'id_proveedor' => 'required|integer|exists:proveedores,id_proveedor',
             'codigo_merceria_proveedor' => 'required|string|max:255',
-            'unidad_medida' => [
+            'medida_stock' => [
                 'required',
                 'string',
-                Rule::in(['pulgadas', 'mm', '#']),
+                Rule::in(['Pulgadas', 'Yardas', 'Unidad']),
             ],
+            'descripcion_merceria' => 'required|string|max:255',
         ];
     }
 
@@ -73,8 +74,11 @@ class MerceriaRequest extends FormRequest
             'id_proveedor.exists' => 'El proveedor seleccionado no existe en el sistema.',
             'codigo_merceria_proveedor.required' => 'Debe colocar un código para la mercería del proveedor.',
             'codigo_merceria_proveedor.string' => 'No es el formato correcto para el código de la mercería del proveedor.',
-            'unidad_medida.required' => 'Debe colocar una unidad de medida para la mercería.',
-            'unidad_medida.in' => 'La unidad de medida debe ser: pulgadas, mm o #.',
+            'medida_stock.required' => 'Debe colocar una unidad de medida para la mercería.',
+            'medida_stock.in' => 'La unidad de medida debe ser: Pulgadas, Yardas o Unidad.',
+            'descripcion_merceria.required' => 'Debe colocar una descripción para la mercería.',
+            'descripcion_merceria.string' => 'No es el formato correcto para la descripción de la mercería.',
+            'descripcion_merceria.max' => 'La descripción de la mercería no debe exceder los 255 caracteres.',
         ];
     }
 }

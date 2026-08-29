@@ -17,11 +17,11 @@ Schema::create('mercerias', function (Blueprint $table) {
             $table->string('codigo_merceria',14)->unique();
             $table->integer('stock');
             $table->string('color', 30);
-            $table->integer('tamanio_merceria');
+            $table->enum('medida_stock', ['Pulgadas', 'Yardas', 'Unidad']);
             $table->foreignId('id_proveedor')
             ->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
-            $table->enum('unidad_medida',['pulgadas','mm','#']);
+            $table->string('descripcion_merceria');
             $table->boolean('visibilidad_merceria')->default(true);
             $table->timestamps();
         });

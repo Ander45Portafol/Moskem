@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { InputD } from "../InputD";
-import { SelectD } from "../SelectD";
+import { SelectD } from "../SelectD"; 
 import { API } from "../../assets/js/global";
 import Swal from "sweetalert2";
 import { SelectWD } from "../SelectWD";

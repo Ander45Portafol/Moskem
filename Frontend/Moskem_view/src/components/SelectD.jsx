@@ -2,7 +2,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export function SelectD({ text, textId, options,updateData,valueData }) {
   return (
-    <div className="flex flex-col gap-1.5 relative w-66">
+    <div className="flex flex-col gap-1.5 relative w-full">
       <label className="text-md font-semibold text-[#004B57] ">{text}</label>
       <div className="relative">
         <select

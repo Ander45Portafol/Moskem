@@ -17,7 +17,7 @@ class DetalleMerceria extends Model
         'cantidad_merceria'
     ];
     public function detalle_pedidos(){
-        return $this->belongsTo(DetallePedido::class,'id_detalle_pedidos','id_detalle_pedidos');
+        return $this->belongsTo(DetallePedido::class,'id_detalle_pedidos','id_detalle_pedido');
     }
     public function mercerias(){
         return $this->belongsTo(Merceria::class,'id_merceria','id_merceria');

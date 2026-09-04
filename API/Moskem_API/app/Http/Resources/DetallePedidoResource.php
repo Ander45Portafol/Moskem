@@ -15,6 +15,7 @@ class DetallePedidoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id_detalle_pedido'=>$this->id_detalle_pedido,
             'pedido'=>$this->id_pedido,
             'tela'=>$this->id_tela,
             'empleado'=>$this->id_empleado,

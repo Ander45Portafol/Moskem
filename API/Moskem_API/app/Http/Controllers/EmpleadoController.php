@@ -17,7 +17,7 @@ use Throwable;
 class EmpleadoController extends Controller
 {
     //
-    public function index():JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $empleado = Empleado::where('visibilidad_empleado', true)->orderBy('nombres_empleado')->get();
@@ -25,7 +25,7 @@ class EmpleadoController extends Controller
                 return response()->json([
                     'message' => 'No existen registros',
                     'code' => 200,
-                    'data'=>[]
+                    'data' => []
                 ]);
             } else {
                 return ApiResponse::success('¡Exito!', 200, EmpleadoResource::collection($empleado));
@@ -72,7 +72,7 @@ class EmpleadoController extends Controller
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
     }
-    public function show($id):JsonResponse
+    public function show($id): JsonResponse
     {
         try {
             $employee = Empleado::findOrFail($id);
@@ -81,12 +81,12 @@ class EmpleadoController extends Controller
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
         }
     }
-    public function update(EmpleadoRequest $request, $id):JsonResponse
+    public function update(EmpleadoRequest $request, $id): JsonResponse
     {
         try {
-            $empleado=Empleado::findOrFail($id);
-            $validaciones=$request->validated();
-            if ($empleado->nombres_empleado!=$validaciones['nombres_empleado']||$empleado->apellidos_empleado!=$validaciones['apellidos_empleado']) {
+            $empleado = Empleado::findOrFail($id);
+            $validaciones = $request->validated();
+            if ($empleado->nombres_empleado != $validaciones['nombres_empleado'] || $empleado->apellidos_empleado != $validaciones['apellidos_empleado']) {
                 $primerNombre = explode(' ', trim($validaciones['nombres_empleado']))[0];
                 $primerApellido = explode(' ', trim($validaciones['apellidos_empleado']))[0];
                 $inicialNombre = strtoupper(substr($primerNombre, 0, 1));
@@ -106,17 +106,18 @@ class EmpleadoController extends Controller
             return ApiResponse::error('Error al intentar actualizar el registro', 500, $ex->getMessage());
         }
     }
-    public function destroy($id){
+    public function destroy($id)
+    {
         try {
-            $empleado=Empleado::findOrFail($id);
-            $empleado->visibilidad_empleado=false;
+            $empleado = Empleado::findOrFail($id);
+            $empleado->visibilidad_empleado = false;
             $empleado->save();
             return ApiResponse::success('Empleado eliminado con exito', 200);
         } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('El empleado seleccionado no existe', 404, $me->getMessage());        
-            }catch(Exception $e){
+            return ApiResponse::error('El empleado seleccionado no existe', 404, $me->getMessage());
+        } catch (Exception $e) {
             return ApiResponse::error('Error al eliminar', 500, $e->getMessage());
-            }
+        }
     }
     //Metodo para el motor de busqueda
     public function search(Request $request)
@@ -140,6 +141,25 @@ class EmpleadoController extends Controller
             return ApiResponse::success('Resultados de búsqueda', 200, EmpleadoResource::collection($empleados));
         } catch (\Exception $ex) {
             return ApiResponse::error('Error al buscar', 500, $ex->getMessage());
+        }
+    }
+    public function getSastres()
+    {
+        try {
+            $empleado = Empleado::where('tipo_empleado', 'Sastre')->where('visibilidad_empleado', true)->get();
+            if ($empleado->isEmpty()) {
+                return response()->json([
+                    'message' => 'No existen registros',
+                    'code' => 200,
+                    'data' => []
+                ]);
+            } else {
+                return ApiResponse::success('¡Exito!', 200, EmpleadoResource::collection($empleado));
+            }
+        } catch (Throwable $th) {
+            return ApiResponse::error('ERROR', 500, $th->getMessage());
+        } catch (Exception $e) {
+            return ApiResponse::error('ERROR', 500, $e->getMessage());
         }
     }
 }

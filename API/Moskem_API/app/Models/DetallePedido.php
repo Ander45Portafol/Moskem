@@ -38,4 +38,8 @@ class DetallePedido extends Model
     public function paquetes(){
         return $this->belongsTo(Paquete::class,'id_paquete','id_paquete');
     }
+    public function ordenTrabajo()
+    {
+        return $this->hasOne(OrdenTrabajo::class, 'id_detalle_pedido');
+    }
 }

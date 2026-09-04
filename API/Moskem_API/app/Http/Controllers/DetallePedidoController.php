@@ -44,7 +44,7 @@ class DetallePedidoController extends Controller
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
     }
-    public function show(int $id)
+    public function show(int $id) 
     {
         try {
             $detalle_pedido = DetallePedido::findOrFail($id);

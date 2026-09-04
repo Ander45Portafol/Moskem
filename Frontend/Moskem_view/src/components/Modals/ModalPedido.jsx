@@ -26,7 +26,6 @@ export function ModalPedido({
   setPedido,
   onPedidoGuardado,
 }) {
-  const [modalActivo, setModalActivo] = useState(false);
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
   const ruta = "pedidos";
@@ -52,8 +51,8 @@ export function ModalPedido({
     onClose,
     ruta,
     estadoInicial,
-    });
-    //Se usa para extraer los datos del cliente que se cargaran en el select
+  });
+  //Se usa para extraer los datos del cliente que se cargaran en el select
   const { data: clientes } = useGet("clientes");
 
   // Usamos el encadenamiento opcional (?.) por si 'clientes' aún está cargando (es undefined o null)
@@ -97,25 +96,25 @@ export function ModalPedido({
     }
   }, [isOpen]);
 
-const guardarDatos = async (e) => {
-  e.preventDefault();
-  try {
-    const pedidoCreado = await handleSubmit(e);
+  const guardarDatos = async (e) => {
+    e.preventDefault();
+    try {
+      const pedidoCreado = await handleSubmit(e);
 
-    if (!id_pedido && pedidoCreado?.id_pedido && onPedidoGuardado) {
-      // Se creó el pedido: avanzamos al siguiente modal y cerramos este
-      onPedidoGuardado(pedidoCreado.id_pedido);
-      onClose();
+      if (!id_pedido && pedidoCreado?.id_pedido && onPedidoGuardado) {
+        // Se creó el pedido: avanzamos al siguiente modal y cerramos este
+        onPedidoGuardado(pedidoCreado.id_pedido);
+        onClose();
+        return true;
+      }
+      // Si id_pedido ya existía, es una edición: no cerramos ni avanzamos,
+      // el modal se queda abierto tal cual (los datos ya se actualizaron via handleSubmit)
       return true;
+    } catch (error) {
+      console.error("Error al guardar el pedido:", error);
+      return false;
     }
-    // Si id_pedido ya existía, es una edición: no cerramos ni avanzamos,
-    // el modal se queda abierto tal cual (los datos ya se actualizaron via handleSubmit)
-    return true;
-  } catch (error) {
-    console.error("Error al guardar el pedido:", error);
-    return false;
-  }
-};
+  };
   if (!render) return null;
   return (
     <div
@@ -147,8 +146,8 @@ const guardarDatos = async (e) => {
 
         {/* Formulario estructurado en Grid de 3 columnas */}
         <form onSubmit={guardarDatos} className="flex flex-col">
-          <div className="flex justify-between gap-x-6 ">
-            <div className="w-66">
+          <div className="flex w-full justify-between gap-x-6 ">
+            <div className="w-1/3">
               <SelectWD
                 text="Cliente"
                 options={SelectClientes}
@@ -157,22 +156,24 @@ const guardarDatos = async (e) => {
                 updateData={inputsUpdate}
               />
             </div>
-
-            <SelectD
-              text="Tipo Evento"
-              options={tipo_eventos}
-              textId="tipo_evento"
-              valueData={data.tipo_evento}
-              updateData={inputsUpdate}
-            />
-
-            <SelectD
-              text="Estado Pedido"
-              textId="estado_pedido"
-              options={estado_pedido}
-              valueData={data.estado_pedido}
-              updateData={inputsUpdate}
-            />
+            <div className="w-1/3">
+              <SelectD
+                text="Tipo Evento"
+                options={tipo_eventos}
+                textId="tipo_evento"
+                valueData={data.tipo_evento}
+                updateData={inputsUpdate}
+              />
+            </div>
+            <div className="w-1/3">
+              <SelectD
+                text="Estado Pedido"
+                textId="estado_pedido"
+                options={estado_pedido}
+                valueData={data.estado_pedido}
+                updateData={inputsUpdate}
+              />
+            </div>
           </div>
           <div className="flex justify-between my-5">
             <InputDate
@@ -230,9 +231,7 @@ const guardarDatos = async (e) => {
               </div>
               <div className="flex justify-start mt-5">
                 <div className="flex-col mr-14">
-                  <label
-                    className="text-md font-semibold text-[#004B57]"
-                  >
+                  <label className="text-md font-semibold text-[#004B57]">
                     Tipo Entalle
                   </label>
                   <div className="flex">
@@ -282,9 +281,7 @@ const guardarDatos = async (e) => {
             </div>
             <div className="h-60 w-3/10 flex text-center rounded-2xl">
               <div className="h-full w-10/12">
-                <label
-                  className="text-md font-semibold text-[#004B57]"
-                >
+                <label className="text-md font-semibold text-[#004B57]">
                   Imagen Referencia
                 </label>
                 <div className="bg-[#D9D9D9] rounded-2xl h-full w-full"></div>

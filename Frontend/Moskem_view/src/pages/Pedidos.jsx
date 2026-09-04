@@ -13,6 +13,9 @@ import { useState } from "react";
 import { ModalPedido } from "../components/Modals/ModalPedido";
 import { ModalDetallePedido } from "../components/Modals/ModalDetallePedido";
 import { ModalPaquetes } from "../components/Modals/ModalPaquete";
+import Swal from "sweetalert2";
+import { API } from "../assets/js/global";
+import { ModalMedidas } from "../components/Modals/ModalMedidas";
 
 export function Pedidos() {
   //Estado para gestionar el modal
@@ -22,9 +25,12 @@ export function Pedidos() {
   const [detalleAbierto, setDetalleAbierto] = useState(false);
   const [paquetes, SetPaquetes] = useState(false);
   const [idPedidoDetalle, setIdPedidoDetalle] = useState(null);
+  const [idPaquete, SetIdPaquete] = useState(null);
+  const [medidas, setMedidas] = useState(false)
+  const [clientes, setClientes]=useState(null)
+  //Variables para el funcionamiento de los pedidos
   const { data, message, setData } = useGet("pedidos");
     const { data:detalles, setData:setDetalle } = useGet("detalle_pedidos");
-  const [idPaquete, SetIdPaquete] = useState(null);
   const modalActualizar = (id) => {
     setIdPedido(id);
     setModalActivo("agregar");
@@ -78,6 +84,42 @@ export function Pedidos() {
       return true;
     }
   };
+   const deletePedidos = async (id) => {
+      try {
+        Swal.fire({
+          title: "Eliminar Pedido",
+          text: "¿Estas seguro?",
+          icon: "warning",
+          showCancelButton: true,
+          cancelButtonColor: "#cc4224",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#31b65c",
+          confirmButtonText: "Eliminar",
+          showConfirmButton: true,
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            const response = await fetch(`${API}pedidos/${id}`, {
+              method: "DELETE",
+            });
+            if (response.ok) {
+              const responseData = await response.json();
+              Swal.fire({
+                toast: true,
+                position: "top-end",
+                title: responseData.message,
+                icon: "success",
+                showConfirmButton: false,
+                timer: 3000,
+              });
+            }
+            setData((prevData) => prevData.filter((data) => data.id_pedido !== id));
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
       {/* Título de la sección */}
@@ -176,7 +218,7 @@ export function Pedidos() {
                         {/* Botón Agenda (Turquesa) -> ¡Ahora también abre las citas! */}
 
                         <button
-                          onClick={() => setModalActivo("citas")}
+                          onClick={() => { setMedidas(true); setIdPedido(pedido.id_pedido); setClientes(pedido.id_cliente); }}
                           className="bg-[#00A29B] text-[#004053] rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10"
                         >
                           <ClipboardDocumentCheckIcon className="size-7" />
@@ -193,7 +235,7 @@ export function Pedidos() {
                         <button
                           className="bg-[#6B7280] text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
                           onClick={() => {
-                            deleteClient(cliente.id);
+                            deletePedidos(pedido.id_pedido);
                           }}
                         >
                           <TrashIcon className="size-7" />
@@ -234,6 +276,7 @@ export function Pedidos() {
           setDetalleAbierto(false);
           SetPaquetes(false);
           setIdPedidoDetalle(null);
+          setIdPedido(null);
         }}
         onRegresar={() => {
           // 👇 en vez de cerrar todo, volvemos al modal de paquetes
@@ -254,6 +297,12 @@ export function Pedidos() {
         id_pedido={idPedido}
         id_paquete={idPaquete}
         setPaquete={SetIdPaquete}
+      />
+      <ModalMedidas
+        isOpen={medidas}
+        id_pedido={idPedido}
+        id_cliente={clientes}
+        onClose={() => setMedidas(false)}
       />
     </div>
   );

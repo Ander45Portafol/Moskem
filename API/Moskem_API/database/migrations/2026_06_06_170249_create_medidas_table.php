@@ -33,6 +33,7 @@ return new class extends Migration
             $table->integer('campana')->nullable();
             $table->integer('rodilla')->nullable();
             $table->integer('tiro')->nullable();
+            $table->integer('muslo')->nullable();
             $table->timestamps();
         });
     }

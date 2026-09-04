@@ -1,4 +1,13 @@
-export function InputD({ text, type, valueData, textId, updateData, view}) {
+import { memo } from "react";
+
+export const InputD = memo(function InputD({
+  text,
+  type,
+  valueData,
+  textId,
+  updateData,
+  view,
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-md font-semibold text-[#004B57] ">{text}</label>
@@ -13,4 +22,4 @@ export function InputD({ text, type, valueData, textId, updateData, view}) {
       />
     </div>
   );
-}
+});

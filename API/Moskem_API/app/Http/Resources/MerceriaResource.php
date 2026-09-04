@@ -20,6 +20,7 @@ class MerceriaResource extends JsonResource
             'id_proveedor'=>$this->id_proveedor,
             'stock'=>$this->stock,
             'color'=>$this->color,
+            'unidad_medida'=>$this->unidad_medida,
             'tamanio'=>$this->tamanio_merceria,
             'proveedor'=>$this->proveedor->nombre_proveedor,
         ];

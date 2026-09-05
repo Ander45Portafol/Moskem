@@ -1,24 +1,28 @@
-export function Paquete({ id, guardarId, isSelected, nombre, list }) {
+export function Paquete({
+  id,
+  guardarId,
+  isSelected,
+  isDisabled,
+  nombre,
+  list,
+}) {
   return (
     <div
-      className={
-        isSelected
-          ? "flex flex-col text-center mt-4 mx-4 min-h-[10rem] w-74 bg-[#9E9E9E] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
-          : "flex flex-col text-center mt-4 mx-4 min-h-[10.8rem] w-74 bg-[#D9D9D9] hover:bg-[#9E9E9E] p-4 rounded-2xl transition-colors duration-200"
-      }
-      onClick={guardarId}
+      onClick={() => {
+        if (!isDisabled) guardarId();
+      }}
+      className={`border rounded-2xl p-4 transition-all ${
+        isDisabled
+          ? "opacity-50 grayscale cursor-not-allowed pointer-events-none bg-gray-100" // 👈 Estilos de bloqueo
+          : isSelected
+            ? "border-[#004B57] bg-[#004B57]/10 shadow-lg cursor-pointer"
+            : "border-gray-300 hover:border-[#004B57] cursor-pointer"
+      }`}
     >
-      {/* Título Dinámico */}
-      <h4 className="text-xl font-bold text-[#004053]">{nombre}</h4>
-
-      {/* Lista Dinámica en Grid (2 Columnas) */}
-
-      {/*<input type="text" className="hidden" name="id_paquete" value={id} />*/}
-      <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-left font-normal text-[#004053] list-disc list-inside pt-3">
-        {list.map((item, index) => (
-          <li key={index} className="hitespace-nowrap ">
-            {item}
-          </li>
+      <h4 className="font-bold text-lg text-[#004053]">{nombre}</h4>
+      <ul className="text-sm mt-2 list-disc list-inside text-gray-600">
+        {list?.map((item, idx) => (
+          <li key={idx}>{item}</li>
         ))}
       </ul>
     </div>

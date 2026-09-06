@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Productos extends Model
 {
+    protected $table = 'productos';
     protected $primaryKey = 'id_producto';
     protected $keyType = 'int';
+
+
     protected $fillable = [
         'id_producto',
         'tipo_producto',

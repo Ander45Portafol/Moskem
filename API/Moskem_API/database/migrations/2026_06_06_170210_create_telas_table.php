@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_tela_proveedor');
             $table->enum('tipo_prenda',['Camisa','Pantalon / Saco / Chaleco','Accesorios']);
+            $table->string('imagen')->nullable();;
             $table->boolean('visibilidad_tela');
             $table->timestamps();
         });

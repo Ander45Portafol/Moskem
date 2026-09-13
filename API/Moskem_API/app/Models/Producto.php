@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Productos extends Model
+class Producto extends Model // <-- Cambiado de Productos a Producto
 {
     protected $table = 'productos';
     protected $primaryKey = 'id_producto';
     protected $keyType = 'int';
-
 
     protected $fillable = [
         'id_producto',
@@ -21,10 +20,12 @@ class Productos extends Model
         'estado_producto',
         'visibilidad_producto'
     ];
+
     public function detalle_renta(){
-        return $this->hasMany(DetalleRenta::class, foreignKey:'id_producto');
+        return $this->hasMany(DetalleRenta::class, 'id_producto');
     }
+
     public function telas(){
-        return $this->belongsTo(Tela::class,'id_tela','id_tela');
+        return $this->belongsTo(Tela::class, 'id_tela', 'id_tela');
     }
 }

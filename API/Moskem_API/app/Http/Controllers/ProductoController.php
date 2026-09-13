@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Responses\ApiResponse;
-use App\Models\Productos;
+use App\Models\Producto; // <-- Cambiado a singular (Producto)
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Js;
-use Psy\Util\Json;
 
-class ProductosController extends Controller
+class ProductoController extends Controller
 {
     /**
      * Obtener todos los registros de productos
@@ -19,7 +17,7 @@ class ProductosController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $productos = productos::where('visibilidad_producto', true)
+            $productos = Producto::where('visibilidad_producto', true)
                 ->orderBy('id_producto')
                 ->get();
             
@@ -45,10 +43,10 @@ class ProductosController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $validate = $request->validated();
-            $validate['visibilidad_producto'] = true;
+            $data = $request->all();
+            $data['visibilidad_producto'] = true;
 
-            $producto = Productos::create($validate);
+            $producto = Producto::create($data);
 
             return response()->json([
                 'message' => 'Producto creado con éxito',
@@ -76,7 +74,7 @@ class ProductosController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $producto = Productos::findOrFail($id);
+            $producto = Producto::findOrFail($id);
             return ApiResponse::success('Producto encontrado correctamente', 200, $producto);
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
@@ -91,10 +89,10 @@ class ProductosController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $producto = Productos::findOrFail($id);
-            $validate = $request->validated();
+            $producto = Producto::findOrFail($id);
+            $data = $request->all();
 
-            $producto->update($validate);
+            $producto->update($data);
 
             return ApiResponse::success('Producto actualizado con éxito', 200, $producto);
         } catch (ModelNotFoundException $me) {
@@ -110,7 +108,7 @@ class ProductosController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $producto = Productos::findOrFail($id);
+            $producto = Producto::findOrFail($id);
             $producto->visibilidad_producto = false;
             $producto->save();
 

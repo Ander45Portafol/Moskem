@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DetalleMerceriaController;
 use App\Http\Controllers\DetallePaqueteController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\PrendaController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\TelaController;
 use App\Models\DetalleMerceria;
 use Illuminate\Http\Request;
@@ -20,11 +22,15 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
-//Metodo para el motor de busqueda
+// Métodos para el motor de búsqueda
 Route::get('clientes/buscar', [ClienteController::class, 'search']);
-Route::get('empleados/buscar',[EmpleadoController::class,'search']);
+Route::get('empleados/buscar', [EmpleadoController::class, 'search']);
 Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
+
+
+
+
+Route::apiResource('productos', ProductoController::class);
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('pedidos',PedidosController::class);
 Route::apiResource('mercerias',MerseriaController::class);
@@ -47,3 +53,4 @@ Route::put('create_codigo_medida/{id}/{id_medida}',[MedidaController::class, 'cr
 Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
 Route::get('getOrders/{id_pedido}',[OrdenTrabajoController::class,'cargarOrdenes']);
 Route::get('getMedidas/{idDetallePedido}',[OrdenTrabajoController::class, 'getMedida']);
+

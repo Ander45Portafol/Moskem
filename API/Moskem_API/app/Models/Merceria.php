@@ -15,10 +15,10 @@ class Merceria extends Model
         'codigo_merceria',
         'stock',
         'color',
-        'tamanio_merceria',
+        'descripcion_merceria',
+        'medida_stock',
         'id_proveedor',
-        'codigo_merceria_proveedor', // Agregado
-        'unidad_medida',            // Agregado
+        'codigo_merceria_proveedor',  // Agregado
         'visibilidad_merceria',
     ];
 

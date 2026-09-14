@@ -10,8 +10,8 @@ import {
   InboxStackIcon,
   ClipboardDocumentCheckIcon,
   WalletIcon,
+  PercentBadgeIcon,
 } from "@heroicons/react/24/solid";
-import { useState } from "react";
 import { Link, useLocation } from "react-router";
 export function Sidebar() {
   const location = useLocation();
@@ -57,7 +57,7 @@ export function Sidebar() {
           </div>
         </Link>
         {/* Empleados */}
-        <Link to="/admin/empleado" onClick={() => setActive("empleado")}>
+        <Link to="/admin/empleado">
           <div
             className={
               active === "empleado"
@@ -127,16 +127,16 @@ export function Sidebar() {
         </Link>
 
         {/* Órdenes de Trabajo */}
-        <Link to="/admin/orden_trabajo">
+        <Link to="/admin/cupones">
           <div
             className={
-              active === "/orden_trabajo"
+              active === "cupones"
                 ? "p-3 rounded-xl flex items-center ml-6 mr-2 gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-[#009BAE] text-[#004053] font-bold translate-x-1"
                 : "p-3 rounded-xl flex items-center ml-6 mr-2 gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-transparent text-white font-normal translate-x-1 hover:bg-[#009BAE] hover:text-[#004053] hover:font-bold"
             }
           >
-            <ClipboardDocumentCheckIcon className="size-6" />
-            <span className="text-md">Ordenes trabajo</span>
+            <PercentBadgeIcon className="size-6" />
+            <span className="text-md">Cupones y descuentos</span>
           </div>
         </Link>
 
@@ -169,7 +169,7 @@ export function Sidebar() {
         </Link>
       </nav>
       <div className=" flex h-1/6 items-end w-full">
-        <Link href="/" className="mb-10">
+        <Link href="/" className="mb-2">
           <div className="p-3 pr-8 w-full rounded-xl flex items-center gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-transparent text-white font-normal ml-6 mr-2 translate-x-1 hover:bg-[#009BAE] hover:text-[#004053] hover:font-bold">
             <Cog8ToothIcon className="size-6" />
             <span className="text-md">Configuración</span>

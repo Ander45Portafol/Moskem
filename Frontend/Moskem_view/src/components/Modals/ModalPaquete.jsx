@@ -5,8 +5,8 @@ import { InputN } from "../InputN";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { DataList } from "../DataList";
 import {
+  ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
-  CheckCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { Paquete } from "../Paquete";
@@ -15,42 +15,57 @@ import { API } from "../../assets/js/global";
 export function ModalPaquetes({
   isOpen,
   onClose,
-  tipo,
   id_paquete,
   id_pedido,
   setPaquete,
+  paquetes = [],
+  tipoEvento = "",
+  onSiguienteDetalle,
+  onRegresar, // 👈 1. Recibimos la prop para regresar al modal de Pedido
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { data, setData } = useGet("paquetes");
 
   const cargarPaquetes = async (id) => {
     try {
+      const responseDetalles = await fetch(`${API}detalles/${id}`);
+
+      if (responseDetalles.ok) {
+        const resDetalleData = await responseDetalles.json();
+        const listaDetalles = Array.isArray(resDetalleData)
+          ? resDetalleData
+          : resDetalleData?.data || [];
+
+        const detalleConPaquete = listaDetalles.find((d) => d.id_paquete);
+
+        if (detalleConPaquete?.id_paquete) {
+          setPaquete(detalleConPaquete.id_paquete);
+          return;
+        }
+      }
+
       const response = await fetch(`${API}getPaquete/${id}`);
       if (response.ok) {
         const responseData = await response.json();
         if (responseData?.data?.id_paquete) {
           setPaquete(responseData.data.id_paquete);
         } else {
-          setPaquete(null); // 👈 nos aseguramos de limpiar selección previa
+          setPaquete(null);
         }
       } else {
         setPaquete(null);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error al cargar el paquete del pedido:", error);
       setPaquete(null);
     }
   };
 
   useEffect(() => {
-    if (isOpen && id_pedido) {
-      cargarPaquetes(id_pedido);
-      setRender(true);
-      setTimeout(() => setIsAnimating(true), 10);
-    } else if (isOpen && !id_pedido) {
-      // pedido nuevo: no hay nada que buscar, limpiamos selección
-      setPaquete(null);
+    if (isOpen) {
+      if (id_pedido) cargarPaquetes(id_pedido);
+      else setPaquete(null);
+
       setRender(true);
       setTimeout(() => setIsAnimating(true), 10);
     } else {
@@ -60,16 +75,18 @@ export function ModalPaquetes({
     }
   }, [isOpen, id_pedido]);
 
-  //Funcion para guardar el Id del paquete elegido
-
   if (!render) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 ${isAnimating ? "opacity-100" : "opacity-0"}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 ${
+        isAnimating ? "opacity-100" : "opacity-0"
+      }`}
     >
       <div
-        className={`bg-white w-[1000px] max-w-[70vw] rounded-[32px] px-10 py-4 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+        className={`bg-white w-[1000px] max-w-[70vw] rounded-[32px] px-10 py-4 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${
+          isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}
       >
         <button
           type="button"
@@ -81,37 +98,67 @@ export function ModalPaquetes({
 
         <div>
           <h2 className="text-4xl font-black text-[#004B57] tracking-wide uppercase">
-            Paquetes para bodas
+            Paquetes para {tipoEvento || "Eventos"}
           </h2>
           <h3 className="uppercase text-xl text-[#004053]">
             Escoge una opción
           </h3>
         </div>
+
         <div className="flex justify-center">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-h-[60vh] overflow-y-auto overflow-x-hidden pr-2">
-            {data.length != 0
-              ? data &&
-                data.map((paquete) => (
+            {paquetes && paquetes.length > 0 ? (
+              paquetes.map((paquete) => {
+                const esElSeleccionado = paquete.id_paquete === id_paquete;
+                const estaBloqueado = Boolean(id_paquete) && !esElSeleccionado;
+
+                return (
                   <Paquete
                     key={paquete.id_paquete}
                     id={paquete.id_paquete}
-                    isSelected={paquete.id_paquete === id_paquete}
+                    isSelected={esElSeleccionado}
+                    isDisabled={estaBloqueado}
                     guardarId={() => {
-                      setPaquete(paquete.id_paquete);
+                      if (!estaBloqueado) {
+                        setPaquete(paquete.id_paquete);
+                      }
                     }}
                     nombre={paquete.nombre_paquete}
                     list={paquete.detalle_paquete?.map(
                       (detalle) => detalle.prenda.prenda_paquete,
                     )}
                   />
-                ))
-              : null}
+                );
+              })
+            ) : (
+              <p className="text-gray-500 font-semibold">
+                No hay paquetes disponibles para este evento.
+              </p>
+            )}
           </div>
         </div>
-        <div className="flex justify-end">
+
+        {/* 2. Botones de Navegación (Regresar y Siguiente) */}
+        <div className="flex justify-between items-center">
           <button
+            type="button"
+            className="bg-[#004053] hover:bg-[#002e3c] text-white font-bold px-5 py-2 mt-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+            onClick={() => {
+              onClose();
+              if (onRegresar) onRegresar(); // 👈 Cierra este modal y abre ModalPedido
+            }}
+          >
+            <ArrowLeftCircleIcon className="size-6" />
+            Regresar
+          </button>
+
+          <button
+            type="button"
             className="bg-[#BCCF00] hover:bg-[#919E0E] text-[#004053] font-bold px-5 py-2 mt-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              if (onSiguienteDetalle) onSiguienteDetalle();
+            }}
           >
             <ArrowRightCircleIcon className="size-6" />
             Siguiente

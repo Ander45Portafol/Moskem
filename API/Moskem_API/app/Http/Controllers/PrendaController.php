@@ -12,7 +12,12 @@ class PrendaController extends Controller
     //
     public function index()
     {
-        return response()->json(Prenda::all());
+        try {
+            $prendas = Prenda::all();
+            return ApiResponse::success('Prendas cargadas correctamente',201,$prendas);
+        } catch (Exception $ex) {
+            return ApiResponse::error('Error al intentar mostrar los registro', 500, $ex->getMessage());
+        }
     }
     public function store(Request $request)
     {

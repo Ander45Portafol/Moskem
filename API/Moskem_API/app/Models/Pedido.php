@@ -29,10 +29,12 @@ class Pedido extends Model
         'tipo_evento',
         'visibilidad_pedido'
     ];
-    public function cliente():BelongsTo{
-        return $this->belongsTo(Cliente::class,'id_cliente','id_cliente');
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'id_cliente', 'id_cliente');
     }
-    public function detalle_pedido(){
-        return $this->hasMany(DetallePedido::class,'id_pedido','id_pedido');
+    public function detalle_pedido()
+    {
+        return $this->hasMany(DetallePedido::class, 'id_pedido');
     }
 }

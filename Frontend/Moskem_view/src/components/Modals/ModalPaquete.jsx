@@ -5,6 +5,7 @@ import { InputN } from "../InputN";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { DataList } from "../DataList";
 import {
+  ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
@@ -17,51 +18,48 @@ export function ModalPaquetes({
   id_paquete,
   id_pedido,
   setPaquete,
-  paquetes = [], // <-- Paquetes filtrados
-  tipoEvento = "", // <-- Nombre del evento (ej. "Boda", "Graduación")
-  onSiguienteDetalle, // <-- Función para ir a ModalDetallePedido
+  paquetes = [],
+  tipoEvento = "",
+  onSiguienteDetalle,
+  onRegresar, // 👈 1. Recibimos la prop para regresar al modal de Pedido
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
 
-
   const cargarPaquetes = async (id) => {
-  try {
-    // 1. Consultar detalles del pedido para verificar si ya tiene un paquete asignado
-    const responseDetalles = await fetch(`${API}detalles/${id}`);
+    try {
+      const responseDetalles = await fetch(`${API}detalles/${id}`);
 
-    if (responseDetalles.ok) {
-      const resDetalleData = await responseDetalles.json();
-      const listaDetalles = Array.isArray(resDetalleData)
-        ? resDetalleData
-        : resDetalleData?.data || [];
+      if (responseDetalles.ok) {
+        const resDetalleData = await responseDetalles.json();
+        const listaDetalles = Array.isArray(resDetalleData)
+          ? resDetalleData
+          : resDetalleData?.data || [];
 
-      // Buscar el primer detalle que tenga un id_paquete registrado
-      const detalleConPaquete = listaDetalles.find((d) => d.id_paquete);
+        const detalleConPaquete = listaDetalles.find((d) => d.id_paquete);
 
-      if (detalleConPaquete?.id_paquete) {
-        setPaquete(detalleConPaquete.id_paquete);
-        return;
+        if (detalleConPaquete?.id_paquete) {
+          setPaquete(detalleConPaquete.id_paquete);
+          return;
+        }
       }
-    }
 
-    // 2. Si no lo encuentra en detalles, intenta con el endpoint directo
-    const response = await fetch(`${API}getPaquete/${id}`);
-    if (response.ok) {
-      const responseData = await response.json();
-      if (responseData?.data?.id_paquete) {
-        setPaquete(responseData.data.id_paquete);
+      const response = await fetch(`${API}getPaquete/${id}`);
+      if (response.ok) {
+        const responseData = await response.json();
+        if (responseData?.data?.id_paquete) {
+          setPaquete(responseData.data.id_paquete);
+        } else {
+          setPaquete(null);
+        }
       } else {
         setPaquete(null);
       }
-    } else {
+    } catch (error) {
+      console.error("Error al cargar el paquete del pedido:", error);
       setPaquete(null);
     }
-  } catch (error) {
-    console.error("Error al cargar el paquete del pedido:", error);
-    setPaquete(null);
-  }
-};
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -99,7 +97,6 @@ export function ModalPaquetes({
         </button>
 
         <div>
-          {/* Título Dinámico según el Tipo de Evento */}
           <h2 className="text-4xl font-black text-[#004B57] tracking-wide uppercase">
             Paquetes para {tipoEvento || "Eventos"}
           </h2>
@@ -113,7 +110,6 @@ export function ModalPaquetes({
             {paquetes && paquetes.length > 0 ? (
               paquetes.map((paquete) => {
                 const esElSeleccionado = paquete.id_paquete === id_paquete;
-                // Si id_paquete ya está definido en el pedido, bloquea todos los demás
                 const estaBloqueado = Boolean(id_paquete) && !esElSeleccionado;
 
                 return (
@@ -121,7 +117,7 @@ export function ModalPaquetes({
                     key={paquete.id_paquete}
                     id={paquete.id_paquete}
                     isSelected={esElSeleccionado}
-                    isDisabled={estaBloqueado} // 👈 Pasamos la prop para deshabilitarlo visual y funcionalmente
+                    isDisabled={estaBloqueado}
                     guardarId={() => {
                       if (!estaBloqueado) {
                         setPaquete(paquete.id_paquete);
@@ -142,8 +138,22 @@ export function ModalPaquetes({
           </div>
         </div>
 
-        <div className="flex justify-end">
+        {/* 2. Botones de Navegación (Regresar y Siguiente) */}
+        <div className="flex justify-between items-center">
           <button
+            type="button"
+            className="bg-[#004053] hover:bg-[#002e3c] text-white font-bold px-5 py-2 mt-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+            onClick={() => {
+              onClose();
+              if (onRegresar) onRegresar(); // 👈 Cierra este modal y abre ModalPedido
+            }}
+          >
+            <ArrowLeftCircleIcon className="size-6" />
+            Regresar
+          </button>
+
+          <button
+            type="button"
             className="bg-[#BCCF00] hover:bg-[#919E0E] text-[#004053] font-bold px-5 py-2 mt-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
             onClick={() => {
               onClose();

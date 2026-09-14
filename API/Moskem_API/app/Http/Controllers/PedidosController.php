@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ClienteRequest;
 use App\Http\Requests\PedidoRequest;
 use App\Http\Resources\PedidoResource;
 use App\Http\Responses\ApiResponse;
@@ -10,14 +9,13 @@ use App\Models\Pedido;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class PedidosController extends Controller
 {
-    //
-    public function index():JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $pedido = Pedido::where('visibilidad_pedido', true)->orderBy("fecha_entrega")->get();
@@ -25,42 +23,58 @@ class PedidosController extends Controller
                 return response()->json([
                     'message' => 'No existen registros',
                     'code' => 200,
-                    'data'=>$pedido
+                    'data' => $pedido
                 ]);
             } else {
                 return ApiResponse::success('¡Exito!', 200, PedidoResource::collection($pedido));
             }
         } catch (Exception $ex) {
             return ApiResponse::error('Error', 500, $ex->getMessage());
-        }
-        catch(Throwable $to){
-            return ApiResponse::error('Error',500,$to->getMessage());
+        } catch (Throwable $to) {
+            return ApiResponse::error('Error', 500, $to->getMessage());
         }
     }
-    public function store(PedidoRequest $request):JsonResponse{
+
+    public function store(PedidoRequest $request): JsonResponse
+    {
         try {
-            $validate=$request->validated();
-            $validate['visibildad_pedido']=true;
-            $pedido=Pedido::create($validate);
-            return ApiResponse::success('Pedido creado con exito',200,new PedidoResource($pedido));
+            $validate = $request->validated();
+            $validate['visibilidad_pedido'] = true;
+
+            // Creamos el pedido excluyendo la imagen del arreglo inicial
+            $pedido = Pedido::create(collect($validate)->except('imagen_referencia')->toArray());
+
+            // Si se envió un archivo de imagen, guardamos y actualizamos
+            if ($request->hasFile('imagen_referencia')) {
+                $pedido->imagen_referencia = $request->file('imagen_referencia')->store('pedidos', 'public');
+                $pedido->save();
+            }
+
+            return ApiResponse::success('Pedido creado con exito', 200, new PedidoResource($pedido));
         } catch (\Throwable $th) {
-            return ApiResponse::error('Hay un problema con el proceso para crear',504,$th->getMessage());
-        }
-        catch(Exception $e){
-            return ApiResponse::error('Error al intentar guardar el registro',500,$e->getMessage());
+            return ApiResponse::error('Hay un problema con el proceso para crear', 504, $th->getMessage());
+        } catch (Exception $e) {
+            return ApiResponse::error('Error al intentar guardar el registro', 500, $e->getMessage());
         }
     }
-    public function show($id):JsonResponse{
+
+    public function show($id): JsonResponse
+    {
         try {
-            $pedido=Pedido::with('cliente','detalle_pedido')->findOrFail($id);
+            $pedido = Pedido::with('cliente', 'detalle_pedido')->findOrFail($id);
+
             $data = [
                 'id_pedido'          => $pedido->id_pedido,
                 'id_cliente'         => $pedido->id_cliente,
-                // Si el pedido tiene cliente, obtenemos su 'nombre_completo'. Si no, devolvemos null o un string alternativo.
-                'cliente'            => $pedido->cliente ? $pedido->cliente->nombres_cliente.' '.$pedido->cliente->apellidos_cliente : 'Cliente no asignado',
+                'cliente'            => $pedido->cliente ? $pedido->cliente->nombres_cliente . ' ' . $pedido->cliente->apellidos_cliente : 'Cliente no asignado',
                 'estado_pedido'      => $pedido->estado_pedido,
+
+                // Corrección aquí: usar $pedido-> en lugar de $this->
+                'imagen_referencia'  => $pedido->imagen_referencia
+                    ? asset('storage/' . $pedido->imagen_referencia)
+                    : null,
+
                 'nota_pedido'        => $pedido->nota_pedido,
-                'imagen_referencia'  => $pedido->imagen_referencia,
                 'evento_traje'       => $pedido->evento_traje,
                 'tipo_entalle'       => $pedido->tipo_entalle,
                 'anticipo'           => $pedido->anticipo,
@@ -69,38 +83,62 @@ class PedidosController extends Controller
                 'fecha_tallaje1'     => $pedido->fecha_tallaje1,
                 'fecha_tallaje2'     => $pedido->fecha_tallaje2,
                 'fecha_entrega'      => $pedido->fecha_entrega,
-                'detalles'=>$pedido->detalle_pedido,
+                'detalles'           => $pedido->detalle_pedido,
                 'tipo_evento'        => $pedido->tipo_evento,
                 'visibilidad_pedido' => $pedido->visibilidad_pedido,
                 'created_at'         => $pedido->created_at,
                 'updated_at'         => $pedido->updated_at,
             ];
+
             return ApiResponse::success('Pedido encontrado correctamente', 200, $data);
         } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('Error al intentar buscar el registro',404,$me->getMessage());
-        }
-        catch(Exception $e){
+            return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
+        } catch (Exception $e) {
             return ApiResponse::error('No se pudo realizar la acción', 500, $e->getMessage());
         }
     }
-    public function update(PedidoRequest $request, $id):JsonResponse{
+
+    public function update(PedidoRequest $request, $id): JsonResponse
+    {
         try {
-            $pedido=Pedido::findOrFail($id);
-            $validaciones=$request->validated();
-            $pedido->update($validaciones);
-            return ApiResponse::success('Pedido actualizado con exito', 200, new PedidoResource($pedido));
+            $pedido = Pedido::findOrFail($id);
+            $validaciones = $request->validated();
+
+            // 1. Excluir la imagen del primer update masivo
+            $datosAActualizar = collect($validaciones)->except('imagen_referencia')->toArray();
+            $pedido->update($datosAActualizar);
+
+            // 2. Verificar si viene un archivo de imagen válido
+            if ($request->hasFile('imagen_referencia') && $request->file('imagen_referencia')->isValid()) {
+
+                // Si existía una imagen anterior, la eliminamos de storage/app/public
+                if ($pedido->imagen_referencia && Storage::disk('public')->exists($pedido->imagen_referencia)) {
+                    Storage::disk('public')->delete($pedido->imagen_referencia);
+                }
+
+                // Guardar el nuevo archivo en la carpeta pedidos
+                $path = $request->file('imagen_referencia')->store('pedidos', 'public');
+
+                // Guardar la nueva ruta en la BD
+                $pedido->imagen_referencia = $path;
+                $pedido->save();
+            }
+
+            return ApiResponse::success('Pedido actualizado con éxito', 200, new PedidoResource($pedido));
         } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('No se encontro el pedido', 404, $me->getMessage());
+            return ApiResponse::error('No se encontró el pedido', 404, $me->getMessage());
         } catch (ValidationException $ve) {
             return ApiResponse::error('Error en validaciones', 422, $ve->getMessage());
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar actualizar el registro', 500, $ex->getMessage());
         }
     }
-    public function destroy($id):JsonResponse{
+
+    public function destroy($id): JsonResponse
+    {
         try {
-            $pedido=Pedido::findOrFail($id);
-            $pedido->visibilidad_pedido=false;
+            $pedido = Pedido::findOrFail($id);
+            $pedido->visibilidad_pedido = false;
             $pedido->save();
             return ApiResponse::success('Pedido eliminado con exito', 200);
         } catch (ModelNotFoundException $me) {

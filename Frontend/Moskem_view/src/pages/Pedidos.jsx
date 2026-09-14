@@ -297,6 +297,10 @@ export function Pedidos() {
         setPaquete={setIdPaquete} // 👈 Pasar setIdPaquete
         paquetes={paquetesFiltrados}
         tipoEvento={tipoEvento}
+        onRegresar={() => {
+          setPaquetesModalAbierto(false);
+          setModalActivo("agregar"); 
+        }}
         onSiguienteDetalle={() => setDetalleAbierto(true)}
       />
 

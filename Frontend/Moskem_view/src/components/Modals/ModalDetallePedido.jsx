@@ -29,17 +29,34 @@ export function ModalDetallePedido({
   const [guardados, setGuardados] = useState([]);
   const [render, setRender] = useState(isOpen);
   const [tipoPedido, setTipoPedido] = useState(false);
+  const [catalogoPrendas, setCatalogoPrendas] = useState([]);
+
+  // Carga del catálogo base
+  const obtenerCatalogoPrendas = useCallback(async (signal) => {
+    try {
+      const response = await fetch(`${API}prendas`, { signal });
+      if (response.ok) {
+        const res = await response.json();
+        const lista = Array.isArray(res) ? res : res?.data || [];
+        setCatalogoPrendas(lista);
+        return lista;
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("Error al cargar prendas:", e);
+    }
+    return [];
+  }, []);
 
   const estadoInicialDetallePedido = useMemo(
     () => ({
       id_pedido: id_pedido || "",
       id_tela: "",
       id_empleado: 1,
-      id_paquete: id_paquete || "",
+      id_paquete: id_paquete || null,
       cantidad_tela: "",
       prenda: "",
       tipo_pedido: tipoPedido ? "Prenda unica" : "Paquete",
-      precio_detalle: "",
+      precio_detalle: "0.00",
       categoria_pedido: "Adulto",
       numero_pedido: "",
     }),
@@ -57,7 +74,6 @@ export function ModalDetallePedido({
 
   const data = formHook?.data || {};
 
-  // Función que mantiene todo el código para guardar toda la información de una prenda
   const guardarPrenda = useCallback(
     async (index, idPaqueteDirecto) => {
       const registro = formsData[index] || {};
@@ -72,40 +88,45 @@ export function ModalDetallePedido({
         return false;
       }
 
-      // Resolucion estricta de id_paquete
+      // RESOLUCIÓN STRICTA: Si idPaqueteDirecto es null explícito (prenda extra), no usa la prop global id_paquete
       const idPaqueteCalculado =
-        idPaqueteDirecto !== undefined && idPaqueteDirecto !== null
+        idPaqueteDirecto !== undefined
           ? idPaqueteDirecto
-          : id_paquete !== undefined && id_paquete !== null
-            ? id_paquete
-            : registro?.id_paquete;
+          : registro?.id_paquete;
 
       const idPaqueteFinal =
         idPaqueteCalculado && !isNaN(Number(idPaqueteCalculado))
           ? Number(idPaqueteCalculado)
           : null;
 
+      const esPrendaUnica = !idPaqueteFinal;
+
+      // PRECIO DETALLE:
+      // - Si ES PAQUETE: precio_detalle SIEMPRE va en "0.00"
+      // - Si ES PRENDA UNICA: Se consulta la tabla prendas usando prenda_paquete
+      let precioFinal = "0.00";
+      if (esPrendaUnica) {
+        const prendaEncontrada = catalogoPrendas.find(
+          (p) => p.prenda_paquete === registro?.prenda,
+        );
+        precioFinal = prendaEncontrada?.precio_unitario || "0.00";
+      }
+
       const payload = {
         id_pedido: Number(registro?.id_pedido || id_pedido),
         id_tela: Number(registro.id_tela),
         id_empleado: Number(registro?.id_empleado || 1),
-        id_paquete: idPaqueteFinal,
+        id_paquete: esPrendaUnica ? null : idPaqueteFinal,
         cantidad_tela: registro?.cantidad_tela
           ? Number(registro.cantidad_tela)
           : null,
         prenda: registro?.prenda,
-        tipo_pedido: idPaqueteFinal ? "Paquete" : "Prenda unica",
-        precio_detalle:
-          registro?.precio_detalle ||
-          data?.precio_detalle ||
-          registro?.precio_unitario ||
-          "0.00",
+        tipo_pedido: esPrendaUnica ? "Prenda unica" : "Paquete",
+        precio_detalle: String(precioFinal),
         categoria_pedido:
           registro?.categoria_pedido || data?.categoria_pedido || "Adulto",
         numero_pedido: Number(registro?.numero_pedido || 1),
       };
-
-      console.log("PAYLOAD REAL ENVIADO A LA API:", payload);
 
       try {
         const esActualizacion = !!registro?.id_detalle_pedido;
@@ -130,7 +151,9 @@ export function ModalDetallePedido({
               id_detalle_pedido:
                 registro?.id_detalle_pedido ||
                 responseData?.data?.id_detalle_pedido,
-              id_paquete: idPaqueteFinal,
+              id_paquete: esPrendaUnica ? null : idPaqueteFinal,
+              tipo_pedido: esPrendaUnica ? "Prenda unica" : "Paquete",
+              precio_detalle: String(precioFinal),
             };
             return copy;
           });
@@ -169,7 +192,7 @@ export function ModalDetallePedido({
         return false;
       }
     },
-    [formsData, id_pedido, id_paquete, data, prendas],
+    [formsData, id_pedido, id_paquete, data, prendas, catalogoPrendas],
   );
 
   const guardarDetalleMerceria = useCallback(
@@ -264,7 +287,7 @@ export function ModalDetallePedido({
   };
 
   const cargarDetallesSinPaquete = useCallback(
-    async (targetPedidoId, signal) => {
+    async (targetPedidoId, signal, catalogo) => {
       try {
         if (!targetPedidoId) {
           setPrendas([{ esExtra: true }]);
@@ -273,6 +296,7 @@ export function ModalDetallePedido({
               ...estadoInicialDetallePedido,
               categoria_pedido: "Adulto",
               id_paquete: null,
+              tipo_pedido: "Prenda unica",
             },
           ]);
           setGuardados([false]);
@@ -293,21 +317,27 @@ export function ModalDetallePedido({
 
           const nuevosGuardados = detallesExistentes.map(() => true);
 
-          const nuevosFormsData = detallesExistentes.map((d) => ({
-            id_pedido: d.id_pedido,
-            id_tela: d.id_tela || "",
-            id_empleado: d.id_empleado || 1,
-            id_paquete: null,
-            cantidad_tela: d.cantidad_tela || "",
-            prenda: d.prenda || "",
-            tipo_pedido: d.tipo_pedido || "Prenda unica",
-            precio_detalle: d.precio_detalle || "0.00",
-            categoria_pedido: d.categoria_pedido || "Adulto",
-            numero_pedido: d.numero_pedido || 1,
-            id_detalle_pedido: d.id_detalle_pedido,
-            categoria_tela: d.telas?.categoria_tela || d.categoria_tela || "",
-            mercerias: d.mercerias || [],
-          }));
+          const nuevosFormsData = detallesExistentes.map((d) => {
+            const matchPrenda = catalogo.find(
+              (p) => p.prenda_paquete === d.prenda,
+            );
+            return {
+              id_pedido: d.id_pedido,
+              id_tela: d.id_tela || "",
+              id_empleado: d.id_empleado || 1,
+              id_paquete: null,
+              cantidad_tela: d.cantidad_tela || "",
+              prenda: d.prenda || "",
+              tipo_pedido: "Prenda unica",
+              precio_detalle:
+                d.precio_detalle || matchPrenda?.precio_unitario || "0.00",
+              categoria_pedido: d.categoria_pedido || "Adulto",
+              numero_pedido: d.numero_pedido || 1,
+              id_detalle_pedido: d.id_detalle_pedido,
+              categoria_tela: d.telas?.categoria_tela || d.categoria_tela || "",
+              mercerias: d.mercerias || [],
+            };
+          });
 
           setPrendas(nuevasPrendas);
           setFormsData(nuevosFormsData);
@@ -320,6 +350,7 @@ export function ModalDetallePedido({
               ...estadoInicialDetallePedido,
               categoria_pedido: "Adulto",
               id_paquete: null,
+              tipo_pedido: "Prenda unica",
             },
           ]);
           setGuardados([false]);
@@ -367,9 +398,8 @@ export function ModalDetallePedido({
     [],
   );
 
-  // Función corregida para mapear las prendas del paquete de forma limpia
   const cargarPrendasPaquete = useCallback(
-    async (paquete_id, targetPedidoId, signal) => {
+    async (paquete_id, targetPedidoId, signal, catalogo) => {
       try {
         const response = await fetch(`${API}paquetes/${paquete_id}`, {
           signal,
@@ -394,7 +424,7 @@ export function ModalDetallePedido({
 
           const detallesProcesadosIds = new Set();
 
-          // 1. Procesar prendas pertenecientes al paquete
+          // 1. Prendas asociadas al paquete
           listaPrendasPaquete.forEach((p) => {
             const nombrePrenda =
               p?.prenda_paquete || (typeof p === "string" ? p : "");
@@ -418,7 +448,7 @@ export function ModalDetallePedido({
                 cantidad_tela: detalleGuardado.cantidad_tela,
                 prenda: detalleGuardado.prenda,
                 tipo_pedido: "Paquete",
-                precio_detalle: detalleGuardado.precio_detalle,
+                precio_detalle: detalleGuardado.precio_detalle || "0.00",
                 categoria_pedido: detalleGuardado.categoria_pedido,
                 numero_pedido: detalleGuardado.numero_pedido,
                 id_detalle_pedido: detalleGuardado.id_detalle_pedido,
@@ -433,27 +463,35 @@ export function ModalDetallePedido({
                 id_paquete: Number(paquete_id),
                 prenda: nombrePrenda,
                 tipo_pedido: "Paquete",
+                precio_detalle: "0.00",
               });
             }
           });
 
-          // 2. Procesar prendas extras (Corregida la variable del bucle)
+          // 2. Prendas extras (se fijan con id_paquete = null y tipo_pedido = "Prenda unica")
           const detallesExtras = detallesExistentes.filter(
             (d) => !detallesProcesadosIds.has(d.id_detalle_pedido),
           );
 
           detallesExtras.forEach((detalleExtra) => {
+            const matchPrenda = catalogo.find(
+              (p) => p.prenda_paquete === detalleExtra.prenda,
+            );
+
             nuevasPrendas.push({ esExtra: true });
             nuevosGuardados.push(true);
             nuevosFormsData.push({
               id_pedido: detalleExtra.id_pedido,
               id_tela: detalleExtra.id_tela || "",
               id_empleado: detalleExtra.id_empleado || 1,
-              id_paquete: Number(paquete_id), // O null si es extra pura
+              id_paquete: null,
               cantidad_tela: detalleExtra.cantidad_tela || "",
               prenda: detalleExtra.prenda,
-              tipo_pedido: detalleExtra.tipo_pedido || "Prenda unica",
-              precio_detalle: detalleExtra.precio_detalle || "0.00",
+              tipo_pedido: "Prenda unica",
+              precio_detalle:
+                detalleExtra.precio_detalle ||
+                matchPrenda?.precio_unitario ||
+                "0.00",
               categoria_pedido: detalleExtra.categoria_pedido || "Adulto",
               numero_pedido: detalleExtra.numero_pedido || 1,
               id_detalle_pedido: detalleExtra.id_detalle_pedido,
@@ -478,17 +516,55 @@ export function ModalDetallePedido({
     [estadoInicialDetallePedido, id_pedido],
   );
 
-  const actualizarDato = useCallback((index, e) => {
-    const { name, type, checked, value } = e.target;
-    setFormsData((prev) => {
-      const copy = [...prev];
-      copy[index] = {
-        ...copy[index],
-        [name]: type === "checkbox" ? checked : value,
-      };
-      return copy;
-    });
-  }, []);
+  const actualizarDato = useCallback(
+    (index, e) => {
+      const { name, type, checked, value } = e.target;
+      const valorFinal = type === "checkbox" ? checked : value;
+
+      setFormsData((prev) => {
+        const copy = [...prev];
+        const itemActual = copy[index] || {};
+        const esDelPaquete = Boolean(itemActual.id_paquete);
+
+        // Si el campo modificado es 'numero_pedido' y pertenece a un paquete:
+        if (name === "numero_pedido" && esDelPaquete) {
+          return copy.map((item) => {
+            // Solo actualiza a los miembros que compartan paquete
+            if (item.id_paquete) {
+              return {
+                ...item,
+                numero_pedido: valorFinal,
+              };
+            }
+            return item;
+          });
+        }
+
+        // Comportamiento normal para prendas individuales u otros campos
+        const prendaActualizada = {
+          ...itemActual,
+          [name]: valorFinal,
+        };
+
+        if (name === "prenda") {
+          if (!esDelPaquete) {
+            const match = catalogoPrendas.find(
+              (p) => p.prenda_paquete === value,
+            );
+            prendaActualizada.precio_detalle = match?.precio_unitario
+              ? String(match.precio_unitario)
+              : "0.00";
+          } else {
+            prendaActualizada.precio_detalle = "0.00";
+          }
+        }
+
+        copy[index] = prendaActualizada;
+        return copy;
+      });
+    },
+    [catalogoPrendas],
+  );
 
   const actualizarDataCompleta = useCallback(
     (index, nuevoData) => {
@@ -496,14 +572,26 @@ export function ModalDetallePedido({
         const copy = [...prev];
         const paqueteExistente = copy[index]?.id_paquete || id_paquete;
 
+        let precioCalculado = nuevoData.precio_detalle;
+        if (nuevoData.prenda) {
+          const match = catalogoPrendas.find(
+            (p) => p.prenda_paquete === nuevoData.prenda,
+          );
+          if (match && match.precio_unitario) {
+            precioCalculado = String(match.precio_unitario);
+          }
+        }
+
         copy[index] = {
           ...nuevoData,
           id_paquete: paqueteExistente ? Number(paqueteExistente) : null,
+          tipo_pedido: paqueteExistente ? "Paquete" : "Prenda unica",
+          precio_detalle: precioCalculado || "0.00",
         };
         return copy;
       });
     },
-    [id_paquete],
+    [id_paquete, catalogoPrendas],
   );
 
   const aplicarCategoriaATodas = useCallback((nuevaCategoria) => {
@@ -522,6 +610,7 @@ export function ModalDetallePedido({
       ...estadoInicialDetallePedido,
       id_paquete: null,
       tipo_pedido: "Prenda unica",
+      precio_detalle: "0.00",
     };
 
     setPrendas((prev) => [...(prev || []), nuevaPrendaExtra]);
@@ -534,11 +623,18 @@ export function ModalDetallePedido({
     const controller = new AbortController();
 
     if (isOpen) {
-      if (id_paquete) {
-        cargarPrendasPaquete(id_paquete, id_pedido, controller.signal);
-      } else {
-        cargarDetallesSinPaquete(id_pedido, controller.signal);
-      }
+      obtenerCatalogoPrendas(controller.signal).then((catalogo) => {
+        if (id_paquete) {
+          cargarPrendasPaquete(
+            id_paquete,
+            id_pedido,
+            controller.signal,
+            catalogo,
+          );
+        } else {
+          cargarDetallesSinPaquete(id_pedido, controller.signal, catalogo);
+        }
+      });
 
       setRender(true);
       const timer = setTimeout(() => setIsAnimating(true), 10);
@@ -555,6 +651,7 @@ export function ModalDetallePedido({
     isOpen,
     id_paquete,
     id_pedido,
+    obtenerCatalogoPrendas,
     cargarPrendasPaquete,
     cargarDetallesSinPaquete,
   ]);
@@ -652,7 +749,6 @@ export function ModalDetallePedido({
                         submitHandle={(e) => {
                           e.preventDefault();
                           setTipoPedido(false);
-                          // 🎯 Pasar id_paquete explícitamente
                           guardarPrenda(index, id_paquete);
                         }}
                         onGuardarMerceria={(idMerceria, cantidad) =>

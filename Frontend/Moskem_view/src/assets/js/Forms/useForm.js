@@ -36,7 +36,6 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
 
   const createData = async (formData) => {
     try {
-      console.log(formData)
       const response = await fetch(`${API}${ruta}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,14 +119,47 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
     }
   };
 
-const handleSubmit = async (e, overrideData) => {
-  e.preventDefault();
-  const payload = overrideData || data;
-  if (!id) {
-    return await createData(payload);
-  } else {
-    return await updateData(payload, id);
-  }
-};
+  const handleSubmit = async (e, customData = null) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    // 1. Determinar si los datos vienen como FormData o como el objeto 'data' tradicional
+    const payload = customData || data;
+    const esFormData = payload instanceof FormData;
+
+    // 2. Definir el método HTTP y la URL adecuadamente
+    // Si es FormData y tiene ID (actualización), Laravel necesita viajar como POST con el _method 'PUT'
+    const url = id ? `${API}${ruta}/${id}` : `${API}${ruta}`;
+    const method = id && !esFormData ? "PUT" : "POST";
+
+    // 3. Definir las cabeceras dinámicamente
+    const headers = {};
+    if (!esFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    // 4. Transformar body según corresponda
+    const body = esFormData ? payload : JSON.stringify(payload);
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        console.error("Error en la respuesta de la API:", result);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error al procesar la petición:", error);
+      return false;
+    }
+  };
+
   return { data, setData, handleSubmit };
 }

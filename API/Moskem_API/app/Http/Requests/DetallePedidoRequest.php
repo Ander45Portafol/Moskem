@@ -24,17 +24,16 @@ class DetallePedidoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'id_pedido' => 'required',
-            'id_tela' => 'required',
-            'id_empleado' => 'required',
-            'tipo_pedido' => 'required',
-            'id_paquete'      => 'nullable|integer',
+            'id_pedido'        => 'sometimes|required',
+            'id_tela'          => 'sometimes|required',
+            'id_empleado'      => 'sometimes|required',
+            'tipo_pedido'      => 'sometimes|required',
+            'id_paquete'       => 'nullable|integer',
             'cantidad_tela'    => 'nullable|numeric',
-            'numero_pedido' => 'required',
-            'categoria_pedido' => 'required',
-            'precio_detalle' => 'required',
-            'prenda' => 'required'
+            'numero_pedido'    => 'sometimes|required',
+            'categoria_pedido' => 'sometimes|required',
+            'precio_detalle'   => 'sometimes|required',
+            'prenda'           => 'sometimes|required'
         ];
     }
     public function messages()

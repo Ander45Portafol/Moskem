@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Medida extends Model
 {
     //
-    protected $primaryKey = 'id_medida';
+    protected $primaryKey = 'id_medidas';
     protected $keyType = 'int';
     protected $fillable = [
-        'id_medida',
+        'id_medidas',
         'codigo_medida',
         'largo',
         'pecho',
@@ -28,7 +28,8 @@ class Medida extends Model
         'largo_pant',
         'campana',
         'rodilla',
-        'tiro'
+        'tiro',
+        'muslo'
     ];
     public function ordenTrabajo() {
     return $this->hasOne(OrdenTrabajo::class, 'id_medidas', 'id_medidas');

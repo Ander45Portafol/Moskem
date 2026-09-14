@@ -8,8 +8,9 @@ import { Rentas } from "./pages/Rentas";
 import Productos from "./pages/Productos";
 import { OrdenesCompra } from "./pages/OrdenesCompra";
 import { Pedidos } from "./pages/Pedidos";
-import { Mercerias} from "./pages/Mercerias";
+import { Mercerias } from "./pages/Mercerias";
 import { Telas } from "./pages/Telas";
+import { Cupones } from "./pages/Cupones";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="empleado" element={<Empleados />} />
         <Route path="pedido" element={<Pedidos />} />
         <Route path="renta" element={<Rentas />} />
+        <Route path="cupones" element={<Cupones />} />
         <Route path="producto" element={<Productos />} />
         <Route path="orden_compra" element={<OrdenesCompra />} />
         <Route path="merceria" element={<Mercerias />} />

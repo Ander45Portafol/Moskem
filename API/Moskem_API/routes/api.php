@@ -27,9 +27,7 @@ Route::get('empleados/buscar',[EmpleadoController::class,'search']);
 Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
 Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('pedidos',PedidosController::class);
-
 Route::apiResource('mercerias',MerseriaController::class);
-
 Route::apiResource('empleados',EmpleadoController::class);
 Route::apiResource('detalle_pedidos',DetallePedidoController::class);
 Route::apiResource('telas',TelaController::class);
@@ -41,7 +39,11 @@ Route::get('getPaquete/{id_pedido}', [DetallePaqueteController::class, 'getPaque
 Route::apiResource('detalle_mercerias',DetalleMerceriaController::class);
 Route::get('lista_merceria/{id}',[DetalleMerceriaController::class, 'getDetallePedidoMerceria']);
 Route::get('sastres',[EmpleadoController::class, 'getSastres']);
-Route::get('medidas_prendas/{id_pedido}',[OrdenTrabajoController::class,'cargarMedidas']);
-Route::apiResource('medidas',MedidaController::class);
+Route::get('medidas_prendas/{id_cliente}/{prenda}',[OrdenTrabajoController::class,'cargarMedidas']);
 Route::apiResource('orden_trabajo',OrdenTrabajoController::class);
-Route::get('create_codigo_medida/{id}/{id_medida}',[MedidaController::class, 'createCodigo']);
+
+Route::apiResource('medidas', MedidaController::class);
+Route::put('create_codigo_medida/{id}/{id_medida}',[MedidaController::class, 'createCodigo']);
+Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
+Route::get('getOrders/{id_pedido}',[OrdenTrabajoController::class,'cargarOrdenes']);
+Route::get('getMedidas/{idDetallePedido}',[OrdenTrabajoController::class, 'getMedida']);

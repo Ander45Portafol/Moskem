@@ -34,18 +34,21 @@ class MedidaController extends Controller
     public function store(Request $request)
     {
         try {
-            $medidas = Medida::create($request);
-            return ApiResponse::success('Medidas ingresadas correctamente', 500, $medidas);
+            $medidas = Medida::create($request->all());
+            return ApiResponse::success('Medidas ingresadas correctamente', 201, [
+                'id_medidas' => $medidas->id_medidas,
+                'medidas'    => $medidas
+            ]);
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
     }
-    public function createCodigo(int $id,Request)
+    public function createCodigo(int $id,int $id_medida)
     {
         try {
             $pedido = Pedido::with(['cliente' => function ($query) {
                 $query->select('id_cliente', 'nombres_cliente', 'apellidos_cliente');
-            }])->find($id);
+            }])->findOrFail($id);
             if (!$pedido->cliente) {
                 return response()->json([
                     'status'  => 'error',
@@ -60,7 +63,6 @@ class MedidaController extends Controller
             $inicialApellido = strtoupper(substr($primerApellido, 0, 1));
             $medida=Medida::findOrFail($id_medida);
             $medida->codigo_medida = $inicialNombre . $inicialApellido .$id .$id_medida;
-            $medida->codigo_medida = $codigoGenerado;
             $medida->save();
             return response()->json([
                 'status' => 'success',
@@ -83,7 +85,7 @@ class MedidaController extends Controller
     {
         try {
             $medida = Medida::findOrFail($id);
-            $medida->update($request);
+            $medida->update($request->all());
             return ApiResponse::success('Detalle creado con exito', 200, $medida);
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('No se encontro el detalle', 404, $me->getMessage());

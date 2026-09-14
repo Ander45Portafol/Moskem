@@ -6,6 +6,7 @@ use App\Http\Requests\DetallePedidoRequest;
 use App\Http\Resources\DetallePedidoResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\DetallePedido;
+use App\Models\Prenda;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,6 @@ use Throwable;
 
 class DetallePedidoController extends Controller
 {
-    //
     public function index()
     {
         try {
@@ -38,42 +38,83 @@ class DetallePedidoController extends Controller
     {
         try {
             $validate = $request->validated();
+
+            // 1. Si es Prenda Única
+            if (empty($validate['id_paquete']) || $validate['id_paquete'] === 'null') {
+                $validate['id_paquete'] = null;
+                $validate['tipo_pedido'] = 'Prenda unica';
+
+                $prendaObj = Prenda::where('prenda_paquete', $validate['prenda'])->first();
+                $validate['precio_detalle'] = $prendaObj ? $prendaObj->precio_unitario : 0.00;
+            }
+            // 2. Si pertenece a un Paquete
+            else {
+                $validate['tipo_pedido'] = 'Paquete';
+                $validate['precio_detalle'] = 0.00;
+
+                // SINCRONIZACIÓN MASA: Asegurar que los miembros del paquete tengan el mismo numero_pedido
+                DetallePedido::where('id_pedido', $validate['id_pedido'])
+                    ->whereNotNull('id_paquete')
+                    ->update(['numero_pedido' => $validate['numero_pedido']]);
+            }
+
             $detalle_pedido = DetallePedido::create($validate);
-            return ApiResponse::success('Detalle creado con exito', 200, new DetallePedidoResource($detalle_pedido));
+            return ApiResponse::success('Detalle creado con éxito', 200, new DetallePedidoResource($detalle_pedido));
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }
     }
-    public function show(int $id) 
+
+    public function update(DetallePedidoRequest $request, int $id)
     {
         try {
             $detalle_pedido = DetallePedido::findOrFail($id);
-            return ApiResponse::success('Detalle creado con exito', 200, $detalle_pedido);
-        } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
-        }
-    }
-    public function update(DetallePedidoRequest $request,int $id){
-        try {
-            $detalle_pedido=DetallePedido::findOrFail($id);
-            $validaciones=$request->validated();
+            $validaciones = $request->validated();
+
+            if (empty($validaciones['id_paquete']) || $validaciones['id_paquete'] === 'null') {
+                $validaciones['id_paquete'] = null;
+                $validaciones['tipo_pedido'] = 'Prenda unica';
+
+                $nombrePrenda = $validaciones['prenda'] ?? $detalle_pedido->prenda;
+                $prendaObj = Prenda::where('prenda_paquete', $nombrePrenda)->first();
+                if ($prendaObj) {
+                    $validaciones['precio_detalle'] = $prendaObj->precio_unitario;
+                }
+            } else {
+                $validaciones['tipo_pedido'] = 'Paquete';
+                $validaciones['precio_detalle'] = 0.00;
+
+                // SINCRONIZACIÓN MASA en actualización
+                if (isset($validaciones['numero_pedido'])) {
+                    DetallePedido::where('id_pedido', $detalle_pedido->id_pedido)
+                        ->whereNotNull('id_paquete')
+                        ->update(['numero_pedido' => $validaciones['numero_pedido']]);
+                }
+            }
+
             $detalle_pedido->update($validaciones);
-            return ApiResponse::success('Detalle creado con exito', 200, new DetallePedidoResource($detalle_pedido));
+            return ApiResponse::success('Detalle actualizado con éxito', 200, new DetallePedidoResource($detalle_pedido));
         } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('No se encontro el detalle', 404, $me->getMessage());
-        } catch (ValidationException $ve) {
-            return ApiResponse::error('Error en validaciones', 422, $ve->getMessage());
+            return ApiResponse::error('No se encontró el detalle', 404, $me->getMessage());
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar actualizar el registro', 500, $ex->getMessage());
         }
     }
+    public function show(int $id)
+    {
+        try {
+            $detalle_pedido = DetallePedido::findOrFail($id);
+            return ApiResponse::success('Detalle obtenido con exito', 200, $detalle_pedido);
+        } catch (ModelNotFoundException $me) {
+            return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
+        }
+    }
+
     public function getByPedido(int $id_pedido): JsonResponse
     {
         try {
-            // Buscamos los detalles que pertenezcan al id_pedido recibido
             $detalles = DetallePedido::where('id_pedido', $id_pedido)->with("telas")->get();
 
-            // Opcional: Si quieres verificar si el pedido tiene detalles o devolver un arreglo vacío
             if ($detalles->isEmpty()) {
                 return ApiResponse::success('No se encontraron detalles para este pedido', 200, []);
             }

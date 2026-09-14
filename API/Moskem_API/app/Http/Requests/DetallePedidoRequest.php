@@ -24,25 +24,24 @@ class DetallePedidoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'id_pedido'=>'required',
-            'id_tela'=>'required',
-            'id_empleado'=>'required',
-            'id_paquete'=>'required',
-            'tipo_pedido'=>'required',
-            'numero_pedido'=>'required',
-            'categoria_pedido'=>'required',
-            'precio_detalle'=>'required',
-            'prenda'=>'required'
+            'id_pedido'        => 'sometimes|required',
+            'id_tela'          => 'sometimes|required',
+            'id_empleado'      => 'sometimes|required',
+            'tipo_pedido'      => 'sometimes|required',
+            'id_paquete'       => 'nullable|integer',
+            'cantidad_tela'    => 'nullable|numeric',
+            'numero_pedido'    => 'sometimes|required',
+            'categoria_pedido' => 'sometimes|required',
+            'precio_detalle'   => 'sometimes|required',
+            'prenda'           => 'sometimes|required'
         ];
     }
     public function messages()
     {
         return [
-            'id_pedido.required'=>'No se pudo encontrar el pedido seleccionado',
+            'id_pedido.required' => 'No se pudo encontrar el pedido seleccionado',
             'id_tela.required' => 'No se pudo encontrar la tela selecccionada',
-            'id_empleado.required' => 'No se pudo encontrar el empelado seleccionado',
-            'id_paquete.required' => 'No se pudo encontrar el paquete seleccionado',
+            'id_empleado.required' => 'No se pudo encontrar el empelado seleccionado'
         ];
     }
 }

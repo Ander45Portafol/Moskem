@@ -22,6 +22,7 @@ class ProductoResource extends JsonResource
             'talla'=>$this->tamanio_producto,
             'id_tela'=>$this->id_tela,
             'estado_producto'=>$this->estado_producto,
+            'codigo_tela'=>$this->producto->codigo_tela
         ];
     }
 }

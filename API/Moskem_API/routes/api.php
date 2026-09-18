@@ -13,6 +13,7 @@ use App\Http\Controllers\PedidosController;
 use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\PrendaController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\RentaController;
 use App\Http\Controllers\TelaController;
 use App\Models\DetalleMerceria;
 use Illuminate\Http\Request;
@@ -53,4 +54,4 @@ Route::put('create_codigo_medida/{id}/{id_medida}',[MedidaController::class, 'cr
 Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
 Route::get('getOrders/{id_pedido}',[OrdenTrabajoController::class,'cargarOrdenes']);
 Route::get('getMedidas/{idDetallePedido}',[OrdenTrabajoController::class, 'getMedida']);
-
+Route::apiResource('rentas',RentaController::class);

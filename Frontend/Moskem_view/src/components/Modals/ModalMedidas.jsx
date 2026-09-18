@@ -116,7 +116,7 @@ const estadoInicialMedida = {
   largo_pant: "",
   campana: "",
   rodilla: "",
-  tiro: "",
+  tiro: ""
 };
 
 const estadoInicialOrden_trabajo = {
@@ -129,7 +129,7 @@ const estadoInicialOrden_trabajo = {
   estado_orden: "",
   tiempo_sastre: "",
   imagen_diseño: "",
-  cantidad_tela: "",
+  cantidad_tela: ""
 };
 
 export function ModalMedidas({ isOpen, onClose, id_pedido, id_cliente }) {

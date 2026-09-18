@@ -18,6 +18,7 @@ class ProductoController extends Controller
     {
         try {
             $productos = Producto::where('visibilidad_producto', true)
+            ->with('telas')
                 ->orderBy('id_producto')
                 ->get();
             

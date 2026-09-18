@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Override;
 
 class RentaRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class RentaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -31,6 +32,12 @@ class RentaRequest extends FormRequest
             'deposito'=>'nullable|numeric|min:0',
             'estado_renta'=>'required',
             'notas_descripcion'=>'nullable|string'
+        ];
+    }
+    public function messages():array
+    {
+        return [
+           'id_cliente.required'=>'Es obligatorio' 
         ];
     }
 }

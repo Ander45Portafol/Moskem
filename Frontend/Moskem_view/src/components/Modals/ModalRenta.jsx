@@ -4,6 +4,7 @@ import {
   ArrowUpOnSquareIcon,
   CheckCircleIcon,
   ChevronDownIcon,
+  ClipboardDocumentListIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { InputD } from "../InputD";
@@ -16,15 +17,12 @@ import { InputDate } from "../inputDate";
 import { TextArea } from "../TextArea";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-import { useRef } from "react";
 
 export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
   const [openLightbox, setOpenLightbox] = useState(false);
-  // Estados y referencias para el control de imágenes
   const [previewImage, setPreviewImage] = useState(null);
-  const fileInputRef = useRef(null);
 
   const { data: productos } = useGet("productos");
   const { data: clientes } = useGet("clientes");
@@ -38,7 +36,7 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
   const SelectProductos =
     productos?.map((registro) => ({
       id: registro.id_producto,
-      nombre: `${registro?.tipo_producto} - ${registro.telas?.codigo_tela??'Sin tela'}`,
+      nombre: `${registro?.tipo_producto} - ${registro.telas?.codigo_tela ?? "Sin tela"}`,
     })) || [];
 
   const ruta = "empleados";
@@ -51,6 +49,7 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
     correo_empleado: "",
     estado_empleado: "",
   };
+
   const { data, setData, handleSubmit } = useForm({
     id: id_renta,
     setForm: setRenta,
@@ -59,11 +58,11 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
     ruta,
     estadoInicial,
   });
+
   const estado_renta = ["Entregado", "En proceso", "Finalizado"];
+
   const inputsUpdate = (e) => {
     const name = e.target.name;
-
-    // Si el elemento es un checkbox o el evento simulado dice que es checkbox, usamos 'checked'
     const inputValue =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
 
@@ -72,14 +71,13 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
       [name]: inputValue,
     });
   };
+
   useEffect(() => {
     if (isOpen) {
       setRender(true);
-      // Pequeño delay para que el navegador registre el cambio de estado y ejecute la animación de entrada
       setTimeout(() => setIsAnimating(true), 10);
     } else {
       setIsAnimating(false);
-      // Espera a que termine la animación de salida (300ms) antes de desmontar el componente
       const timer = setTimeout(() => setRender(false), 300);
       return () => clearTimeout(timer);
     }
@@ -93,13 +91,13 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
         isAnimating ? "opacity-100" : "opacity-0"
       }`}
     >
-      {/* Tarjeta del Modal con animación de escala y opacidad */}
+      {/* Tarjeta del Modal */}
       <div
         className={`bg-white w-[1000px] max-w-[100vw] rounded-[32px] p-10 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        {/* Botón Cerrar (X) arriba a la derecha */}
+        {/* Botón Cerrar */}
         <button
           type="button"
           onClick={onClose}
@@ -108,14 +106,14 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
           <XMarkIcon className="size-7" />
         </button>
 
-        {/* Encabezado del Modal */}
+        {/* Encabezado */}
         <div>
           <h2 className="text-4xl font-black text-[#004B57] tracking-wide uppercase">
             Formulario - Empleados
           </h2>
         </div>
 
-        {/* Formulario estructurado en Grid de 3 columnas */}
+        {/* Formulario */}
         <form onSubmit={handleSubmit} className="flex flex-col">
           <div className="flex gap-6">
             <div className="flex-col">
@@ -178,6 +176,7 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
               />
             </div>
 
+            {/* Columna Derecha: Producto e Imagen */}
             <div className="grid grid-cols-1 w-3/8">
               <SelectWD
                 text="Producto"
@@ -186,60 +185,48 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
                 valueData={data.id_producto}
                 updateData={inputsUpdate}
               />
-              <div className="grid grid-cols-2 gap-2 mb-10">
+              <div className="grid grid-cols-2 gap-2 my-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-md font-semibold text-[#004B57]">
-                    Color:
+                    Talla:
                   </label>
-                  <div className="flex justify-center h-1/2 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
-                    {data.color || "Verde"}
+                  <div className="flex justify-center h-10 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
+                    {data.talla || "S"}
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-md font-semibold text-[#004B57]">
                     Color:
                   </label>
-                  <div className="flex justify-center h-1/2 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
+                  <div className="flex justify-center h-10 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
                     {data.color || "Verde"}
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-0">
-                <div className=" h-full w-4/5 bg-gray-400 rounded-2xl"></div>
-                <div className="flex-col content-end mb-3 items-start">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (previewImage) {
-                        setOpenLightbox(true);
-                      } else {
-                        Swal.fire({
-                          toast: true,
-                          position: "top-end",
-                          title: "No hay imagen para ampliar",
-                          icon: "info",
-                          showConfirmButton: false,
-                          timer: 2000,
-                        });
-                      }
-                    }}
-                    className="h-10 w-10 bg-[#004053] hover:bg-[#002e3c] rounded-lg flex justify-center items-center text-white m-2 transition-colors"
-                  >
-                    <ArrowsPointingInIcon className="size-6" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current.click()}
-                    className="h-10 w-10 bg-[#00A29B] hover:bg-[#008781] rounded-lg m-2 flex justify-center items-center text-[#004053] transition-colors"
-                  >
-                    <ArrowUpOnSquareIcon className="size-6" />
-                  </button>
+
+              <div className="flex justify-center items-center w-full my-2">
+                <div className="h-52 w-full bg-gray-200 rounded-2xl flex justify-center items-center overflow-hidden">
+                  {previewImage ? (
+                    <img
+                      src={previewImage}
+                      alt="Referencia del producto"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-500 font-medium text-sm">
+                      Sin imagen
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-          {/* Botón Guardar / Editar */}
-          <div className="flex justify-end mt-4">
+
+          <div className="flex justify-end mt-4 gap-4">
+            <button className="bg-[#009BAE] text-[#004053] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95">
+              <ClipboardDocumentListIcon className="size-6"/>
+              Agregar Medidas
+            </button>
             <button
               type="submit"
               className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"

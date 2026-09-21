@@ -12,13 +12,14 @@ class Merceria extends Model
 
     protected $fillable = [
         'tipo_merceria',
+        'tamanio_merceria',
         'codigo_merceria',
         'stock',
         'color',
         'descripcion_merceria',
-        'medida_stock',
+        'unidad_medida',
         'id_proveedor',
-        'codigo_merceria_proveedor',  // Agregado
+        'codigo_merceria_proveedor',
         'visibilidad_merceria',
     ];
 

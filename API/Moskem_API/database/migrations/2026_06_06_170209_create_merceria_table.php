@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('mercerias', function (Blueprint $table) {
+        Schema::create('mercerias', function (Blueprint $table) {
             $table->id('id_merceria');
-            $table->enum('tipo_merceria', ['Botones','Ganchos','Zipper','Agujas','Hilos']);
-            $table->string('codigo_merceria',14)->unique();
+            $table->enum('tipo_merceria', ['Botones', 'Ganchos', 'Zipper', 'Agujas', 'Hilos']);
+            $table->integer('tamanio_merceria')->default(0); // <-- Agregar esta línea
+            $table->string('codigo_merceria', 14)->unique();
             $table->integer('stock');
             $table->string('color', 30);
-            $table->enum('medida_stock', ['Pulgadas', 'Yardas', 'Unidad']);
-            $table->foreignId('id_proveedor')
-            ->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
+            $table->enum('unidad_medida', ['Pulgadas', 'mm', '#']); // Mantenlas en minúsculas
+            $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
             $table->string('descripcion_merceria');
             $table->boolean('visibilidad_merceria')->default(true);

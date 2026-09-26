@@ -14,14 +14,16 @@ class RentaResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $renta = $this->renta ?? $this;
+        $cliente = $renta->cliente;
         return [
-            'id_detalle_renta'=>$this->id_detalle_renta,
-            'id_renta'          => $this->id_renta,
-            'nombre_completo_cliente'=> $this->renta->clientes->nombres_cliente." ". $this->renta->clientes->apellidos_cliente,
-            'fecha_inicio'      => $this->renta->fecha_inicio,
-            'estado_renta'      => $this->renta->estado_renta,
-            'fecha_devolucion'  => $this->renta->fecha_devolucion,
-            'producto'=> $this->producto
+            'id_detalle_renta'        => $this->id_detalle_renta ?? null,
+            'id_renta'                => $renta->id_renta ?? null,
+            'nombre_completo_cliente' => trim(($cliente?->nombres_cliente ?? $cliente?->nombres ?? '') . ' ' . ($cliente?->apellidos_cliente ?? $cliente?->apellidos ?? '')),
+            'fecha_inicio'            => $renta->fecha_inicio ?? null,
+            'estado_renta'            => $renta->estado_renta ?? null,
+            'fecha_devolucion'        => $renta->fecha_devolucion ?? null,
+            'producto'                => $this->producto ?? null
         ];
     }
 }

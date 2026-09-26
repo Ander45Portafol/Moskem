@@ -15,8 +15,15 @@ import { useGet } from "../../assets/js/useGet";
 import { InputDate } from "../inputDate";
 import { TextArea } from "../TextArea";
 import "yet-another-react-lightbox/styles.css";
+import { DataList } from "../DataList";
 
-export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
+export default function ModalRenta({
+  isOpen,
+  onClose,
+  id_renta,
+  setRenta,
+  isModalDetalle,
+}) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
@@ -30,22 +37,18 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
       nombre: `${registro.nombres} ${registro.apellidos}`,
     })) || [];
 
-  const SelectProductos =
-    productos?.map((registro) => ({
-      id: registro.id_producto,
-      nombre: `${registro?.tipo_producto} - ${registro.telas?.codigo_tela ?? "Sin tela"}`,
-    })) || [];
-
-  const ruta = "empleados";
+  const ruta = "rentas";
   const estadoInicial = {
-    nombres_empleado: "",
-    apellidos_empleado: "",
-    usuario_empleado: "",
-    tipo_empleado: "",
-    documentos_empleados: "",
-    correo_empleado: "",
-    estado_empleado: "",
-    id_producto: "", // Se asegura de tener la propiedad en el estado inicial
+    id_cliente: "",
+    id_empleado: "",
+    fecha_inicio: "",
+    fecha_devolucion: "",
+    fecha_evento: "",
+    monto_total: "",
+    deposito: "",
+    estado_renta: "",
+    notas_descripcion: "",
+    visibilidad_renta: "",
   };
 
   const { data, setData, handleSubmit } = useForm({
@@ -57,23 +60,57 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
     estadoInicial,
   });
 
-  // 1. Encontrar el producto seleccionado actualmente
-  const productoSeleccionado = productos?.find(
-    (p) => String(p.id_producto) === String(data.id_producto),
-  );
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
 
-  // 2. Actualizar la imagen cuando cambia el producto seleccionado
-  useEffect(() => {
-    if (productoSeleccionado) {
-      const img =
-        productoSeleccionado.imagen_producto ||
-        productoSeleccionado.telas?.imagen ||
-        null;
-      setPreviewImage(img);
-    } else {
-      setPreviewImage(null);
+    try {
+      // 1. Ejecutas la petición al backend (esperamos a que responda)
+      const result = await handleSubmit(e);
+
+      // 2. Buscamos el nombre del cliente seleccionado para actualizar la vista localmente
+      const clienteEncontrado = clientes?.find(
+        (c) => String(c.id) === String(data.id_cliente),
+      );
+      const nombreCliente = clienteEncontrado
+        ? `${clienteEncontrado.nombres} ${clienteEncontrado.apellidos}`
+        : "Cliente no seleccionado";
+
+      // 3. Objeto formateado como lo espera la tabla en Rentas.jsx
+      const registroActualizado = {
+        ...data,
+        id_renta: id_renta || result?.id_renta || Date.now(),
+        nombre_completo_cliente: nombreCliente,
+        estado_renta: data.estado_renta,
+      };
+
+      // 4. Actualización optimista del estado local en Rentas.jsx
+      setRenta((prevRentas) => {
+        if (!Array.isArray(prevRentas)) return [registroActualizado];
+
+        if (id_renta) {
+          // Si es edición, reemplazamos la fila correspondiente
+          return prevRentas.map((item) =>
+            item.id_renta === id_renta
+              ? { ...item, ...registroActualizado }
+              : item,
+          );
+        } else {
+          // Si es creación, agregamos el nuevo registro arriba
+          return [registroActualizado, ...prevRentas];
+        }
+      });
+
+      // 5. Ahora sí cerramos este modal y abrimos el de detalle de forma segura
+      onClose();
+      if (isModalDetalle) {
+        isModalDetalle(true);
+      }
+    } catch (error) {
+      console.error("Error al guardar la renta:", error);
     }
-  }, [data.id_producto, productos]);
+  };
+
+  // ... (tus useEffects e inputsUpdate se mantienen exactamente igual) ...
 
   const estado_renta = ["Entregado", "En proceso", "Finalizado"];
 
@@ -107,13 +144,11 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
         isAnimating ? "opacity-100" : "opacity-0"
       }`}
     >
-      {/* Tarjeta del Modal */}
       <div
-        className={`bg-white w-[1000px] max-w-[100vw] rounded-[32px] p-10 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${
+        className={`bg-white w-[700px] max-w-[100vw] rounded-[32px] p-10 shadow-2xl relative flex flex-col gap-8 transition-all duration-300 transform ${
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        {/* Botón Cerrar */}
         <button
           type="button"
           onClick={onClose}
@@ -122,149 +157,90 @@ export default function ModalRenta({ isOpen, onClose, id_renta, setRenta }) {
           <XMarkIcon className="size-7" />
         </button>
 
-        {/* Encabezado */}
         <div>
           <h2 className="text-4xl font-black text-[#004B57] tracking-wide uppercase">
             Formulario - Rentas
           </h2>
         </div>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="flex gap-6">
-            <div className="flex-col">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-5">
-                <InputDate
-                  type="date"
-                  text="Fecha Inicio"
-                  valueData={data.fecha_inicio}
-                  textId="fecha_inicio"
-                  view=""
-                  updateData={inputsUpdate}
-                />
-
-                <InputD
-                  type="date"
-                  text="Fecha Devolución"
-                  valueData={data.fecha_devolucion}
-                  textId="fecha_devolucion"
-                  view=""
-                  updateData={inputsUpdate}
-                />
-                <InputD
-                  type="date"
-                  text="Fecha Evento"
-                  valueData={data.fecha_evento}
-                  textId="fecha_evento"
-                  view=""
-                  updateData={inputsUpdate}
-                />
-                <SelectWD
-                  text="Cliente"
-                  textId="id_cliente"
-                  options={SelectClientes}
-                  valueData={data.id_cliente}
-                  updateData={inputsUpdate}
-                />
-              </div>
-              <TextArea
-                text="Notas"
-                textId="notas_descripcion"
-                valueData={data.notas_descripcion}
+        <form onSubmit={handleFormSubmit} className="flex flex-col">
+          {/* CAMPOS DEL FORMULARIO */}
+          <div className="flex-col">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-5">
+              <InputDate
+                type="date"
+                text="Fecha Inicio"
+                valueData={data.fecha_inicio}
+                textId="fecha_inicio"
+                view=""
                 updateData={inputsUpdate}
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mt-4">
-                <SelectD
-                  text="Estado Renta"
-                  textId="estado_renta"
-                  options={estado_renta}
-                  valueData={data.estado_renta}
-                  updateData={inputsUpdate}
-                />
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-md font-semibold text-[#004B57] ">
-                    Pago Final
-                  </label>
-                  <input
-                    type="number"
-                    className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all disabled:cursor-not-allowed"
-                    value={data.monto_total}
-                    id="monto_total"
-                    name="monto_total"
-                    placeholder=""
-                    onChange={inputsUpdate}
-                    disabled={true}
-                  />
-                </div>
-                <InputD
-                  text="Deposito"
-                  type="number"
-                  textId="deposito"
-                  view=""
-                  valueData={data.deposito}
-                  updateData={inputsUpdate}
-                />
-              </div>
+              <InputD
+                type="date"
+                text="Fecha Devolución"
+                valueData={data.fecha_devolucion}
+                textId="fecha_devolucion"
+                view=""
+                updateData={inputsUpdate}
+              />
+              <InputD
+                type="date"
+                text="Fecha Evento"
+                valueData={data.fecha_evento}
+                textId="fecha_evento"
+                view=""
+                updateData={inputsUpdate}
+              />
+              <DataList
+                text="Cliente"
+                textId="id_cliente"
+                nametag="id_cliente"
+                dataList={SelectClientes}
+                valueData={data.id_cliente}
+                updateData={inputsUpdate}
+              />
             </div>
-            <div className="h-full w-2 bg-[#
-            
-            004B57]"></div>
-            {/* Columna Derecha: Producto e Imagen */}
-            <div className="grid grid-cols-1 w-3/8">
-              <SelectWD
-                text="Producto"
-                options={SelectProductos}
-                textId="id_producto"
-                valueData={data.id_producto}
+            <TextArea
+              text="Notas"
+              textId="notas_descripcion"
+              valueData={data.notas_descripcion}
+              updateData={inputsUpdate}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mt-4">
+              <SelectD
+                text="Estado Renta"
+                textId="estado_renta"
+                options={estado_renta}
+                valueData={data.estado_renta}
                 updateData={inputsUpdate}
               />
-              <div className="grid grid-cols-2 gap-2 my-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-md font-semibold text-[#004B57]">
-                    Talla:
-                  </label>
-                  <div className="flex justify-center h-10 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
-                    {/* Muestra la talla dinámicamente o "-" si no hay nada seleccionado */}
-                    {productoSeleccionado?.talla || "-"}
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-md font-semibold text-[#004B57]">
-                    Color:
-                  </label>
-                  <div className="flex justify-center h-10 items-center gap-1.5 bg-[#004053] text-[#B2B2B2] font-bold rounded-2xl">
-                    {/* Muestra el color dinámicamente o "-" si no hay nada seleccionado */}
-                    {productoSeleccionado?.color || "-"}
-                  </div>
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-md font-semibold text-[#004B57]">
+                  Pago Final
+                </label>
+                <input
+                  type="number"
+                  className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all disabled:cursor-not-allowed"
+                  value={data.monto_total}
+                  id="monto_total"
+                  name="monto_total"
+                  onChange={inputsUpdate}
+                  disabled={true}
+                />
               </div>
-
-              <div className="flex justify-center items-center w-full my-2">
-                <div className="h-52 w-full bg-gray-200 rounded-2xl flex justify-center items-center overflow-hidden">
-                  {previewImage ? (
-                    <img
-                      src={previewImage}
-                      alt="Referencia del producto"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-gray-500 font-medium text-sm">
-                      Sin imagen
-                    </span>
-                  )}
-                </div>
-              </div>
+              <InputD
+                text="Deposito"
+                type="number"
+                textId="deposito"
+                view=""
+                valueData={data.deposito}
+                updateData={inputsUpdate}
+              />
             </div>
           </div>
 
+          {/* BOTÓN GUARDAR SIN onClick INLINE */}
           <div className="flex justify-end mt-4 gap-4">
-            <button
-              type="button"
-              className="bg-[#009BAE] text-[#004053] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"
-            >
-              <ClipboardDocumentListIcon className="size-6" />
-              Agregar Medidas
-            </button>
             <button
               type="submit"
               className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"

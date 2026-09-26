@@ -15,7 +15,7 @@ class RentaController extends Controller
     public function index()
     {
         try {
-            $renta = DetalleRenta::with(['renta.clientes', 'producto'])->whereHas('renta', function ($query) {
+            $renta = DetalleRenta::with(['renta.cliente', 'producto'])->whereHas('renta', function ($query) {
                 $query->where('visibilidad_renta', true);
             })->get();
             if ($renta->isEmpty()) {
@@ -53,7 +53,7 @@ class RentaController extends Controller
             $validaciones = $request->validated();
 
             $renta->update($validaciones);
-            return ApiResponse::success('Renta actualizada con éxito', 200, new Renta($renta));
+            return ApiResponse::success('Renta actualizada con éxito', 200, new RentaResource($renta));
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('No se encontró el detalle', 404, $me->getMessage());
         } catch (Exception $ex) {

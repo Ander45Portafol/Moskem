@@ -24,10 +24,10 @@ class Renta extends Model
     public function detalle_renta(){
         return $this->hasMany(DetalleRenta::class,foreignKey:'id_renta');
     }
-    public function clientes(){
+    public function cliente(){
         return $this->belongsTo(Cliente::class,'id_cliente','id_cliente');
     }
-    public function empleados(){
+    public function empleado(){
         return $this->belongsTo(Empleado::class,'id_empleado','id_empleado');
     }
 }

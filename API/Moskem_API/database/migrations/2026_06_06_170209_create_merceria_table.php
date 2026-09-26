@@ -17,11 +17,12 @@ Schema::create('mercerias', function (Blueprint $table) {
             $table->string('codigo_merceria',14)->unique();
             $table->integer('stock');
             $table->string('color', 30);
+            $table->integer('tamanio_merceria')->nullable();
             $table->enum('medida_stock', ['Pulgadas', 'Yardas', 'Unidad']);
-            $table->foreignId('id_proveedor')
+            $table->foreignId('id_proveedor') 
             ->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
-            $table->string('descripcion_merceria');
+            $table->string('imagen_merceria')->nullable();
             $table->boolean('visibilidad_merceria')->default(true);
             $table->timestamps();
         });
@@ -32,6 +33,6 @@ Schema::create('mercerias', function (Blueprint $table) {
      */
     public function down(): void
     {
-        Schema::dropIfExists('accesorios');
+        Schema::dropIfExists('mercerias');
     }
 };

@@ -16,6 +16,7 @@ import ModalDetalleRenta from "../components/Modals/ModalDetalleRenta";
 export function Rentas() {
   // --- ESTADOS PARA CONTROLAR EL MODAL EN EL FUTURO ---
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalDetalleOpen, setIsModalDetalleOpen] = useState(false);
   const [idRenta, setIdRenta] = useState(null);
   const { data, message, setData } = useGet("rentas");
 
@@ -157,17 +158,16 @@ export function Rentas() {
                   </td>
                   <td className="py-4 text-black">{renta.fecha_devolucion}</td>
                   <td className="py-4">
-                    {/* Iteración de botones con sus estilos fijos por fila */}
                     <div className="flex items-center justify-center gap-2">
-                      {/* Botón Info (Verde Limón) */}
                       <button
-                        onClick={() => { setIsModalOpen(true); setIdRenta(renta.id_renta) }}
+                        onClick={() => {
+                          setIsModalOpen(true);
+                          setIdRenta(renta.id_renta);
+                        }}
                         className="bg-[#B4D333] text-[#004B57] p-2 rounded-lg font-bold hover:bg-[#a3c02b] transition-all active:scale-95 flex items-center justify-center w-11 h-10"
                       >
                         <InformationCircleIcon className="size-7" />
                       </button>
-
-                      {/* Botón Descargar (Azul Oscuro Moskem) */}
                       <button className="bg-[#004B57] text-white p-2 rounded-lg hover:bg-[#00363E] transition-all active:scale-95 flex items-center justify-center w-11 h-10">
                         <ArrowDownOnSquareIcon className="size-                                                                                           7" />
                       </button>
@@ -192,6 +192,15 @@ export function Rentas() {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
+        }}
+        id_renta={idRenta}
+        setRenta={setData}
+        isModalDetalle={setIsModalDetalleOpen}
+      />
+      <ModalDetalleRenta
+        isOpen={isModalDetalleOpen}
+        onClose={() => {
+          setIsModalDetalleOpen(false);
         }}
         id_renta={idRenta}
         setRenta={setData}

@@ -39,6 +39,7 @@ return new class extends Migration
             //Campo para seleccionar el tipo de evento
             $table->enum('tipo_evento',['Boda','Graduación', 'Bautizo','Cumpleaños','otro']);
             $table->boolean('visibilidad_pedido')->default(true);
+            $table->foreignId('id_cupon')->constrained('cupones', 'id_cupon')->nullable();
             $table->timestamps();
         });
     }

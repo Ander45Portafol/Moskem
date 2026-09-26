@@ -22,7 +22,7 @@ class DetalleRenta extends Model
         return $this->belongsTo(Renta::class,'id_renta','id_renta');
     }
     public function producto(){
-        return $this->belongsTo(Productos::class,'id_producto','id_producto');
+        return $this->belongsTo(Producto::class,'id_producto','id_producto');
     }
     public function paquetes(){
         return $this->belongsTo(Paquete::class,'id_paquete','id_paquete');

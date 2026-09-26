@@ -21,38 +21,30 @@ export function DataList({
       (item) => String(item.id) === String(valueData),
     );
 
-    if (seleccionada) {
-      setTextoMostrar(`#${seleccionada.nombre}`);
-    } else {
-      // Si la tela seleccionada previamente no existe en la categoría actual, limpia el input
-      setTextoMostrar("");
-    }
+    setTextoMostrar(seleccionada ? seleccionada.nombre : "");
   }, [valueData, dataList]);
 
   const handleChange = (e) => {
     const valorIngresado = e.target.value;
     setTextoMostrar(valorIngresado);
 
-    // Buscar coincidencia en la lista
+    // Buscar coincidencia exacta por nombre o por ID
     const opcionEncontrada = dataList.find(
       (item) =>
-        `#${item.nombre}` === valorIngresado ||
-        item.nombre === valorIngresado ||
-        String(item.id) === valorIngresado,
+        item.nombre === valorIngresado || String(item.id) === valorIngresado,
     );
 
     if (opcionEncontrada) {
       updateData({
         target: {
-          name: textId || nametag,
+          name: nametag, // Usamos directamente nametag ("id_producto")
           value: opcionEncontrada.id,
         },
       });
     } else if (valorIngresado === "") {
-      // Limpiar selección si se borra el texto
       updateData({
         target: {
-          name: textId || nametag,
+          name: nametag,
           value: "",
         },
       });
@@ -68,20 +60,18 @@ export function DataList({
       </label>
 
       <input
-        list={listId} // CORRECCIÓN: Vinculación con el datalist
+        list={listId}
         value={textoMostrar}
         onChange={handleChange}
         name={nametag}
         disabled={disabled}
-        placeholder="Escribe el código de tela."
+        placeholder="Seleccione un producto..."
         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[#004053] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004B57] focus:border-transparent transition-all bg-[#d9d9d9] disabled:opacity-50 disabled:cursor-not-allowed"
       />
 
       <datalist id={listId}>
-        {" "}
-        {/* CORRECCIÓN: Se agrega el id obligatorio */}
-        {dataList.map((tela) => (
-          <option key={tela.id} value={`#${tela.nombre}`} />
+        {dataList.map((item) => (
+          <option key={item.id} value={item.nombre} />
         ))}
       </datalist>
     </div>

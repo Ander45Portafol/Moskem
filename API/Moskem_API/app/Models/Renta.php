@@ -21,7 +21,7 @@ class Renta extends Model
         'notas_descripcion',
         'visibilidad_renta'
     ];
-    public function detalle_orden(){
+    public function detalle_renta(){
         return $this->hasMany(DetalleRenta::class,foreignKey:'id_renta');
     }
     public function clientes(){

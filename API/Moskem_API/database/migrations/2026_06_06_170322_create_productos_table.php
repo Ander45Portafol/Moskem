@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id('id_producto');
             $table->enum('tipo_producto', ['Traje_completo','Saco','Pantalon','Camisa','Traje superior','corbata']);
+            $table->string('codigo_producto')->nullable();
+            $table->string('imagen_producto', 255)->nullable();
             $table->string('color', 50);
             $table->string('talla', 10);
             $table->foreignId('id_tela')->constrained('telas', 'id_tela')->onDelete('cascade');
             $table->decimal('costo', 10, 2);
-            $table->enum('estado_producto', ['Disponible','Agotado']); // Ej: "Disponible", "Rentado", "Mantenimiento"
+            $table->enum('estado_producto', ['Vendido','Disponible','Rentado','Lavanderia','Ajuste']);
             $table->boolean('visibilidad_producto');
             $table->timestamps();
         });

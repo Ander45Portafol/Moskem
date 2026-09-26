@@ -29,7 +29,6 @@ class ProductoController extends Controller
                 'data' => []
             ], 200);   
         }
-
         return ApiResponse::success('¡Éxito!', 200, $productos);
     } catch (Exception $ex) {
         return ApiResponse::error('Error al listar los productos', 500, $ex->getMessage());

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('unidad_medida', ['Pulgadas', 'mm', '#']); // Mantenlas en minúsculas
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
-            $table->string('descripcion_merceria');
+            $table->string('imagen_merceria')->nullable();
             $table->boolean('visibilidad_merceria')->default(true);
             $table->timestamps();
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accesorios');
+        Schema::dropIfExists('mercerias');
     }
 };

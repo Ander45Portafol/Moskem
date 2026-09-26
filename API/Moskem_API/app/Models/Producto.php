@@ -25,7 +25,7 @@ class Producto extends Model // <-- Cambiado de Productos a Producto
         return $this->hasMany(DetalleRenta::class, 'id_producto');
     }
 
-    public function telas(){
+    public function tela(){
         return $this->belongsTo(Tela::class, 'id_tela', 'id_tela');
     }
 }

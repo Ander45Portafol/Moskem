@@ -13,22 +13,34 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id('id_producto');
-            $table->enum('tipo_producto', ['Traje_completo','Saco','Pantalon','Camisa','Traje superior','corbata']);
+            $table->enum('tipo_producto', [
+                'Traje_completo',
+                'Saco',
+                'Pantalon',
+                'Camisa',
+                'Traje_superior',
+                'Corbata',
+                'Zapatos'
+            ]);
             $table->string('codigo_producto')->nullable();
             $table->string('imagen_producto', 255)->nullable();
-            $table->string('color', 50);
+            $table->string('color', 50)->nullable(); // Se hace nullable porque cuando hay Tela, el color se toma de ella
             $table->string('talla', 10);
-            $table->foreignId('id_tela')->constrained('telas', 'id_tela')->onDelete('cascade');
+            
+            // OBLIGATORIO: nullable() para permitir Zapatos que no llevan tela
+            $table->foreignId('id_tela')
+                  ->nullable()
+                  ->constrained('telas', 'id_tela')
+                  ->nullOnDelete();
+                  
             $table->decimal('costo', 10, 2);
-            $table->enum('estado_producto', ['Vendido','Disponible','Rentado','Lavanderia','Ajuste']);
-            $table->boolean('visibilidad_producto');
+            $table->string('descripcion_producto', 255)->nullable();
+            $table->enum('estado_producto', ['Vendido', 'Disponible', 'Rentado', 'Lavanderia', 'Ajuste']);
+            $table->boolean('visibilidad_producto')->default(true);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('productos');

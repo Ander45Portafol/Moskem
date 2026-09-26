@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useGet } from "../assets/js/useGet";
 import ModalRenta from "../components/Modals/ModalRenta";
+import ModalDetalleRenta from "../components/Modals/ModalDetalleRenta";
 
 export function Rentas() {
   // --- ESTADOS PARA CONTROLAR EL MODAL EN EL FUTURO ---
@@ -160,7 +161,7 @@ export function Rentas() {
                     <div className="flex items-center justify-center gap-2">
                       {/* Botón Info (Verde Limón) */}
                       <button
-                        onClick={() => abrirModal("ver")}
+                        onClick={() => { setIsModalOpen(true); setIdRenta(renta.id_renta) }}
                         className="bg-[#B4D333] text-[#004B57] p-2 rounded-lg font-bold hover:bg-[#a3c02b] transition-all active:scale-95 flex items-center justify-center w-11 h-10"
                       >
                         <InformationCircleIcon className="size-7" />
@@ -170,8 +171,6 @@ export function Rentas() {
                       <button className="bg-[#004B57] text-white p-2 rounded-lg hover:bg-[#00363E] transition-all active:scale-95 flex items-center justify-center w-11 h-10">
                         <ArrowDownOnSquareIcon className="size-                                                                                           7" />
                       </button>
-
-                      {/* Botón Eliminar (Gris Oscuro de Estado) */}
                       <button className="bg-[#7E8A95] text-white p-2 rounded-lg hover:bg-[#6b7782] transition-colors flex items-center justify-center w-11 h-10">
                         <TrashIcon className="size-7" />
                       </button>

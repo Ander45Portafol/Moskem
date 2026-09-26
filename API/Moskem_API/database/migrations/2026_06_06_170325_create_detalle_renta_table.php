@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id('id_detalle_renta');
             $table->foreignId('id_renta')->constrained('rentas', 'id_renta')->onDelete('cascade');
             $table->foreignId('id_producto')->constrained('productos', 'id_producto');
-            $table->foreignId('id_medidas')->constrained('medidas', 'id_medidas')->onDelete('cascade');
+            $table->foreignId('id_medidas')->nullable()->constrained('medidas', 'id_medidas');
             $table->integer('cantidad')->default(1);
             $table->date('fecha_renta');
             $table->enum('estado_producto_renta', ['Solicitado','Entregado','Devuelto']);
-            $table->foreignId('id_paquete')->constrained('paquetes', 'id_paquete')->nullable();
-            $table->foreignId('id_cupon')->constrained('cupones', 'id_cupon')->nullable();
+            $table->foreignId('id_paquete')->nullable()->constrained('paquetes', 'id_paquete');
+            $table->foreignId('id_cupon')->nullable()->constrained('cupones', 'id_cupon');
             $table->timestamps();
         });
     }

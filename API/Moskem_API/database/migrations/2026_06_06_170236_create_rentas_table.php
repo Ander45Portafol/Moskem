@@ -22,6 +22,7 @@ return new class extends Migration
             
             $table->date('fecha_inicio');
             $table->date('fecha_devolucion');
+            $table->date('fecha_evento');
             $table->decimal('monto_total', 10, 2);
             $table->decimal('deposito', 10, 2)->default(0.00);
             $table->enum('estado_renta', ['Entregado','En proceso','Finalizado']);

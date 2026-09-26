@@ -178,7 +178,7 @@ export default function Productos() {
                     <td className="py-4">{item.color}</td>
                     <td className="py-4">{item.talla}</td>
                     <td className="py-4">{renderEstadoBadge(item.estado || item.estado_producto)}</td>
-                    <td className="py-4">{item.tela?.nombre_tela || item.tela}</td>
+                    <td className="py-4">{item.tela?.nombre_tela || item.tela.nombre_tela} - ${item.tela.codigo_tela || item.tela.codigo}</td>
 
                     <td className="py-4">
                       <div className="flex items-center justify-center gap-2">

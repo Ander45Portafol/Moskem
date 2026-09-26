@@ -29,6 +29,7 @@ export function ModalMerceria({
     codigo_merceria: "",
     codigo_merceria_proveedor: "",
     stock: "",
+    descripcion_merceria: "",
     id_proveedor: "",
   };
 
@@ -59,6 +60,7 @@ export function ModalMerceria({
           codigo_merceria: registroEditar.codigo_merceria || registroEditar.codigo || "",
           codigo_merceria_proveedor: registroEditar.codigo_merceria_proveedor || "",
           stock: registroEditar.stock ?? "",
+          descripcion_merceria: registroEditar.descripcion_merceria || "",
           id_proveedor: registroEditar.id_proveedor || registroEditar.proveedor?.id_proveedor || "",
         });
       } else if (tipo === "agregar") {
@@ -81,7 +83,7 @@ export function ModalMerceria({
     })) || [];
 
   const SelectTipoMerceria = ["Botones", "Ganchos", "Zipper", "Agujas", "Hilos"];
-  const SelectUnidadesMedida = ["pulgadas", "mm", "#"];
+  const SelectUnidadesMedida = ["Pulgadas", "mm", "#"];
 
   const inputsUpdate = (e) => {
     const { name, value } = e.target;
@@ -251,6 +253,16 @@ export function ModalMerceria({
             textId="id_proveedor"
             options={SelectProveedores}
             valueData={data.id_proveedor || ""}
+            updateData={inputsUpdate}
+          />
+
+          <InputD
+            text="Descripcion"
+            type="text"
+            name="descripcion_merceria"
+            textId="descripcion_merceria"
+            view=""
+            valueData={data.descripcion_merceria || ""}
             updateData={inputsUpdate}
           />
 

@@ -15,28 +15,27 @@ class ProductoController extends Controller
      * Obtener todos los registros de productos
      */
     public function index(): JsonResponse
-    {
-        try {
-            $productos = Producto::where('visibilidad_producto', true)
-            ->with('telas')
-                ->orderBy('id_producto')
-                ->get();
-            
-            if ($productos->isEmpty()) {
-                return response()->json([
-                    'message' => 'No existen registros',
-                    'code' => 200, 
-                    'data' => []
-                ], 200);   
-            }
-
-            return ApiResponse::success('¡Éxito!', 200, $productos);
-        } catch (Exception $ex) {
-            return ApiResponse::error('Error al listar los productos', 500, $ex->getMessage());
-        } catch (\Throwable $to) {
-            return ApiResponse::error('Error inesperado al listar los productos', 500, $to->getMessage());
+{
+    try {
+        $productos = Producto::with('tela') // <-- Eager loading de la relación
+            ->where('visibilidad_producto', true)
+            ->orderBy('id_producto')
+            ->get();
+        
+        if ($productos->isEmpty()) {
+            return response()->json([
+                'message' => 'No existen registros',
+                'code' => 200, 
+                'data' => []
+            ], 200);   
         }
+        return ApiResponse::success('¡Éxito!', 200, $productos);
+    } catch (Exception $ex) {
+        return ApiResponse::error('Error al listar los productos', 500, $ex->getMessage());
+    } catch (\Throwable $to) {
+        return ApiResponse::error('Error inesperado al listar los productos', 500, $to->getMessage());
     }
+}
 
     /**
      * Crear un nuevo registro de producto
@@ -52,19 +51,19 @@ class ProductoController extends Controller
             return response()->json([
                 'message' => 'Producto creado con éxito',
                 'code' => 201,
-                'data' => $producto
+                'data' => $producto,
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al intentar guardar el registro',
                 'code' => 500,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Hay un problema con el proceso para crear',
                 'code' => 500,
-                'error' => $th->getMessage()
+                'error' => $th->getMessage(),
             ], 500);
         }
     }
@@ -73,16 +72,16 @@ class ProductoController extends Controller
      * Obtener un registro de producto por su ID
      */
     public function show($id): JsonResponse
-    {
-        try {
-            $producto = Producto::findOrFail($id);
-            return ApiResponse::success('Producto encontrado correctamente', 200, $producto);
-        } catch (ModelNotFoundException $me) {
-            return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error al intentar buscar el registro', 500, $e->getMessage());
-        }
+{
+    try {
+        $producto = Producto::with('tela')->findOrFail($id); // <-- Incluir tela
+        return ApiResponse::success('Producto encontrado correctamente', 200, $producto);
+    } catch (ModelNotFoundException $me) {
+        return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
+    } catch (\Exception $e) {
+        return ApiResponse::error('Error al intentar buscar el registro', 500, $e->getMessage());
     }
+}
 
     /**
      * Actualizar un registro de producto por su ID
@@ -98,7 +97,7 @@ class ProductoController extends Controller
             return ApiResponse::success('Producto actualizado con éxito', 200, $producto);
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ApiResponse::error('Error al intentar actualizar el registro', 500, $e->getMessage());
         }
     }
@@ -116,7 +115,7 @@ class ProductoController extends Controller
             return ApiResponse::success('Producto eliminado con éxito', 200, $producto);
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro', 404, $me->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ApiResponse::error('Error al intentar eliminar el registro', 500, $e->getMessage());
         }
     }

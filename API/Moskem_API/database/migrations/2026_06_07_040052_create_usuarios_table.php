@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id_usuario');
             $table->foreignId('id_empleado')->constrained('empleados', 'id_empleado');  
             $table->integer('cantidad_intentos');
-            $table->string('correo_electronico');
+            $table->string('usuario');
             $table->enum('tipo_usuario', ['Administrador', 'Sastre', 'Vendedor', 'root', 'Diseñador', 'Pasantes']);
             $table->boolean('estado_usuario')->default(true);
             $table->string('clave');         

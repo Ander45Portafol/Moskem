@@ -20,49 +20,47 @@ use App\Http\Controllers\TelaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// 1. Ruta Pública para Iniciar Sesión
+Route::post('login', [AuthController::class, 'login'])->name('login');
 
-
-Route::post('login', [AuthController::class, 'login']);
+// 2. TODAS las rutas protegidas del sistema van dentro de este grupo
 Route::middleware('auth:api')->group(function () {
+
+    // Rutas de Sesión / Autenticación
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
+
+    // Métodos para el motor de búsqueda
+    Route::get('clientes/buscar', [ClienteController::class, 'search']);
+    Route::get('empleados/buscar', [EmpleadoController::class, 'search']);
+    Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
+
+    // Métodos independientes
+    Route::get('renta_detalles/{id_renta}', [DetalleRentaController::class, 'cargarDetalleRenta']);
+    Route::put('create_codigo_medida/{id}/{id_medida}', [MedidaController::class, 'createCodigo']);
+    Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
+    Route::get('getOrders/{id_pedido}', [OrdenTrabajoController::class, 'cargarOrdenes']);
+    Route::get('getMedidas/{idDetallePedido}', [OrdenTrabajoController::class, 'getMedida']);
+    Route::get('lista_merceria/{id}', [DetalleMerceriaController::class, 'getDetallePedidoMerceria']);
+    Route::get('sastres', [EmpleadoController::class, 'getSastres']);
+    Route::get('medidas_prendas/{id_cliente}/{prenda}', [OrdenTrabajoController::class, 'cargarMedidas']);
+    Route::get('getPaquete/{id_pedido}', [DetallePaqueteController::class, 'getPaquetePedido']);
+
+    // Métodos pertenecientes a apiResource
+    Route::apiResource('productos', ProductoController::class);
+    Route::apiResource('clientes', ClienteController::class);
+    Route::apiResource('pedidos', PedidosController::class);
+    Route::apiResource('mercerias', MerseriaController::class);
+    Route::apiResource('empleados', EmpleadoController::class);
+    Route::apiResource('detalle_pedidos', DetallePedidoController::class);
+    Route::apiResource('telas', TelaController::class);
+    Route::apiResource('proveedores', ProveedoresController::class);
+    Route::apiResource('paquetes', PaqueteController::class);
+    Route::apiResource('detalle_paquetes', DetallePaqueteController::class);
+    Route::apiResource('prendas', PrendaController::class);
+    Route::apiResource('detalle_mercerias', DetalleMerceriaController::class);
+    Route::apiResource('orden_trabajo', OrdenTrabajoController::class);
+    Route::apiResource('medidas', MedidaController::class);
+    Route::apiResource('rentas', RentaController::class);
 });
-
-// Métodos para el motor de búsqueda
-Route::get('clientes/buscar', [ClienteController::class, 'search']);
-Route::get('empleados/buscar', [EmpleadoController::class, 'search']);
-Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
-
-
-//Metodos independientes
-Route::get('renta_detalles/{id_renta}', [DetalleRentaController::class, 'cargarDetalleRenta']);
-Route::put('create_codigo_medida/{id}/{id_medida}', [MedidaController::class, 'createCodigo']);
-Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
-Route::get('getOrders/{id_pedido}', [OrdenTrabajoController::class, 'cargarOrdenes']);
-Route::get('getMedidas/{idDetallePedido}', [OrdenTrabajoController::class, 'getMedida']);
-Route::get('lista_merceria/{id}', [DetalleMerceriaController::class, 'getDetallePedidoMerceria']);
-Route::get('sastres', [EmpleadoController::class, 'getSastres']);
-Route::get('medidas_prendas/{id_cliente}/{prenda}', [OrdenTrabajoController::class, 'cargarMedidas']);
-Route::get('getPaquete/{id_pedido}', [DetallePaqueteController::class, 'getPaquetePedido']);
-
-
-//Metodos pertenecientes al apiResource
-Route::apiResource('productos', ProductoController::class);
-Route::apiResource('clientes', ClienteController::class);
-Route::apiResource('pedidos', PedidosController::class);
-Route::apiResource('mercerias', MerseriaController::class);
-Route::apiResource('empleados', EmpleadoController::class);
-Route::apiResource('detalle_pedidos', DetallePedidoController::class);
-Route::apiResource('telas', TelaController::class);
-Route::apiResource('proveedores', ProveedoresController::class);
-route::apiResource('paquetes', PaqueteController::class);
-Route::apiResource('detalle_paquetes', DetallePaqueteController::class);
-Route::apiResource('prendas', PrendaController::class);
-Route::apiResource('detalle_mercerias', DetalleMerceriaController::class);
-Route::apiResource('orden_trabajo', OrdenTrabajoController::class);
-Route::apiResource('medidas', MedidaController::class);
-Route::apiResource('rentas', RentaController::class);

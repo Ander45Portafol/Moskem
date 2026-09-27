@@ -13,8 +13,6 @@ class Empleado extends Model
         'id_empleado',
         'nombres_empleado',
         'apellidos_empleado',
-        'usuario_empleado',
-        'clave_empleado',
         'tipo_empleado',
         'documentos_empleados',
         'correo_empleado',

@@ -8,7 +8,7 @@ export default function Login() {
 
   // Estado para capturar las credenciales
   const [formData, setFormData] = useState({
-    correo_electronico: "",
+    usuario: "",
     clave: "",
   });
 
@@ -31,7 +31,7 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      await login(formData.correo_electronico, formData.clave);
+      await login(formData);
       // Redirige al panel correspondiente una vez autenticado
       navigate("/admin");
     } catch (err) {
@@ -71,13 +71,13 @@ export default function Login() {
           className="h-full flex-col pt-6 font-bold"
         >
           <div className="h-30 w-full">
-            <p className="text-lg text-white">Correo Electrónico</p>
+            <p className="text-lg text-white">Usuario</p>
             <input
-              type="email"
-              name="correo_electronico"
-              value={formData.correo_electronico}
+              type="text"
+              name="usuario"
+              value={formData.usuario}
               onChange={handleChange}
-              placeholder="ejemplo@moskem.com"
+              placeholder=""
               required
               className="mt-3 h-14 w-10/11 rounded-lg bg-[#B2B2B2] border-none px-6 text-gray-900 focus:outline-none placeholder-gray-600"
             />
@@ -90,7 +90,7 @@ export default function Login() {
               name="clave"
               value={formData.clave}
               onChange={handleChange}
-              placeholder="••••••••"
+              placeholder=""
               required
               className="mt-3 h-14 w-10/11 border-none rounded-lg bg-[#B2B2B2] px-6 text-gray-900 focus:outline-none placeholder-gray-600"
             />

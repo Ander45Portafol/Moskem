@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http/Controllers;
+namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
@@ -10,27 +10,35 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // 1. Validamos que recibimos el código de empleado en el campo 'usuario'
         $credentials = $request->validate([
-            'correo_electronico' => ['required', 'email'],
-            'clave'              => ['required', 'string'],
+            'usuario' => ['required', 'string'], // Código de empleado (ej: AA000001)
+            'clave'   => ['required', 'string'], // Contraseña enviada desde el frontend
         ]);
 
-        $usuario = Usuario::where('correo_electronico', $credentials['correo_electronico'])->first();
+        // 2. Buscamos al usuario por la columna 'usuario' de la BD
+        $usuario = Usuario::where('usuario', $credentials['usuario'])->first();
 
         if (!$usuario) {
             return response()->json(['error' => 'Credenciales inválidas'], 401);
         }
 
+        // 3. Verificamos si la cuenta está inactiva o bloqueada
         if (!$usuario->estado_usuario) {
-            return response()->json(['error' => 'La cuenta se encuentra desactivada o bloqueada por intentos fallidos'], 403);
+            return response()->json([
+                'error' => 'La cuenta se encuentra desactivada o bloqueada por intentos fallidos'
+            ], 403);
         }
 
+        // 4. Mapeamos credenciales para Auth::guard('api')->attempt()
+        // 'usuario' consulta la columna en BD y 'password' se valida con Hash::check gracias a getAuthPassword() en el modelo
         $authCredentials = [
-            'correo_electronico' => $credentials['correo_electronico'],
-            'password'           => $credentials['clave'],
+            'usuario'  => $credentials['usuario'],
+            'password' => $credentials['clave'],
         ];
 
         if (!$token = Auth::guard('api')->attempt($authCredentials)) {
+            // Descontar intento fallido
             $usuario->decrement('cantidad_intentos');
             $usuario->refresh();
 
@@ -50,7 +58,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Login exitoso
+        // 5. Login exitoso: restablecemos intentos y cargamos la relación 'empleado'
         $usuario->update([
             'cantidad_intentos' => 5,
             'estado_usuario'    => true,
@@ -58,7 +66,6 @@ class AuthController extends Controller
 
         $usuario->load('empleado');
 
-        // Retornar respuesta adjuntando la Cookie HttpOnly
         return $this->respondWithToken($token, $usuario);
     }
 
@@ -79,7 +86,6 @@ class AuthController extends Controller
     {
         Auth::guard('api')->logout();
 
-        // Eliminar la cookie al cerrar sesión (olvidar la cookie token_jwt)
         $cookie = cookie()->forget('token_jwt');
 
         return response()->json(['message' => 'Sesión cerrada correctamente'])->withCookie($cookie);
@@ -100,20 +106,19 @@ class AuthController extends Controller
 
     protected function respondWithToken($token, $usuario)
     {
-        // Duración de la cookie equivalente al TTL del JWT (en minutos)
         $minutes = Auth::guard('api')->factory()->getTTL();
 
-        // Crear la cookie HttpOnly
+        // Cookie HttpOnly optimizada para el entorno local/producción
         $cookie = cookie(
-            'token_jwt', // Nombre de la cookie
-            $token,      // Valor (JWT)
-            $minutes,    // Minutos
-            '/',         // Path
-            null,        // Domain
-            config('app.env') === 'production', // Secure (HTTPS solo en producción)
-            true,        // HttpOnly (Inaccesible desde JS)
-            false,       // Raw
-            'Lax'        // SameSite
+            'token_jwt',                        // Nombre
+            $token,                             // Valor (JWT)
+            $minutes,                           // Expiración en minutos
+            '/',                                // Path
+            null,                               // Domain
+            config('app.env') === 'production', // Secure (solo exige HTTPS en producción)
+            true,                               // HttpOnly (Protegido contra JS)
+            false,                              // Raw
+            'Lax'                               // SameSite
         );
 
         return response()->json([

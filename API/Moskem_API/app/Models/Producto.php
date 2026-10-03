@@ -13,6 +13,9 @@ class Producto extends Model // <-- Cambiado de Productos a Producto
     protected $fillable = [
         'id_producto',
         'tipo_producto',
+        'codigo_producto',
+        'imagen_producto',
+        'descripcion_producto',
         'color',
         'talla',
         'id_tela',

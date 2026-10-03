@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../Context/AuthContext";
 
 export default function Login() {
@@ -47,85 +47,75 @@ export default function Login() {
   };
 
   return (
-    <div className="font-poppins flex h-screen overflow-hidden">
-      <div className="h-full w-1/2 rounded-r-4xl bg-[#006272] pt-32 pl-10 text-start">
-        <h3 className="text-5xl font-extrabold text-white">
-          ¡Bienvenidos a MOSKEM!
-        </h3>
-        <div className="flex-col pt-14 text-start text-white">
-          <p className="text-3xl font-extrabold">Iniciar sesión</p>
-          <p className="text-md gap-8 font-sm">
-            Ingrese todas sus credenciales para poder acceder a su perfil
-          </p>
+    <div className="font-poppins flex w-full h-screen overflow-hidden bg-[#004053]">
+      <div className="w-2/5 hidden lg:block lg:bg-[url('../../public/images/Imagen_login2.png')] bg-cover"></div>
+      <div className="w-full lg:w-3/5 bg-gradient-to-b from-[#004053] via-[#10566B] to-[#B2B2B2] flex-col">
+        <div className="flex justify-end w-full mt-4">
+          <img
+            src="/images/logo_blanco.svg"
+            alt="moskem_menswear"
+            className="w-84 h-auto object-contain"
+          />
         </div>
-
-        {/* Mensaje de error dinámico de Laravel */}
-        {errorMsg && (
-          <div className="mt-6 mr-10 rounded-lg bg-red-100 border border-red-400 p-4 text-red-700 text-sm font-semibold">
-            {errorMsg}
-          </div>
-        )}
-
-        <form
-          onSubmit={handleSubmit}
-          className="h-full flex-col pt-6 font-bold"
-        >
-          <div className="h-30 w-full">
-            <p className="text-lg text-white">Usuario</p>
-            <input
-              type="text"
-              name="usuario"
-              value={formData.usuario}
-              onChange={handleChange}
-              placeholder=""
-              required
-              className="mt-3 h-14 w-10/11 rounded-lg bg-[#B2B2B2] border-none px-6 text-gray-900 focus:outline-none placeholder-gray-600"
-            />
-          </div>
-
-          <div className="h-28 w-full">
-            <p className="text-xl text-white">Contraseña</p>
-            <input
-              type="password"
-              name="clave"
-              value={formData.clave}
-              onChange={handleChange}
-              placeholder=""
-              required
-              className="mt-3 h-14 w-10/11 border-none rounded-lg bg-[#B2B2B2] px-6 text-gray-900 focus:outline-none placeholder-gray-600"
-            />
-          </div>
-
-          <div className="w-full text-end">
-            <p className="mr-20 text-sm text-[#B2B2B2] cursor-pointer hover:underline">
-              ¿Olvidaste tu contraseña?
+        <div className="flex justify-center mt-4">
+          <div className="flex-col text-white">
+            <h1 className="text-5xl font-bold">Inicio de sesión</h1>
+            <p className="mt-2 font-normal text-lg">
+              ¡Bienvenido a grupo Moskem!
             </p>
+            <p className=" text-xl">
+              Ingrese todas sus credenciales para poder acceder a su perfil.
+            </p>
+            {errorMsg && (
+              <div className="mt-6 mr-10 rounded-lg bg-red-100 border border-red-400 p-4 text-red-700 text-sm font-semibold">
+                {errorMsg}
+              </div>
+            )}
+            <form className="flex-col" onSubmit={handleSubmit}>
+              <div className="mt-10 flex-col">
+                <label htmlFor="" className="font-bold text-lg">
+                  Usuario
+                </label>
+                <input
+                  type="text"
+                  name="usuario"
+                  value={formData.usuario}
+                  onChange={handleChange}
+                  required
+                  className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 p-6 rounded-xl mt-3"
+                />
+              </div>
+              <div className="mt-6 flex-col">
+                <label htmlFor="" className="font-bold text-xl">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  name="clave"
+                  value={formData.clave}
+                  onChange={handleChange}
+                  required
+                  className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 p-6 rounded-xl mt-3"
+                />
+              </div>
+              <div className="flex justify-end mt-4">
+                <Link to="/recuperar_contraseña">
+                  <p className="text-sm text-white font-semibold cursor-pointer hover:underline hover:text-[#D9D9D9]">
+                    ¿Olvidaste tu contraseña?
+                  </p>
+                </Link>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-[#BCCF00] text-[#004053] text-xl font-bold w-2/3 mt-10 rounded-lg py-3 hover:bg-[#A1AD2A]"
+                >
+                  {isSubmitting ? "Cargando..." : "Iniciar sesión"}
+                </button>
+              </div>
+            </form>
           </div>
-
-          <div className="flex h-30 w-full items-center justify-center pr-10">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-12 w-54 rounded-xl bg-[#00A29B] text-xl font-extrabold text-[#004053] hover:bg-[#008f88] transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              {isSubmitting ? "Cargando..." : "Iniciar sesión"}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="flex h-full w-1/2 justify-center">
-        <div className="m-auto flex-col">
-          <img
-            src="/images/Logo.svg"
-            alt="Moskem_image"
-            className="mb-10 w-auto object-contain"
-          />
-          <img
-            src="/images/singel.svg"
-            alt="imagen_ilustrativa"
-            className="m-auto w-auto"
-          />
         </div>
       </div>
     </div>

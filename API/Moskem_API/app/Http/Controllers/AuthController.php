@@ -54,7 +54,7 @@ class AuthController extends Controller
             }
 
             return response()->json([
-                'error' => "Credenciales inválidas. Te quedan {$usuario->cantidad_intentos} intento(s)."
+                'error' => "Credenciales inválidas."
             ], 401);
         }
 

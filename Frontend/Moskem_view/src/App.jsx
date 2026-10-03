@@ -15,6 +15,7 @@ import { Cupones } from "./pages/Cupones";
 
 // Importamos los guardianes de ruta
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
+import { Recuperacion } from "./pages/Recuperacion";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       {/* Rutas Públicas (Login) */}
       <Route element={<PublicRoute />}>
         <Route path="/" element={<Login />} />
+        <Route path="/recuperar_contraseña" element={<Recuperacion />} />
       </Route>
 
       {/* Rutas Protegidas (Solo accesible si está autenticado) */}

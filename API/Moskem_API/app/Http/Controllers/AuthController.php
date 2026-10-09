@@ -125,4 +125,12 @@ class AuthController extends Controller
             'user' => $usuario,
         ])->withCookie($cookie);
     }
+
+    public function validateData(Request $request){
+        try {
+            
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
 }

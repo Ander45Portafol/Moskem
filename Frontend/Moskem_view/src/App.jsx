@@ -17,6 +17,7 @@ import { Cupones } from "./pages/Cupones";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
 import { Recuperacion } from "./pages/Recuperacion";
 import Login2 from "./pages/Login2";
+import { Configuracion } from "./pages/Configuracion";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="orden_compra" element={<OrdenesCompra />} />
           <Route path="merceria" element={<Mercerias />} />
           <Route path="tela" element={<Telas />} />
+          <Route path="config" element={ <Configuracion/>} />
         </Route>
       </Route>
 

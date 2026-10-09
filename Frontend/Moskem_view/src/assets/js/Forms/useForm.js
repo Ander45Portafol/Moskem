@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
-import { API } from "../global";
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../../../services/api";
 
 export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
   const [data, setData] = useState(estadoInicial);
@@ -21,145 +21,96 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
     }
   }, [id, isOpen]);
 
-  const chargeData = async (id) => {
+  // Carga los datos de un registro individual para edición
+  const chargeData = async (idToLoad) => {
     try {
-      const response = await fetch(`${API}${ruta}/${id}`);
-      if (response.ok) {
-        const responseData = await response.json();
-        setData(responseData.data);
-        idCargadoRef.current = id;
-      }
+      const responseData = await apiFetch(`${ruta}/${idToLoad}`, {
+        method: "GET",
+      });
+      setData(responseData.data ?? responseData);
+      idCargadoRef.current = idToLoad;
     } catch (e) {
-      console.log(e);
+      console.error("Error al cargar los datos del registro:", e);
     }
   };
 
-  const createData = async (formData) => {
-    try {
-      const response = await fetch(`${API}${ruta}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          title: result.message || "Registro creado con éxito",
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-        setForm((prev) => [...prev, result.data]);
-        return result.data;
-      }
-    } catch (e) {
-      Swal.fire({
-        title: "Ocurrió un problema",
-        text: e.message,
-        icon: "error",
-        showConfirmButton: false,
-        timer: 3000,
-      });
-    }
-  };
-
-  const updateData = async (formData, id_form) => {
-    try {
-      const response = await fetch(`${API}${ruta}/${id_form}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        // 1. Convertimos la respuesta a JSON para obtener el "message" del backend
-        const result = await response.json();
-
-        // 2. Mostramos la alerta usando el mensaje real de tu API de Laravel
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          title: result.message || "Registro actualizado con éxito",
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-
-        // 3. Volvemos a pedir la lista completa para actualizar el componente padre
-        const updateClient = await fetch(`${API}${ruta}`);
-        if (updateClient.ok) {
-          const responseData = await updateClient.json();
-          setForm(responseData.data);
-        }
-
-        // 4. Cerramos el modal de forma segura
-        if (onClose) onClose();
-        return result.data; // 👈 IMPORTANTE
-      } else {
-        // Si el backend responde con un error (ej. 500 o 422)
-        const errorResult = await response.json();
-        Swal.fire({
-          title: "Error al actualizar",
-          text: errorResult.data || "Verifica los datos enviados",
-          icon: "error",
-          showConfirmButton: true,
-        });
-      }
-    } catch (e) {
-      // Importante: No dejar el catch vacío para saber si algo falla en JS
-      console.error("Error en la petición de actualización:", e);
-      Swal.fire({
-        title: "Ocurrió un problema",
-        text: "No se pudo conectar con el servidor.",
-        icon: "error",
-        timer: 3000,
-      });
-    }
-  };
-
+  // Manejador principal para Crear o Actualizar registros
   const handleSubmit = async (e, customData = null) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    // 1. Determinar si los datos vienen como FormData o como el objeto 'data' tradicional
     const payload = customData || data;
     const esFormData = payload instanceof FormData;
 
-    // 2. Definir el método HTTP y la URL adecuadamente
-    // Si es FormData y tiene ID (actualización), Laravel necesita viajar como POST con el _method 'PUT'
-    const url = id ? `${API}${ruta}/${id}` : `${API}${ruta}`;
-    const method = id && !esFormData ? "PUT" : "POST";
+    // Determinar URL y método
+    const endpoint = id ? `${ruta}/${id}` : ruta;
+    let method = id ? "PUT" : "POST";
 
-    // 3. Definir las cabeceras dinámicamente
-    const headers = {};
-    if (!esFormData) {
-      headers["Content-Type"] = "application/json";
+    // Si es actualización y viene como FormData, Laravel requiere que viaje como POST con _method = 'PUT'
+    if (id && esFormData) {
+      method = "POST";
+      payload.append("_method", "PUT");
     }
 
-    // 4. Transformar body según corresponda
-    const body = esFormData ? payload : JSON.stringify(payload);
+    // Configurar opciones de petición
+    const options = {
+      method,
+      body: esFormData ? payload : JSON.stringify(payload),
+      headers: {},
+    };
+
+    // Si es FormData, dejamos que el navegador genere automáticamente el boundary
+    if (esFormData) {
+      delete options.headers["Content-Type"];
+    }
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers,
-        body,
+      const result = await apiFetch(endpoint, options);
+
+      // Alerta de éxito con SweetAlert2
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        title:
+          result.message ||
+          (id ? "Registro actualizado con éxito" : "Registro creado con éxito"),
+        icon: "success",
+        showConfirmButton: false,
+        timer: 3000,
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        return result.data || result;
-      } else {
-        console.error("Error en la respuesta de la API:", result);
-        return false;
+      // Recargamos o actualizamos la lista en el estado padre si setForm está disponible
+      if (setForm) {
+        try {
+          const listResponse = await apiFetch(ruta, { method: "GET" });
+          setForm(listResponse.data ?? listResponse);
+        } catch (errList) {
+          console.error("Error al refrescar la lista:", errList);
+        }
       }
+
+      // Cerramos el modal si aplica
+      if (onClose) onClose();
+
+      // Retornamos el resultado completo para que la vista pueda leer clave_inicial, empleado, etc.
+      return result;
     } catch (error) {
-      console.error("Error al procesar la petición:", error);
+      const errorMsg =
+        error.data?.error ||
+        error.data?.message ||
+        error.message ||
+        "Error al procesar la solicitud.";
+
+      Swal.fire({
+        title: id ? "Error al actualizar" : "Error al registrar",
+        text: errorMsg,
+        icon: "error",
+        showConfirmButton: true,
+        confirmButtonColor: "#006272",
+      });
+
       return false;
     }
   };
 
-  return { data, setData, handleSubmit };
+  return { data, setData, handleSubmit, chargeData };
 }

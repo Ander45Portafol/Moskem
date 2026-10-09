@@ -12,6 +12,7 @@ import {
 import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
+import { apiFetch } from "../services/api";
 
 export function Clientes() {
   //Estado para manejar el modal
@@ -32,25 +33,19 @@ export function Clientes() {
   }, [searchQuery]);
 
   //Función creada para el motor de busqueda
-  const fetchClientes = async (query = "") => {
-    try {
-      // Si hay query usamos la ruta de buscar, si no, traemos todos
-      const url = query
-        ? `${API}clientes/buscar?q=${encodeURIComponent(query)}`
-        : `${API}clientes`;
-      //Petición a la API
-      const response = await fetch(url);
-      //Validamos si la petición fue exitosa o si tuvo algun error
-      if (response.ok) {
-        //Al ser exitosa la petición la convertimos en formato JSON
-        const responseData = await response.json();
-        //Actualiza el estado de los datos
-        setData(responseData.data);
-      }
-    } catch (error) {
-      console.error("Error al traer los clientes:", error);
-    }
-  };
+const fetchClientes = async (query = "") => {
+  try {
+    const endpoint = query
+      ? `clientes/buscar?q=${encodeURIComponent(query)}`
+      : "clientes";
+
+    const responseData = await apiFetch(endpoint, { method: "GET" });
+
+    setData(responseData.data);
+  } catch (error) {
+    console.error("Error al traer los clientes:", error.message || error);
+  }
+};
   //Función utilizada para cargar el modal con la opcion de actualizar, enviandole el id
   const modalActualizar = (id) => {
     setIdCliente(id);

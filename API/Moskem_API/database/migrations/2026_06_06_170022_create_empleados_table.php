@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id('id_empleado');
             $table->string('nombres_empleado', 100);
             $table->string('apellidos_empleado', 100);
-            $table->string('usuario_empleado', 50);
-            $table->string('clave_empleado',200)->nullable(); // Hash de contraseña
             $table->enum('tipo_empleado', ['Administrador', 'Sastre','Vendedor','root','Diseñador','Pasantes']); // Ej: Administrador, Sastre, Vendedor
             $table->string('documentos_empleados', 10); // Ruta de archivos
             $table->string('correo_empleado',200);

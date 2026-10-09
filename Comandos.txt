@@ -1,0 +1,8 @@
+Laravel:
+- composer require tymon/jwt-auth
+- php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+- php artisan jwt:secret
+- php artisan make:middleware ReadJwtFromCookie
+
+React:
+ - npm install yet-another-react-lightbox

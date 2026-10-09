@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmpleadoRequest;
 use App\Http\Resources\EmpleadoResource;
+use Illuminate\Support\Str;
 use App\Http\Responses\ApiResponse;
 use App\Models\Empleado;
+use App\Models\Usuario;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -39,35 +42,53 @@ class EmpleadoController extends Controller
     public function store(EmpleadoRequest $request): JsonResponse
     {
         try {
-            $validate = $request->validated();
-            $validate['visibilidad_empleado'] = true;
-            // 1. Creamos el empleado inicialmente
-            $empleado = Empleado::create($validate);
+            $data = DB::transaction(function () use ($request) {
+                $validate = $request->validated();
+                $validate['visibilidad_empleado'] = true;
 
+                // 1. Creamos el empleado inicialmente
+                $empleado = Empleado::create($validate);
 
-            // 2. Extraemos el primer nombre y el primer apellido para las iniciales
-            // Usamos explode por si el usuario ingresó nombres compuestos separados por espacios
-            $primerNombre = explode(' ', trim($empleado->nombres_empleado))[0];
-            $primerApellido = explode(' ', trim($empleado->apellidos_empleado))[0];
+                // 2. Extraemos el primer nombre y primer apellido para las iniciales
+                $primerNombre = explode(' ', trim($empleado->nombres_empleado))[0];
+                $primerApellido = explode(' ', trim($empleado->apellidos_empleado))[0];
 
-            // Tomamos la primera letra de cada uno y la aseguramos en mayúscula
-            $inicialNombre = strtoupper(substr($primerNombre, 0, 1));
-            $inicialApellido = strtoupper(substr($primerApellido, 0, 1));
+                $inicialNombre = mb_strtoupper(mb_substr($primerNombre, 0, 1));
+                $inicialApellido = mb_strtoupper(mb_substr($primerApellido, 0, 1));
 
-            // 3. Rellenamos el ID con ceros a la izquierda hasta completar 6 dígitos
-            $idConCeros = str_pad($empleado->id_empleado, 6, '0', STR_PAD_LEFT);
+                // 3. Rellenamos el ID con ceros a la izquierda (Ej: AA000001)
+                $idConCeros = str_pad($empleado->id_empleado, 6, '0', STR_PAD_LEFT);
+                $empleado->codigo_empleado = $inicialNombre . $inicialApellido . $idConCeros;
+                $empleado->save();
 
-            // 4. Concatenamos las iniciales con el ID formateado (Ej: AA000001)
-            $empleado->codigo_empleado = $inicialNombre . $inicialApellido . $idConCeros;
+                // 4. Generamos una clave aleatoria alfanumérica de 8 caracteres
+                $clavePlana = Str::random(8);
 
-            //Utilizamos que para la primera contraseña se cree con el codigo de el empleado
-            $empleado->clave_empleado = Hash::make($empleado->codigo_empleado);
+                // 5. Creación del usuario asociado usando el codigo_empleado
+                $usuario = Usuario::create([
+                    'id_empleado'       => $empleado->id_empleado,
+                    'cantidad_intentos' => 5,
+                    'usuario'           => $empleado->codigo_empleado, // <--- Ajustado a codigo_empleado
+                    'estado_usuario'    => true,
+                    'tipo_usuario'      => $empleado->tipo_empleado,
+                    'clave'             => Hash::make($clavePlana),
+                ]);
 
-            // 5. Guardamos el cambio definitivo en la base de datos
-            $empleado->save();
+                return [
+                    'empleado'   => $empleado,
+                    'clavePlana' => $clavePlana,
+                ];
+            });
 
-            // Retornamos usando tu estructura de ApiResponse y tu Resource
-            return ApiResponse::success('Empleado creado con exito', 200, new EmpleadoResource($empleado));
+            // Retornamos la respuesta de éxito junto con la clave plana
+            return ApiResponse::success(
+                'Empleado y usuario creados con éxito',
+                201,
+                [
+                    'empleado'      => new EmpleadoResource($data['empleado']),
+                    'clave_inicial' => $data['clavePlana'], // <--- Ahora sí viajará en el JSON
+                ]
+            );
         } catch (Exception $ex) {
             return ApiResponse::error('Error al intentar guardar el registro', 500, $ex->getMessage());
         }

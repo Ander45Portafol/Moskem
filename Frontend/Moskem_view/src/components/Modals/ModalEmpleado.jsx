@@ -22,7 +22,6 @@ export default function ModalEmpleado({
   const estadoInicial = {
     nombres_empleado: "",
     apellidos_empleado: "",
-    usuario_empleado: "",
     tipo_empleado: "",
     documentos_empleados: "",
     correo_empleado: "",
@@ -147,15 +146,6 @@ export default function ModalEmpleado({
               textId="documentos_empleados"
               view="00000000-0"
               valueData={data.documentos_empleados}
-              updateData={inputsUpdate}
-            />
-
-            <InputD
-              text="Usuario"
-              type="text"
-              textId="usuario_empleado"
-              view=""
-              valueData={data.usuario_empleado}
               updateData={inputsUpdate}
             />
 

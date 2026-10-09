@@ -25,7 +25,6 @@ class EmpleadoRequest extends FormRequest
         return [
             'nombres_empleado' => 'required|string',
             'apellidos_empleado' => 'required|string',
-            'usuario_empleado' => 'required|string',
             'tipo_empleado' => 'required',
             'documentos_empleados' => [
                 'required',
@@ -44,8 +43,6 @@ class EmpleadoRequest extends FormRequest
             'nombres_empleado.string' => 'El nombre del empleado no cumple con el formato correcto',
             'apellidos_empleado.required' => 'El apellido del empleado no puede quedar vacio',
             'apellidos_empleado.string' => 'El apellidos del empleado no cumple con el formato correcto',
-            'usuario_empleado.required' => 'Debe ingresar un usuario para el empleado',
-            'usuario_empleado.string' => 'El usuario del empleado no cumple con el formato correcto',
             'tipo_empleado.required' => 'Debe seleccionar un tipo de empleado',
             'documentos_empleados.required' => 'Debe ingresar un documento de identificación del empleado',
             'documentos_empleados.regex' => 'El documento del empleado, no cumple con el formato indicado',

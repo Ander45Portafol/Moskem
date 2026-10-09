@@ -1,27 +1,32 @@
 import Swal from "sweetalert2";
-import { API } from "./global";
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../../services/api";
+
 
 export function useGet(url) {
   const [data, setData] = useState([]);
   const [message, setMessage] = useState(null);
-  const fetchedRef = useRef(false)
+  const fetchedRef = useRef(false);
 
   async function getData() {
     try {
-      const response = await fetch(API + url, { method: "GET" });
-      const responseData = await response.json();
-      setMessage(responseData.message);
-      setData(responseData.data);
+      // apiFetch ya incluye credentials: "include" y la constante API
+      const responseData = await apiFetch(url, { method: "GET" });
+
+      setMessage(responseData.message || null);
+      // Si Laravel responde con la estructura estándar de ApiResponse, los datos están en .data
+      setData(responseData.data ?? responseData);
     } catch (e) {
+      // Capturamos la excepción lanzada por apiFetch cuando response.ok es false o falla la red
+      const errorMsg =
+        e.data?.error || e.message || "Error al conectar con el servidor.";
+
       Swal.fire({
-        title: "Ocurrio un problema",
-        text: "No se puede establecer la conexión con el servidor. Error 401",
+        title: "Ocurrió un problema",
+        text: errorMsg,
         icon: "error",
-        showConfirmButton: false, // Desactiva el botón de confirmación
-        showCancelButton: false, // Desactiva el botón de cancelar
-        allowOutsideClick: false, // Opcional: Evita que el usuario cierre el modal haciendo clic fuera
-        allowEscapeKey: false,
+        showConfirmButton: true, // Se activa para que el usuario pueda cerrar la alerta
+        confirmButtonColor: "#006272",
       });
     }
   }
@@ -29,12 +34,9 @@ export function useGet(url) {
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
-    // fetch(url, action)
-    //   .then((response) => setData(response.json().data))
-    //   .then((info) => setData(info.data))
-    //   .catch((error) => setError(error))
+
     getData();
   }, [url]);
-  //se retornan estas variables porque serán que se uilizaremos para cargar los datos y mostrar los datos
-  return { data, message, setData };
+
+  return { data, message, setData, refetch: getData };
 }

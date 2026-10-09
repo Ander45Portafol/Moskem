@@ -8,7 +8,7 @@ import {
 import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
-import ModalProducto from "../components/Modals/ModalProducto";
+import { ModalProducto } from "../components/Modals/ModalProducto";
 
 export default function Productos() {
   const [modalActivo, setModalActivo] = useState(null);
@@ -33,7 +33,7 @@ export default function Productos() {
       const response = await fetch(url);
       if (response.ok) {
         const responseData = await response.json();
-        setData(responseData.data);
+        setData(responseData.data || responseData);
       }
     } catch (error) {
       console.error("Error al traer los productos:", error);
@@ -168,6 +168,12 @@ export default function Productos() {
             {data && data.length !== 0 ? (
               data.map((item) => {
                 const itemId = item.id_producto || item.id;
+                
+                // Extraer información de tela de forma segura usando encadenamiento opcional
+                const telaObj = item.tela || item.telas;
+                const nombreTela = telaObj?.color_tela || telaObj?.nombre_tela || telaObj?.categoria_tela || "Sin tela";
+                const codigoTela = telaObj?.codigo_tela || telaObj?.codigo || "";
+
                 return (
                   <tr
                     key={itemId}
@@ -178,7 +184,9 @@ export default function Productos() {
                     <td className="py-4">{item.color}</td>
                     <td className="py-4">{item.talla}</td>
                     <td className="py-4">{renderEstadoBadge(item.estado || item.estado_producto)}</td>
-                    <td className="py-4">{item.tela?.nombre_tela || item.tela.nombre_tela} - ${item.tela.codigo_tela || item.tela.codigo}</td>
+                    <td className="py-4">
+                      {codigoTela ? `${nombreTela} - ${codigoTela}` : nombreTela}
+                    </td>
 
                     <td className="py-4">
                       <div className="flex items-center justify-center gap-2">
@@ -214,7 +222,6 @@ export default function Productos() {
         </table>
       </div>
 
-      {/* Se pasan tanto las props viejas como las nuevas para asegurar compatibilidad */}
       <ModalProducto
         key={registroEditar ? `edit-${registroEditar.id_producto || registroEditar.id}` : 'create-new'}
         show={modalActivo === "agregar"}
@@ -222,6 +229,7 @@ export default function Productos() {
         onClose={() => {
           setModalActivo(null);
           setRegistroEditar(null);
+          fetchProductos(searchQuery); // Refresca los datos para traer la relación de telas actualizada
         }}
         tipo={registroEditar ? "actualizar" : "agregar"}
         modalTipo={registroEditar ? "ver" : "agregar"}

@@ -23,55 +23,76 @@ class ProductoRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Detecta el ID si se trata de una actualización (PUT) para ignorarlo en el UNIQUE
+        // Detecta el ID si se trata de una actualización (PUT/PATCH)
         $id = $this->route('producto') ?? $this->route('id');
 
         return [
-            'nombre_producto' => 'required|string|max:255',
-            'codigo_producto' => [
+            'tipo_producto' => [
                 'required',
                 'string',
-                'max:14',
+                Rule::in([
+                    'Traje_completo',
+                    'Saco',
+                    'Pantalon',
+                    'Camisa',
+                    'Traje_superior',
+                    'Corbata',
+                    'Zapatos'
+                ]),
+            ],
+            'codigo_producto' => [
+                'nullable',
+                'string',
+                'max:50',
                 Rule::unique('productos', 'codigo_producto')->ignore($id, 'id_producto'),
             ],
-            'stock' => 'required|integer|min:0',
-            'color' => 'required|string|max:30',
-            // Cambiado a integer para coincidir con la columna en PostgreSQL
-            'tamanio_producto' => 'required|integer|min:0',
-            'id_proveedor' => 'required|integer|exists:proveedores,id_proveedor',
-            'codigo_producto_proveedor' => 'required|string|max:255',
-            'medida_stock' => [
+            // Permite string (URL/ruta existente) o un archivo de imagen válido
+            'imagen_producto' => 'nullable',
+            
+            // Color obligatorio SOLO si NO es un producto con tela (es decir, obligatorio si es Zapatos o no tiene tela seleccionada)
+            'color' => 'nullable|required_if:tipo_producto,Zapatos|string|max:50',
+            
+            'talla' => 'required|string|max:10',
+            
+            // id_tela es OBLIGATORIO para todo excepto si el tipo de producto es 'Zapatos'
+            'id_tela' => [
+                'nullable',
+                'required_unless:tipo_producto,Zapatos',
+                'integer',
+                'exists:telas,id_tela',
+            ],
+            
+            'costo' => 'required|numeric|min:0',
+            'descripcion_producto' => 'nullable|string|max:255',
+            'estado_producto' => [
                 'required',
                 'string',
-                Rule::in(['Pulgadas', 'Yardas', 'Unidad']),
+                Rule::in(['Vendido', 'Disponible', 'Rentado', 'Lavanderia', 'Ajuste']),
             ],
-            'descripcion_producto' => 'required|string|max:255',
+            'visibilidad_producto' => 'boolean',
         ];
     }
 
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
-            'tipo_producto.required' => 'Debe seleccionar una opción para el tipo de producto.',
-            'tipo_producto.in' => 'El tipo debe ser: Tela, Forro, Cierre, Botones, Ganchos, Zipper, Agujas o Hilos.',
-            'color.required' => 'El color es obligatorio.',
-            'color.max' => 'El color no debe exceder los 30 caracteres.',
-            'color.string' => 'El color debe ser una cadena de texto.',
+            'tipo_producto.required' => 'Debe seleccionar un tipo de producto.',
+            'tipo_producto.in' => 'El tipo de producto seleccionado no es válido.',
+            'codigo_producto.unique' => 'Este código de producto ya está registrado.',
+            'color.required_if' => 'El campo color es obligatorio para zapatos.',
+            'color.max' => 'El color no debe exceder los 50 caracteres.',
             'talla.required' => 'La talla es obligatoria.',
-            'talla.integer' => 'La talla debe ser un número entero.',
-            'id_tela.required' => 'Debe seleccionar una tela.',
-            'id_tela.integer' => 'El ID de la tela debe ser un número entero.',
-            'id_tela.exists' => 'La tela seleccionada no existe.',
-            'codigo_tela.required' => 'El código de la tela es obligatorio.',
-            'codigo_tela.string' => 'El código de la tela debe ser una cadena de texto.',
-            'codigo_tela.max' => 'El código de la tela no debe exceder los 14 caracteres.',
-            'codigo_tela.unique' => 'Este código de tela ya está registrado.',
-            'tela.required' => 'Debe seleccionar una tela.',
-            'tela.string' => 'La tela debe ser una cadena de texto.',
-            'costo.required' => 'El costo es obligatorio.',
-            'costo.numeric' => 'El costo debe ser un número.',
-            'estado_producto.required' => 'Debe seleccionar un estado para el producto.',
-            'estado_producto.in' => 'El estado debe ser: Disponible, Agotado o Descontinuado.',
+            'id_tela.required_unless' => 'Debe seleccionar una tela para este tipo de producto.',
+            'id_tela.exists' => 'La tela seleccionada no existe en el catálogo.',
+            'costo.required' => 'El costo del producto es obligatorio.',
+            'costo.numeric' => 'El costo debe ser un valor numérico.',
+            'estado_producto.required' => 'El estado del producto es obligatorio.',
+            'estado_producto.in' => 'El estado seleccionado no es válido.',
         ];
     }
 }

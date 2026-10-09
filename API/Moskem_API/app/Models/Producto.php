@@ -13,6 +13,9 @@ class Producto extends Model // <-- Cambiado de Productos a Producto
     protected $fillable = [
         'id_producto',
         'tipo_producto',
+        'codigo_producto',
+        'imagen_producto',
+        'descripcion_producto',
         'color',
         'talla',
         'id_tela',
@@ -25,7 +28,7 @@ class Producto extends Model // <-- Cambiado de Productos a Producto
         return $this->hasMany(DetalleRenta::class, 'id_producto');
     }
 
-    public function telas(){
+    public function tela(){
         return $this->belongsTo(Tela::class, 'id_tela', 'id_tela');
     }
 }

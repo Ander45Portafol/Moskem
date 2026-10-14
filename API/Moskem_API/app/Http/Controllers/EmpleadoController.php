@@ -59,20 +59,20 @@ class EmpleadoController extends Controller
                 // 3. Rellenamos el ID con ceros a la izquierda (Ej: AA000001)
                 $idConCeros = str_pad($empleado->id_empleado, 6, '0', STR_PAD_LEFT);
                 $empleado->codigo_empleado = $inicialNombre . $inicialApellido . $idConCeros;
-                $empleado->save();
 
                 // 4. Generamos una clave aleatoria alfanumérica de 8 caracteres
                 $clavePlana = Str::random(8);
 
                 // 5. Creación del usuario asociado usando el codigo_empleado
                 $usuario = Usuario::create([
-                    'id_empleado'       => $empleado->id_empleado,
+                    'id_empleado'=>$empleado->id_empleado,
                     'cantidad_intentos' => 5,
                     'usuario'           => $empleado->codigo_empleado, // <--- Ajustado a codigo_empleado
                     'estado_usuario'    => true,
                     'tipo_usuario'      => $empleado->tipo_empleado,
                     'clave'             => Hash::make($clavePlana),
                 ]);
+                $empleado->save();
 
                 return [
                     'empleado'   => $empleado,

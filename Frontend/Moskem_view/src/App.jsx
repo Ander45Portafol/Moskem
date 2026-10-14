@@ -17,6 +17,8 @@ import { Cupones } from "./pages/Cupones";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
 import { Recuperacion } from "./pages/Recuperacion";
 import Login2 from "./pages/Login2";
+import { Configuracion } from "./pages/Configuracion";
+import { CambioClave } from "./pages/CambioClave";
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
       <Route element={<PublicRoute />}>
         <Route path="/" element={<Login2 />} />
         <Route path="/recuperar_contraseña" element={<Recuperacion />} />
+        <Route path="/cambio_contraseña" element={ <CambioClave/>} />
       </Route>
 
       {/* Rutas Protegidas (Solo accesible si está autenticado) */}
@@ -40,6 +43,7 @@ function App() {
           <Route path="orden_compra" element={<OrdenesCompra />} />
           <Route path="merceria" element={<Mercerias />} />
           <Route path="tela" element={<Telas />} />
+          <Route path="config" element={ <Configuracion/>} />
         </Route>
       </Route>
 

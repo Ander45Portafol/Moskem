@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id('id_usuario');
-            $table->foreignId('id_empleado')->constrained('empleados', 'id_empleado');  
             $table->integer('cantidad_intentos');
             $table->string('usuario');
+            $table->unsignedBigInteger('id_empleado');
+            $table->foreign('id_empleado')->references('id_empleado')->on('empleados')->onDelete('cascade');
             $table->enum('tipo_usuario', ['Administrador', 'Sastre', 'Vendedor', 'root', 'Diseñador', 'Pasantes']);
             $table->boolean('estado_usuario')->default(true);
             $table->string('clave');         

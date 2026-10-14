@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\SendResetCodeNotification;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -124,5 +128,132 @@ class AuthController extends Controller
         return response()->json([
             'user' => $usuario,
         ])->withCookie($cookie);
+    }
+
+    public function sendResetCode(Request $request)
+    {
+        // 1. Validar la entrada del formulario
+        $request->validate([
+            'usuario'         => 'required|string',
+            'correo_empleado' => 'required|email',
+        ]);
+
+        // Limpiar espacios y normalizar a minúsculas
+        $usuarioInput = strtolower(trim($request->usuario));
+        $correoInput  = strtolower(trim($request->correo_empleado));
+
+        // 2. Buscar al usuario ignorando mayúsculas/minúsculas en ambas tablas
+        $usuario = Usuario::whereRaw('LOWER(usuario) = ?', [$usuarioInput])
+            ->whereHas('empleado', function ($query) use ($correoInput) {
+                $query->whereRaw('LOWER(correo_empleado) = ?', [$correoInput]);
+            })
+            ->first();
+
+        // 3. Si las credenciales no coinciden entre ambas tablas
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'El nombre de usuario o el correo electrónico son incorrectos.'
+            ], 422);
+        }
+
+        // 4. Generar código aleatorio de 6 dígitos
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // 5. Guardar en Cache por 15 minutos con la clave normalizada
+        Cache::put('reset_code_' . $usuarioInput, (string)$code, now()->addMinutes(15));
+
+        // 6. Enviar notificación al empleado
+        $usuario->empleado->notify(new SendResetCodeNotification($code));
+
+        return response()->json([
+            'message' => 'Se ha enviado un código de verificación a tu correo electrónico.'
+        ], 200);
+    }
+    // 2. Verificar el código de 6 dígitos ingresado por el usuario
+    public function verifyResetCode(Request $request)
+    {
+        $request->validate([
+            'usuario' => 'required|string',
+            'codigo'  => 'required|string|digits:6'
+        ]);
+
+        // Generar la misma clave estandarizada
+        $usuarioInput = strtolower(trim($request->usuario));
+        $cacheKey = 'reset_code_' . $usuarioInput;
+
+        $cachedCode = Cache::get($cacheKey);
+
+        // Verificar expiración o existencia
+        if (!$cachedCode) {
+            return response()->json([
+                'message' => 'El código de verificación ha expirado o es inválido.'
+            ], 422);
+        }
+
+        // Comparar asegurando conversión a string
+        if ((string)$cachedCode !== (string)$request->codigo) {
+            return response()->json([
+                'message' => 'El código ingresado es incorrecto.'
+            ], 422);
+        }
+
+        // Eliminar código usado
+        Cache::forget($cacheKey);
+
+        // Autorizar cambio de clave por 10 min
+        Cache::put('reset_authorized_' . $usuarioInput, true, now()->addMinutes(10));
+
+        return response()->json([
+            'message' => 'Código verificado correctamente. Ya puedes ingresar tu nueva contraseña.'
+        ], 200);
+    }
+    // 3. Actualizar la contraseña por la nueva
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'usuario' => 'required|string',
+            'codigo'  => 'required|string',
+            'clave'   => [
+                'required',
+                'string',
+                Password::min(8)      // Longitud mínima recomendada (12+ caracteres)
+                    ->mixedCase()      // Opcional: Requiere mayúsculas y minúsculas
+                    ->numbers()        // Opcional: Requiere números
+                    ->symbols()        // Opcional: Requiere caracteres especiales
+                    ->uncompromised() // Verifica que la clave no haya aparecido en filtraciones de datos
+            ],
+        ]);
+
+        $usuarioInput = strtolower(trim($request->usuario));
+
+        // 2. Validar que el usuario tenga la autorización en Cache
+        $isAuthorized = Cache::get('reset_authorized_' . $usuarioInput);
+
+        if (!$isAuthorized) {
+            return response()->json([
+                'message' => 'No estás autorizado para realizar este cambio o la sesión ha expirado. Inicia el proceso nuevamente.'
+            ], 403);
+        }
+
+        // 3. Buscar al usuario en la base de datos (insensible a mayúsculas/minúsculas)
+        $usuario = Usuario::whereRaw('LOWER(usuario) = ?', [$usuarioInput])->first();
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado.'
+            ], 404); // Se recomienda status 404 para no encontrado en lugar de 444
+        }
+
+        // 4. Actualizar contraseña encriptada 
+        // Nota: Reemplaza 'clave' por el nombre exacto de la columna en tu BD (ej. $usuario->clave o $usuario->password)
+        $usuario->clave = Hash::make($request->clave);
+        $usuario->save();
+
+        // 5. Consumir el permiso temporal en Cache para que no se pueda reutilizar
+        Cache::forget('reset_authorized_' . $usuarioInput);
+
+        return response()->json([
+            'message' => 'Contraseña actualizada con éxito.'
+        ], 200);
     }
 }

@@ -8,23 +8,14 @@ import {
   Cog8ToothIcon,
   TableCellsIcon,
   InboxStackIcon,
-  ClipboardDocumentCheckIcon,
   WalletIcon,
   PercentBadgeIcon,
 } from "@heroicons/react/24/solid";
 import { Link, useLocation } from "react-router";
-import { useAuth } from "../Context/AuthContext";
 export function Sidebar() {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);
   const active = pathSegments[pathSegments.length - 1] || "dashboard";
-
-
-  const { logout } = useAuth();
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    await logout();
-  };
 
   //Trabajar botones del menu como estado con el useState y que cada boton sea tipo boolean si esta activo sera true y si no sera false, para hacer que se activen
   return (
@@ -174,12 +165,12 @@ export function Sidebar() {
         </Link>
       </nav>
       <div className=" flex h-1/6 items-end w-full">
-        <button onClick={handleLogout} className="mb-2">
+        <Link to="/admin/config" className="mb-2">
           <div className="p-3 pr-8 w-full rounded-xl flex items-center gap-4 transition-all duration-300 ease-out group transform active:scale-95 bg-transparent text-white font-normal ml-6 mr-2 translate-x-1 hover:bg-[#009BAE] hover:text-[#004053] hover:font-bold">
             <Cog8ToothIcon className="size-6" />
             <span className="text-md">Configuración</span>
           </div>
-        </button>
+        </Link>
       </div>
     </div>
   );

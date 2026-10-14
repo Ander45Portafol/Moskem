@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../Context/AuthContext";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid"; // Iconos para el botón de visibilidad
 
 export default function Login2() {
   const navigate = useNavigate();
@@ -11,6 +12,9 @@ export default function Login2() {
     usuario: "",
     clave: "",
   });
+
+  // Estado para alternar la visibilidad de la contraseña
+  const [showPassword, setShowPassword] = useState(false);
 
   // Estados para errores y carga
   const [errorMsg, setErrorMsg] = useState("");
@@ -71,6 +75,14 @@ export default function Login2() {
             <p className="font-normal text-sm">
               Ingrese todas sus credenciales para poder acceder a su perfil.
             </p>
+
+            {/* Mensaje de error si la autenticación falla */}
+            {errorMsg && (
+              <div className="mt-4 p-3 bg-rose-600/80 rounded-lg text-sm text-white font-medium text-center">
+                {errorMsg}
+              </div>
+            )}
+
             <div className="mt-10 flex-col">
               <label htmlFor="" className="font-bold text-md">
                 Usuario
@@ -81,22 +93,41 @@ export default function Login2() {
                 required
                 value={formData.usuario}
                 onChange={handleChange}
-                className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 p-6 rounded-xl mt-3"
+                className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 p-6 rounded-xl mt-3 outline-none"
               />
             </div>
+
             <div className="mt-4 flex-col">
               <label htmlFor="" className="font-bold text-md">
                 Contraseña
               </label>
-              <input
-                type="password"
-                name="clave"
-                value={formData.clave}
-                onChange={handleChange}
-                required
-                className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 p-6 rounded-xl mt-3"
-              />
+              {/* Contenedor relativo para posicionar el botón de ver/ocultar */}
+              <div className="relative w-full mt-3 flex items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="clave"
+                  value={formData.clave}
+                  onChange={handleChange}
+                  required
+                  className="w-full text-[#004053] font-semibold text-xl bg-[#D9D9D9] h-14 pl-6 pr-14 rounded-xl outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-[#004053] hover:opacity-75 transition-opacity p-1"
+                  title={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="size-6" />
+                  ) : (
+                    <EyeIcon className="size-6" />
+                  )}
+                </button>
+              </div>
             </div>
+
             <div className="flex justify-end mt-4">
               <Link to="/recuperar_contraseña">
                 <p className="text-xs text-white font-semibold cursor-pointer hover:underline hover:text-[#D9D9D9]">
@@ -108,7 +139,7 @@ export default function Login2() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#BCCF00] text-[#004053] text-lg font-bold w-1/2 mt-10 rounded-lg py-2 hover:bg-[#A1AD2A]"
+                className="bg-[#BCCF00] text-[#004053] text-lg font-bold w-1/2 mt-10 rounded-lg py-2 hover:bg-[#A1AD2A] transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? "Cargando..." : "Iniciar sesión"}
               </button>

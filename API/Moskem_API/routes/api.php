@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Route;
 
 // 1. Ruta Pública para Iniciar Sesión
 Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::post('sendResetCode',[AuthController::class, 'sendResetCode']);
+Route::post('verifyResetCode', [AuthController::class, 'verifyResetCode']);
+Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 
 // 2. TODAS las rutas protegidas del sistema van dentro de este grupo
 Route::middleware('auth:api')->group(function () {

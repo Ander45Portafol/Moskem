@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id('id_producto');
-            $table->enum('tipo_producto', [
-                'Traje_completo',
-                'Saco',
-                'Pantalon',
-                'Camisa',
-                'Traje_superior',
-                'Corbata',
-                'Zapatos'
+            $table->enum('categoria_producto', [
+                'Vestimenta',
+                'Zapatos',
+                'Accesorios'
             ]);
+            $table->string('nombre_producto');
             $table->string('codigo_producto')->nullable();
             $table->string('imagen_producto', 255)->nullable();
+            $table->enum('tipo_producto',['Saco','Pantalón','Camisa','Chaqué (tipo saco)','Frac (tipo saco)','Blazer','Faja','Corbatin (Bow tie)','Mancuernilla','Zapatos','Pañuelo','Traje de colección','Chaleco','Corbata','Tirantes']);
+            $table->integer('cantidad_stock')->default(1);
+            $table->date('fecha_ingreso_producto');
             $table->string('color', 50)->nullable(); // Se hace nullable porque cuando hay Tela, el color se toma de ella
             $table->string('talla', 10);
             
@@ -36,6 +36,7 @@ return new class extends Migration
             $table->decimal('costo', 10, 2);
             $table->string('descripcion_producto', 255)->nullable();
             $table->enum('estado_producto', ['Vendido', 'Disponible', 'Rentado', 'Lavanderia', 'Ajuste']);
+            
             $table->boolean('visibilidad_producto')->default(true);
             $table->timestamps();
         });

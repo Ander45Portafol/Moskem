@@ -9,6 +9,7 @@ import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
 import { ModalProducto } from "../components/Modals/ModalProducto";
+import Dropdown from "../components/DropDown";
 
 export default function Productos() {
   const [modalActivo, setModalActivo] = useState(null);
@@ -16,6 +17,9 @@ export default function Productos() {
 
   const { data, setData } = useGet("productos");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Estado para controlar la opción seleccionada en el filtro Dropdown
+  const [selectedTipo, setSelectedTipo] = useState("Todos");
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -73,7 +77,7 @@ export default function Productos() {
               timer: 3000,
             });
             setData((prevData) =>
-              prevData.filter((item) => (item.id || item.id_producto) !== id)
+              prevData.filter((item) => (item.id || item.id_producto) !== id),
             );
           }
         }
@@ -114,6 +118,19 @@ export default function Productos() {
     );
   };
 
+  // Filtrado reactivo en el cliente según el tipo de producto seleccionado
+  const productosFiltrados = Array.isArray(data)
+    ? data.filter((item) => {
+        if (selectedTipo === "Todos") return true;
+        const tipoItem = (
+          item.tipo_producto ||
+          item.tipoProducto ||
+          ""
+        ).toLowerCase();
+        return tipoItem === selectedTipo.toLowerCase();
+      })
+    : [];
+
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
       <div>
@@ -140,6 +157,13 @@ export default function Productos() {
           />
         </div>
 
+        {/* Dropdown con callback onSelect para filtrar */}
+        <Dropdown
+          title="Tipo Producto"
+          options={["Zapatos", "Vestimenta", "Accesorios"]}
+          onSelect={(opcion) => setSelectedTipo(opcion)}
+        />
+
         <button
           onClick={() => {
             setRegistroEditar(null);
@@ -156,7 +180,7 @@ export default function Productos() {
           <thead className="sticky top-0 bg-white z-10">
             <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black">
               <th className="pb-4 pt-4 font-bold">ID</th>
-              <th className="pb-4 pt-4 font-bold">Tipo Producto</th>
+              <th className="py-4 pl-4 font-bold">Producto</th>
               <th className="pb-4 pt-4 font-bold">Color</th>
               <th className="pb-4 pt-4 font-bold">Talla</th>
               <th className="pb-4 pt-4 font-bold">Estado Producto</th>
@@ -165,14 +189,18 @@ export default function Productos() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
-            {data && data.length !== 0 ? (
-              data.map((item) => {
+            {productosFiltrados.length > 0 ? (
+              productosFiltrados.map((item) => {
                 const itemId = item.id_producto || item.id;
-                
-                // Extraer información de tela de forma segura usando encadenamiento opcional
+
                 const telaObj = item.tela || item.telas;
-                const nombreTela = telaObj?.color_tela || telaObj?.nombre_tela || telaObj?.categoria_tela || "Sin tela";
-                const codigoTela = telaObj?.codigo_tela || telaObj?.codigo || "";
+                const nombreTela =
+                  telaObj?.color_tela ||
+                  telaObj?.nombre_tela ||
+                  telaObj?.categoria_tela ||
+                  "Sin tela";
+                const codigoTela =
+                  telaObj?.codigo_tela || telaObj?.codigo || "";
 
                 return (
                   <tr
@@ -180,12 +208,18 @@ export default function Productos() {
                     className="hover:bg-gray-200 transition-colors"
                   >
                     <td className="py-4">{itemId}</td>
-                    <td className="py-4">{item.tipo_producto || item.tipoProducto}</td>
+                    <td className="py-4 pl-4">
+                      {   item.nombre_producto}
+                    </td>
                     <td className="py-4">{item.color}</td>
                     <td className="py-4">{item.talla}</td>
-                    <td className="py-4">{renderEstadoBadge(item.estado || item.estado_producto)}</td>
                     <td className="py-4">
-                      {codigoTela ? `${nombreTela} - ${codigoTela}` : nombreTela}
+                      {renderEstadoBadge(item.estado || item.estado_producto)}
+                    </td>
+                    <td className="py-4">
+                      {codigoTela
+                        ? `${nombreTela} (${codigoTela})`
+                        : nombreTela}
                     </td>
 
                     <td className="py-4">
@@ -209,12 +243,12 @@ export default function Productos() {
                 );
               })
             ) : (
-              <tr
-                key="no-data"
-                className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200"
-              >
-                <td className="w-56 ml-2">
-                  <p>No existen registros</p>
+              <tr>
+                <td
+                  colSpan="7"
+                  className="py-8 text-center text-gray-500 font-semibold"
+                >
+                  No existen registros que coincidan con los filtros aplicados.
                 </td>
               </tr>
             )}
@@ -223,13 +257,17 @@ export default function Productos() {
       </div>
 
       <ModalProducto
-        key={registroEditar ? `edit-${registroEditar.id_producto || registroEditar.id}` : 'create-new'}
+        key={
+          registroEditar
+            ? `edit-${registroEditar.id_producto || registroEditar.id}`
+            : "create-new"
+        }
         show={modalActivo === "agregar"}
         isOpen={modalActivo === "agregar"}
         onClose={() => {
           setModalActivo(null);
           setRegistroEditar(null);
-          fetchProductos(searchQuery); // Refresca los datos para traer la relación de telas actualizada
+          fetchProductos(searchQuery);
         }}
         tipo={registroEditar ? "actualizar" : "agregar"}
         modalTipo={registroEditar ? "ver" : "agregar"}

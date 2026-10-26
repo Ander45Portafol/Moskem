@@ -25,7 +25,7 @@ return new class extends Migration
             $table->date('fecha_asignacion');
             $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado']);
             $table->time('tiempo_sastre');
-            $table->string('imagen_diseño',255)->nullable();
+            $table->string('imagen_diseno',255)->nullable();
             $table->timestamps();
         });
     }

@@ -28,6 +28,7 @@ class TelasRequest extends FormRequest
             'cantidad_stock'=>'required|integer',
             'categoria_tela'=>'required|string',
             'id_proveedor'=>'required|integer',
+            'tipo_prenda'=>'required|string',
             'codigo_tela_proveedor'=>'nullable|string'
         ];
     }

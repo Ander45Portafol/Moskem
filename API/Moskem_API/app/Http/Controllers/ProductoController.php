@@ -49,6 +49,7 @@ class ProductoController extends Controller
         try {
             $data = $request->validated();
             $data['visibilidad_producto'] = true;
+            $data['fecha_ingreso_producto'] = now()->toDateString();
 
             // Manejo del archivo de imagen
             if ($request->hasFile('imagen_producto')) {
@@ -61,9 +62,33 @@ class ProductoController extends Controller
                 $data['id_tela'] = null;
             }
 
+            // 1. Creamos el producto primero para obtener su ID auto-incremental
             $producto = Producto::create($data);
 
-            // Cargar la relación tela antes de responder para evitar pantallas en blanco en React
+            // 2. Definimos el prefijo según el tipo de producto
+            $prefijo = match ($producto->tipo_producto) {
+                'Saco'                => 'RS',
+                'Pantalón'            => 'RP',
+                'Camisa'              => 'RCA',
+                'Chaqué (tipo saco)'  => 'RCH',
+                'Frac (tipo saco)'    => 'RFR',
+                'Blazer'              => 'RB',
+                'Chaleco'             => 'RV',
+                'Faja'                => 'RF',
+                'Traje de colección'  => 'RCO',
+                'Corbatin (Bow tie)'  => 'RBT',
+                'Corbata'             => 'RT',
+                'Mancuernilla'        => 'RM',
+                'Zapatos'             => 'RZ',
+                'Pañuelo'             => 'RP',
+                default               => 'PROD',
+            };
+
+            // 3. Formateamos el código con el ID y actualizamos el registro
+            $producto->codigo_producto = "{$prefijo}-{$producto->id_producto}";
+            $producto->save();
+
+            // Cargar la relación tela antes de responder
             $producto->load('tela');
 
             return response()->json([

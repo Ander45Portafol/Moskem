@@ -53,13 +53,13 @@ Route::middleware('auth:api')->group(function () {
     // Métodos pertenecientes a apiResource
     Route::apiResource('productos', ProductoController::class);
     Route::apiResource('empleados', EmpleadoController::class);
+    Route::apiResource('paquetes', PaqueteController::class);
     Route::apiResource('clientes', ClienteController::class);
     Route::apiResource('pedidos', PedidosController::class);
     Route::apiResource('mercerias', MerseriaController::class);
     Route::apiResource('detalle_pedidos', DetallePedidoController::class);
     Route::apiResource('telas', TelaController::class);
     Route::apiResource('proveedores', ProveedoresController::class);
-    Route::apiResource('paquetes', PaqueteController::class);
     Route::apiResource('detalle_paquetes', DetallePaqueteController::class);
     Route::apiResource('prendas', PrendaController::class);
     Route::apiResource('detalle_mercerias', DetalleMerceriaController::class);

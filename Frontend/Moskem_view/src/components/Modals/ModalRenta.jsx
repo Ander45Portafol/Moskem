@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ArrowsPointingInIcon,
-  ArrowUpOnSquareIcon,
   CheckCircleIcon,
-  ChevronDownIcon,
-  ClipboardDocumentListIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { InputD } from "../InputD";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { SelectD } from "../SelectD";
-import { SelectWD } from "../SelectWD";
 import { useGet } from "../../assets/js/useGet";
 import { InputDate } from "../inputDate";
 import { TextArea } from "../TextArea";
@@ -206,7 +201,7 @@ export default function ModalRenta({
               valueData={data.notas_descripcion}
               updateData={inputsUpdate}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5 mt-4">
               <SelectD
                 text="Estado Renta"
                 textId="estado_renta"
@@ -236,6 +231,61 @@ export default function ModalRenta({
                 valueData={data.deposito}
                 updateData={inputsUpdate}
               />
+            </div>
+            <div className="grid grid-cols-1 mt-4">
+              <div className="flex-col mr-14">
+                <label className="text-md font-semibold text-[#004B57]">
+                  Tipo Paquete
+                </label>
+                <div className="flex">
+                  <input
+                    type="checkbox"
+                    id="paquetefull"
+                    checked={data.tipo_entalle === "Paquete Full"}
+                    onChange={(e) => {
+                      setData({
+                        ...data,
+                        tipo_entalle: e.target.checked ? "Paquete Full" : "",
+                      });
+                    }}
+                  />
+                  <label htmlFor="paquetefull" className="ml-2">
+                    Paquete Full
+                  </label>
+                </div>
+                <div className="flex">
+                  <input
+                    type="checkbox"
+                    id="sacoypantalon"
+                    checked={data.tipo_entalle === "Saco y Pantalón"}
+                    onChange={(e) => {
+                      setData({
+                        ...data,
+                        tipo_entalle: e.target.checked ? "Saco y Pantalón" : "",
+                      });
+                    }}
+                  />
+                  <label htmlFor="sacoypantalon" className="ml-2">
+                    Saco y Pantalón
+                  </label>
+                </div>
+                <div className="flex">
+                  <input
+                    type="checkbox"
+                    id="prenda"
+                    checked={data.tipo_entalle === "Prenda"}
+                    onChange={(e) => {
+                      setData({
+                        ...data,
+                        tipo_entalle: e.target.checked ? "Prenda" : "",
+                      });
+                    }}
+                  />
+                  <label htmlFor="prenda" className="ml-2">
+                    Prenda
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 

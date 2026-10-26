@@ -19,6 +19,8 @@ import { Recuperacion } from "./pages/Recuperacion";
 import Login2 from "./pages/Login2";
 import { Configuracion } from "./pages/Configuracion";
 import { CambioClave } from "./pages/CambioClave";
+import Productos2 from "./pages/Productos2";
+import Productos3 from "./pages/Productos3";
 
 function App() {
   return (
@@ -39,7 +41,7 @@ function App() {
           <Route path="pedido" element={<Pedidos />} />
           <Route path="renta" element={<Rentas />} />
           <Route path="cupones" element={<Cupones />} />
-          <Route path="producto" element={<Productos />} />
+          <Route path="producto" element={<Productos3/>} />
           <Route path="orden_compra" element={<OrdenesCompra />} />
           <Route path="merceria" element={<Mercerias />} />
           <Route path="tela" element={<Telas />} />

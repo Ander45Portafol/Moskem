@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('monto_total', 10, 2);
             $table->decimal('deposito', 10, 2)->default(0.00);
             $table->enum('estado_renta', ['Entregado','En proceso','Finalizado']);
+            $table->enum('tipo_paquete', ['Paquete Full', 'Saco y Pantalón', 'Prenda']);
             $table->string('notas_descripcion',300)->nullable();
             $table->boolean('visibilidad_renta');
             $table->timestamps();

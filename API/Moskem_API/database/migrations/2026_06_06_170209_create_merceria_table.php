@@ -18,10 +18,12 @@ return new class extends Migration
             $table->string('codigo_merceria', 14)->unique();
             $table->integer('stock');
             $table->string('color', 30);
+            $table->date('fecha_ingreso_merceria');
             $table->enum('unidad_medida', ['Pulgadas', 'mm', '#']); // Mantenlas en minúsculas
             $table->foreignId('id_proveedor')->constrained('proveedores', 'id_proveedor')->onDelete('cascade');
             $table->string('codigo_merceria_proveedor');
             $table->string('imagen_merceria')->nullable();
+            $table->string('descripcion_merceria')->nullable();
             $table->boolean('visibilidad_merceria')->default(true);
             $table->timestamps();
         });

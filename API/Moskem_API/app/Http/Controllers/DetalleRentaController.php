@@ -28,4 +28,11 @@ class DetalleRentaController extends Controller
             return ApiResponse::error('Error inesperado al listar los productos', 500, $to->getMessage());
         }
     }
+    public function store (Request $request){
+        try {
+            
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
 }

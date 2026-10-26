@@ -21,7 +21,7 @@ export function Rentas() {
   const { data, message, setData } = useGet("rentas");
 
   // Datos de rentas basados exactamente en tu imagen (image_83cf0a.png)
-  const [rentas, setRentas] = useState([
+  const [rentas, setRentas] = useState([ 
     {
       id: 1,
       cliente: "Anderson Aguilar",

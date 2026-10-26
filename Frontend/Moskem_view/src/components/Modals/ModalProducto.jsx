@@ -13,6 +13,9 @@ import { API } from "../../assets/js/global";
 import Swal from "sweetalert2";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
+import { SelectD } from "../SelectD";
+import { InputD } from "../InputD";
+import { DataList } from "../DataList";
 
 export function ModalProducto({
   isOpen,
@@ -35,10 +38,14 @@ export function ModalProducto({
 
   const estadoInicial = {
     codigo_producto: "",
-    tipo_producto: "Camisa",
+    tipo_producto: "",
+    nombre_producto: "",
     color: "",
     talla: "",
+    fecha_ingreso_producto: "",
+    cantidad_stock: "",
     id_tela: "",
+    categoria_producto: "",
     costo: "",
     estado_producto: "Disponible",
     descripcion_producto: "",
@@ -46,7 +53,7 @@ export function ModalProducto({
     imagen_producto: "",
   };
 
-  const { data, setData } = useForm({
+  const { data, setData, handleSubmit } = useForm({
     id: id_producto,
     setForm: setProducto,
     isOpen,
@@ -68,6 +75,8 @@ export function ModalProducto({
         const esTipoZapatos = registroEditar.tipo_producto === "Zapatos";
 
         const nuevosDatos = {
+          nombre_producto:
+            registroEditar.nombre_producto || registroEditar.nombre || "",
           codigo_producto:
             registroEditar.codigo_producto || registroEditar.codigo || "",
           tipo_producto: registroEditar.tipo_producto || "Camisa",
@@ -138,25 +147,54 @@ export function ModalProducto({
     };
   });
 
-  const selectTiposProducto = [
-    { id: "Camisa", nombre: "Camisa" },
-    { id: "Pantalon", nombre: "Pantalón" },
-    { id: "Saco", nombre: "Saco" },
-    { id: "Traje_completo", nombre: "Traje Completo" },
-    { id: "Corbata", nombre: "Corbata" },
-    { id: "Zapatos", nombre: "Zapatos" },
+  const tiposProducto = [
+    "Saco",
+    "Pantalón",
+    "Camisa",
+    "Chaqué (tipo saco)",
+    "Frac (tipo saco)",
+    "Blazer",
+    "Faja",
+    "Corbatin (Bow tie)",
+    "Mancuernilla",
+    "Zapatos",
+    "Pañuelo",
+    "Traje de colección",
+    "Chaleco",
+    "Corbata",
   ];
-
+  const selectTiposProducto = tiposProducto.map((registro, index) => ({
+    id: registro,
+    nombre: registro,
+  }));
   const selectEstados = [
-    { id: "Disponible", nombre: "Disponible" },
-    { id: "Rentado", nombre: "Rentado" },
-    { id: "Vendido", nombre: "Vendido" },
-    { id: "Lavanderia", nombre: "Lavandería" },
-    { id: "Ajuste", nombre: "Ajuste" },
+    "Vendido",
+    "Disponible",
+    "Rentado",
+    "Lavanderia",
+    "Ajuste",
   ];
+  const obtenerCategoriaPorTipo = (tipoProducto) => {
+    switch (tipoProducto) {
+      case "Corbata":
+      case "Corbatin (Bow tie)":
+      case "Faja":
+      case "Mancuernilla":
+      case "Pañuelo":
+      case "Tirantes":
+        return "Accesorios";
 
-  const esZapatos = data.tipo_producto === "Zapatos";
+      case "Zapatos":
+        return "Zapatos";
 
+      default:
+        return "Vestimenta";
+    }
+  };
+  const esZapatos = data.categoria_producto === "Zapatos";
+  // Si categoria_producto es distinto de "Accesorios", bloqueamos el stock
+  const categoriaActual = obtenerCategoriaPorTipo(data.tipo_producto);
+  const esStockBloqueado = categoriaActual !== "Accesorios";
   const inputsUpdate = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === "checkbox" ? checked : value;
@@ -203,15 +241,10 @@ export function ModalProducto({
     }
     e.target.value = "";
   };
-
-  const guardarDatos = async (e) => {
+  // Envió simplificado aprovechando el hook useForm
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    const targetId =
-      id_producto || registroEditar?.id_producto || registroEditar?.id;
-    const esEdicion = tipo === "actualizar" || Boolean(targetId);
-
-    // Validación condicional de Tela
     if (!esZapatos && !data.id_tela) {
       Swal.fire({
         icon: "warning",
@@ -221,87 +254,47 @@ export function ModalProducto({
       return;
     }
 
-    try {
-      const formData = new FormData();
-      const descVal = data.descripcion_producto || data.descripcion || "";
+    // Se determina la categoría automáticamente según el tipo de producto
+    const categoriaCalculada = obtenerCategoriaPorTipo(data.tipo_producto);
 
-      formData.append("codigo_producto", data.codigo_producto || "");
-      formData.append("tipo_producto", data.tipo_producto || "Camisa");
-      formData.append("color", esZapatos ? data.color || "" : "");
-      formData.append("talla", data.talla || "");
+    const formData = new FormData();
+    const descVal = data.descripcion_producto || data.descripcion || "";
 
-      if (!esZapatos && data.id_tela) {
-        formData.append("id_tela", data.id_tela);
-      }
+    formData.append("nombre_producto", data.nombre_producto || "");
+    formData.append("codigo_producto", data.codigo_producto || "");
+    formData.append("tipo_producto", data.tipo_producto || "Camisa");
 
-      formData.append("costo", parseFloat(data.costo) || 0);
-      formData.append("estado_producto", data.estado_producto || "Disponible");
-      formData.append("descripcion_producto", descVal);
+    // Se envía la categoría resuelta por el switch
+    formData.append("categoria_producto", categoriaCalculada);
 
-      if (data.imagen_producto instanceof File) {
-        formData.append("imagen_producto", data.imagen_producto);
-      }
+    formData.append("color", esZapatos ? data.color || "" : "");
+    formData.append("talla", data.talla || "");
 
-      if (esEdicion) {
-        formData.append("_method", "PUT");
-      }
+    if (!esZapatos && data.id_tela) {
+      formData.append("id_tela", data.id_tela);
+    }
 
-      const url = esEdicion ? `${API}productos/${targetId}` : `${API}productos`;
+    // Si no es Accesorios, la cantidad_stock se envía vacía o en 0 según la regla
+    const stockVal =
+      categoriaCalculada === "Accesorios" ? data.cantidad_stock || 0 : "";
+    formData.append("cantidad_stock", stockVal);
 
-      const response = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
+    formData.append("costo", parseFloat(data.costo) || 0);
+    formData.append("estado_producto", data.estado_producto || "Disponible");
+    formData.append("descripcion_producto", descVal);
 
-      if (response.ok) {
-        const responseData = await response.json();
+    if (data.imagen_producto instanceof File) {
+      formData.append("imagen_producto", data.imagen_producto);
+    }
 
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title:
-            responseData.message ||
-            (esEdicion ? "Producto actualizado" : "Producto guardado"),
-          showConfirmButton: false,
-          timer: 2500,
-        });
+    if (tipo === "actualizar") {
+      formData.append("_method", "PUT");
+    }
 
-        if (setProducto) {
-          setProducto((prev) => {
-            if (!Array.isArray(prev)) return [responseData.data || data];
-            if (esEdicion) {
-              return prev.map((item) =>
-                (item.id_producto || item.id) === targetId
-                  ? responseData.data || { ...item, ...data }
-                  : item
-              );
-            }
-            return [...prev, responseData.data || data];
-          });
-        }
+    const res = await handleSubmit(e, formData);
 
-        if (onProductoGuardado) {
-          onProductoGuardado(responseData.data || targetId);
-        }
-
-        onClose();
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        Swal.fire(
-          "Error",
-          errorData.message || "No se pudo guardar la información del producto",
-          "error"
-        );
-      }
-    } catch (error) {
-      console.error("Error al guardar el producto:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error de conexión",
-        text: "Ocurrió un problema al intentar conectar con el servidor.",
-        confirmButtonColor: "#004053",
-      });
+    if (res && onProductoGuardado) {
+      onProductoGuardado(res.data || id_producto);
     }
   };
 
@@ -334,7 +327,7 @@ export function ModalProducto({
           </h2>
         </div>
 
-        <form onSubmit={guardarDatos} className="flex flex-col gap-6">
+        <form onSubmit={onSubmit} className="flex flex-col gap-6">
           <input
             type="file"
             ref={fileInputRef}
@@ -347,7 +340,17 @@ export function ModalProducto({
             {/* Sección principal de Campos */}
             <div className="flex-1 flex flex-col gap-5">
               {/* Fila 1: Código Producto, Tipo Producto, Color, Talla */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <InputD
+                    text="Nombre Producto"
+                    type="text"
+                    valueData={data.nombre_producto || ""}
+                    textId="nombre_producto"
+                    view=""
+                    updateData={inputsUpdate}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-md font-semibold text-[#004B57]">
                     Código
@@ -359,20 +362,52 @@ export function ModalProducto({
                     value={data.codigo_producto || ""}
                     onChange={inputsUpdate}
                     className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all"
-                    placeholder="Ej. PROD-001"
+                    disabled
                   />
                 </div>
 
                 <div>
-                  <SelectWD
+                  <DataList
                     text="Tipo Producto"
-                    options={selectTiposProducto}
+                    dataList={selectTiposProducto}
                     textId="tipo_producto"
-                    valueData={data.tipo_producto || "Camisa"}
+                    nametag="tipo_producto"
+                    valueData={data.tipo_producto || ""}
                     updateData={inputsUpdate}
                   />
                 </div>
 
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-md font-semibold text-[#004B57]">
+                    Talla
+                  </label>
+                  <input
+                    type="text"
+                    name="talla"
+                    id="talla"
+                    value={data.talla || ""}
+                    onChange={inputsUpdate}
+                    required
+                    className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all"
+                    placeholder="Ej. L / 40"
+                  />
+                </div>
+                <div
+                  className={
+                    esZapatos
+                      ? "opacity-40 pointer-events-none transition-opacity"
+                      : "transition-opacity"
+                  }
+                >
+                  <SelectWD
+                    text="Tela"
+                    options={selectTelas}
+                    textId="id_tela"
+                    valueData={esZapatos ? "" : data.id_tela || ""}
+                    updateData={inputsUpdate}
+                    disabled={esZapatos}
+                  />
+                </div>
                 <div
                   className={`flex flex-col gap-1.5 ${
                     !esZapatos
@@ -397,43 +432,28 @@ export function ModalProducto({
                     }
                   />
                 </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-md font-semibold text-[#004B57]">
-                    Talla
-                  </label>
-                  <input
-                    type="text"
-                    name="talla"
-                    id="talla"
-                    value={data.talla || ""}
-                    onChange={inputsUpdate}
-                    required
-                    className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all"
-                    placeholder="Ej. L / 40"
-                  />
-                </div>
               </div>
-
               {/* Fila 2: Tela, Costo ($), Estado */}
               <div className="grid grid-cols-3 gap-4">
                 <div
-                  className={
-                    esZapatos
-                      ? "opacity-40 pointer-events-none transition-opacity"
-                      : "transition-opacity"
-                  }
+                  className={`flex flex-col gap-1.5 ${esStockBloqueado ? "opacity-40 pointer-events-none transition-opacity" : "transition-opacity"}`}
                 >
-                  <SelectWD
-                    text="Tela"
-                    options={selectTelas}
-                    textId="id_tela"
-                    valueData={esZapatos ? "" : data.id_tela || ""}
-                    updateData={inputsUpdate}
-                    disabled={esZapatos}
+                  <label className="text-md font-semibold text-[#004B57]">
+                    Cantidad stock
+                  </label>
+                  <input
+                    type="number"
+                    name="cantidad_stock"
+                    id="cantidad_stock"
+                    value={esStockBloqueado ? "" : data.cantidad_stock || ""}
+                    onChange={inputsUpdate}
+                    disabled={esStockBloqueado}
+                    className="bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all disabled:cursor-not-allowed"
+                    placeholder={
+                      esStockBloqueado ? "Solo para Accesorios" : "Ej. 10"
+                    }
                   />
                 </div>
-
                 <div className="flex flex-col gap-1.5">
                   <label className="text-md font-semibold text-[#004B57]">
                     Costo ($)
@@ -450,9 +470,8 @@ export function ModalProducto({
                     placeholder="0.00"
                   />
                 </div>
-
                 <div>
-                  <SelectWD
+                  <SelectD
                     text="Estado"
                     options={selectEstados}
                     textId="estado_producto"
@@ -461,13 +480,13 @@ export function ModalProducto({
                   />
                 </div>
               </div>
-
-              {/* Fila 3: Descripción */}
               <div className="w-full">
                 <TextArea
                   text="Descripción"
                   textId="descripcion_producto"
-                  valueData={data.descripcion_producto || data.descripcion || ""}
+                  valueData={
+                    data.descripcion_producto || data.descripcion || ""
+                  }
                   updateData={inputsUpdate}
                 />
               </div>

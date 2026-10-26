@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { InputD } from "../InputD";
-import { SelectD } from "../SelectD"; 
-import { API } from "../../assets/js/global";
-import Swal from "sweetalert2";
+import { SelectD } from "../SelectD";
 import { SelectWD } from "../SelectWD";
 import { useGet } from "../../assets/js/useGet";
 
@@ -33,8 +31,10 @@ export function ModalMerceria({
     id_proveedor: "",
   };
 
-  const { data, setData } = useForm({
-    id: id_merceria,
+  const targetId = id_merceria || registroEditar?.id_merceria;
+
+  const { data, setData, handleSubmit } = useForm({
+    id: targetId,
     setForm: setMerceria,
     isOpen,
     onClose,
@@ -53,15 +53,22 @@ export function ModalMerceria({
       // Precarga de datos
       if (tipo === "actualizar" && registroEditar) {
         setData({
-          tipo_merceria: registroEditar.tipo_merceria || registroEditar.tipo || "Botones",
-          tamanio_merceria: registroEditar.tamanio_merceria ?? registroEditar.tamanio ?? "",
+          tipo_merceria:
+            registroEditar.tipo_merceria || registroEditar.tipo || "Botones",
+          tamanio_merceria:
+            registroEditar.tamanio_merceria ?? registroEditar.tamanio ?? "",
           unidad_medida: registroEditar.unidad_medida || "mm",
           color: registroEditar.color || "",
-          codigo_merceria: registroEditar.codigo_merceria || registroEditar.codigo || "",
-          codigo_merceria_proveedor: registroEditar.codigo_merceria_proveedor || "",
+          codigo_merceria:
+            registroEditar.codigo_merceria || registroEditar.codigo || "",
+          codigo_merceria_proveedor:
+            registroEditar.codigo_merceria_proveedor || "",
           stock: registroEditar.stock ?? "",
           descripcion_merceria: registroEditar.descripcion_merceria || "",
-          id_proveedor: registroEditar.id_proveedor || registroEditar.proveedor?.id_proveedor || "",
+          id_proveedor:
+            registroEditar.id_proveedor ||
+            registroEditar.proveedor?.id_proveedor ||
+            "",
         });
       } else if (tipo === "agregar") {
         setData(estadoInicial);
@@ -82,7 +89,13 @@ export function ModalMerceria({
       nombre: reg.nombre_proveedor || reg.nombre,
     })) || [];
 
-  const SelectTipoMerceria = ["Botones", "Ganchos", "Zipper", "Agujas", "Hilos"];
+  const SelectTipoMerceria = [
+    "Botones",
+    "Ganchos",
+    "Zipper",
+    "Agujas",
+    "Hilos",
+  ];
   const SelectUnidadesMedida = ["Pulgadas", "mm", "#"];
 
   const inputsUpdate = (e) => {
@@ -93,61 +106,18 @@ export function ModalMerceria({
     }));
   };
 
-  const onSubmitForm = async (e) => {
+  // Handler que formatea los datos numéricos y reutiliza handleSubmit de useForm
+  const onSubmitForm = (e) => {
     e.preventDefault();
 
-    try {
-      const isEdit = tipo === "actualizar" && (id_merceria || registroEditar?.id_merceria);
-      const targetId = id_merceria || registroEditar?.id_merceria;
-      const url = isEdit ? `${API}mercerias/${targetId}` : `${API}mercerias`;
-      const method = isEdit ? "PUT" : "POST";
+    const payload = {
+      ...data,
+      tamanio_merceria: parseInt(data.tamanio_merceria, 10) || 0,
+      stock: parseInt(data.stock, 10) || 0,
+      id_proveedor: parseInt(data.id_proveedor, 10) || null,
+    };
 
-      const payload = {
-        ...data,
-        tamanio_merceria: parseInt(data.tamanio_merceria, 10) || 0,
-        stock: parseInt(data.stock, 10) || 0,
-        id_proveedor: parseInt(data.id_proveedor, 10) || null,
-      };
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          title: responseData.message || (isEdit ? "Registro actualizado" : "Registro creado"),
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-
-        if (isEdit) {
-          setMerceria((prev) =>
-            prev.map((item) =>
-              item.id_merceria === targetId
-                ? responseData.data || { ...item, ...payload }
-                : item
-            )
-          );
-        } else {
-          setMerceria((prev) => [...prev, responseData.data || payload]);
-        }
-
-        onClose();
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        Swal.fire("Error", errorData.message || "No se pudo guardar la información", "error");
-      }
-    } catch (error) {
-      console.error("Error al enviar el formulario:", error);
-      Swal.fire("Error", "Ocurrió un error con la conexión al servidor", "error");
-    }
+    handleSubmit(e, payload);
   };
 
   if (!render || !data) return null;
@@ -161,7 +131,9 @@ export function ModalMerceria({
     >
       <div
         className={`bg-white rounded-[32px] shadow-2xl w-full max-w-4xl p-8 relative flex flex-col gap-6 border border-gray-100 transform transition-all duration-300 ${
-          isAnimating ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2.5"
+          isAnimating
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 translate-y-2.5"
         }`}
       >
         <button
@@ -174,11 +146,16 @@ export function ModalMerceria({
 
         <div>
           <h2 className="text-3xl font-black text-[#004B57] uppercase">
-            {tipo === "actualizar" ? "Editar Mercería" : "Formulario – Mercería"}
+            {tipo === "actualizar"
+              ? "Editar Mercería"
+              : "Formulario – Mercería"}
           </h2>
         </div>
 
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6" onSubmit={onSubmitForm}>
+        <form
+          className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6"
+          onSubmit={onSubmitForm}
+        >
           <SelectD
             text="Tipo Mercería"
             name="tipo_merceria"

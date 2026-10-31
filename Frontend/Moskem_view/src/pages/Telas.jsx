@@ -35,7 +35,7 @@ export function Telas() {
       const url = query
         ? `${API}telas/buscar?q=${encodeURIComponent(query)}`
         : `${API}telas`;
-      
+
       const response = await fetch(url);
       if (response.ok) {
         const responseData = await response.json();
@@ -91,7 +91,6 @@ export function Telas() {
 
   return (
     <div className="flex-1 p-6 flex h-screen w-full flex-col gap-6">
-      
       {/* Título de la sección */}
       <div>
         <h1 className="text-5xl font-black text-[#004053]">TELAS</h1>
@@ -146,8 +145,9 @@ export function Telas() {
               <th className="pb-4 pt-4 font-bold">Código Tela</th>
               <th className="pb-4 pt-4 font-bold">Color</th>
               <th className="pb-4 pt-4 font-bold">Cantidad</th>
-              <th className="pb-4 pt-4 font-bold">Proveedor</th>
               <th className="pb-4 pt-4 font-bold">Fecha Ingreso</th>
+              <th className="pb-4 pt-4 font-bold">Proveedor</th>
+              <th className="pb-4 pt-4 font-bold">Imagen</th>
               <th></th>
             </tr>
           </thead>
@@ -160,14 +160,34 @@ export function Telas() {
                   className="hover:bg-gray-200 transition-colors"
                 >
                   <td className="py-4">{item.id}</td>
-                  <td className="py-4">{item.codigo_tela}</td>
+                  <td className="py-4">{item.codigo}</td>
                   <td className="py-4">{item.color}</td>
                   <td className="py-4">
                     {item.cantidad} {item.cantidad === 1 ? "yarda" : "yardas"}
                   </td>
-                  <td className="py-4">{item.proveedor}</td>
                   <td className="py-4">{item.fecha_ingreso}</td>
-
+                  <td className="py-4">{item.proveedor}</td>
+                  <td className="py-4">
+                    {item.imagen_telas ? (
+                      <img
+                        src={
+                          item.imagen_telas.startsWith("http")
+                            ? item.imagen_telas
+                            : `${API.replace(/\/api\/?$/, "")}/storage/${item.imagen_telas}`
+                        }
+                        alt={`Tela ${item.codigo}`}
+                        className="w-16 h-16 object-cover rounded-lg shadow-sm border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-300">
+                        <span className="text-gray-400 text-xs text-center leading-tight">
+                          Sin
+                          <br />
+                          imagen
+                        </span>
+                      </div>
+                    )}
+                  </td>{" "}
                   {/* Acciones: Solo 2 botones (Información y Eliminar) */}
                   <td className="py-4">
                     <div className="flex items-center justify-center gap-2">

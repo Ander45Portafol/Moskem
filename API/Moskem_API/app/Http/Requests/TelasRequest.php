@@ -23,28 +23,33 @@ class TelasRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'codigo_tela'=>'required|string',
-            'color_tela'=>'required|string',
-            'cantidad_stock'=>'required|integer',
-            'categoria_tela'=>'required|string',
-            'id_proveedor'=>'required|integer',
-            'tipo_prenda'=>'required|string',
-            'codigo_tela_proveedor'=>'nullable|string'
+            'codigo_tela' => 'required|string',
+            'color_tela' => 'required|string',
+            'cantidad_stock' => 'required|integer',
+            'categoria_tela' => 'required|string',
+            'id_proveedor' => 'required|integer',
+            'tipo_prenda' => 'required|string',
+            'imagen_telas' => 'nullable|file|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'codigo_tela_proveedor' => 'nullable|string'
         ];
     }
-    public function messages(){
-        return[
-            'codigo_tela.required'=>'Debe colocar un código para la tela',
-            'codigo_tela.string'=>'No es el formato correcto para el código de la tela',
-            'color_tela.required'=>'Debe colocar un color para la tela',
-            'color_tela.string'=>'No es el formato correcto para el color de la tela',
-            'cantidad_stock.required'=>'Debe colocar la cantidad de stock para la tela',
-            'cantidad_stock.integer'=>'No es el formato correcto para el stock de la tela',
-            'categoria_tela.required'=>'Debe colocar una categoría para la tela',
-            'categoria_tela.string'=>'No es el formato correcto para la categoría de la tela',
-            'id_proveedor.required'=>'Es obligatorio que se defina el proveedor de la tela',
-            'id_proveedor.integer'=>'No se pudo encontrar el proveedor',
-            'codigo_tela_proveedor.string'=>'No es el formato correcto para el código de la tela del proveedor'  
+    public function messages()
+    {
+        return [
+            'codigo_tela.required' => 'Debe colocar un código para la tela',
+            'codigo_tela.string' => 'No es el formato correcto para el código de la tela',
+            'color_tela.required' => 'Debe colocar un color para la tela',
+            'color_tela.string' => 'No es el formato correcto para el color de la tela',
+            'cantidad_stock.required' => 'Debe colocar la cantidad de stock para la tela',
+            'cantidad_stock.integer' => 'No es el formato correcto para el stock de la tela',
+            'categoria_tela.required' => 'Debe colocar una categoría para la tela',
+            'categoria_tela.string' => 'No es el formato correcto para la categoría de la tela',
+            'id_proveedor.required' => 'Es obligatorio que se defina el proveedor de la tela',
+            'id_proveedor.integer' => 'No se pudo encontrar el proveedor',
+            'codigo_tela_proveedor.string' => 'No es el formato correcto para el código de la tela del proveedor',
+            'imagen_telas.image' => 'El archivo debe ser una imagen válida',
+            'imagen_telas.mimes' => 'La imagen debe estar en formato JPG, PNG o WEBP',
+            'imagen_telas.max' => 'La imagen no debe superar los 8MB'
         ];
     }
-}   
+}

@@ -65,6 +65,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('detalle_pedidos', DetallePedidoController::class);
     Route::apiResource('telas', TelaController::class);
     Route::apiResource('proveedores', ProveedoresController::class);
+    Route::apiResource('medidas', MedidaController::class);
     Route::apiResource('detalle_paquetes', DetallePaqueteController::class);
     Route::apiResource('prendas', PrendaController::class);
     Route::apiResource('detalle_mercerias', DetalleMerceriaController::class);
@@ -72,4 +73,3 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('rentas', RentaController::class);
     Route::get('sastres', [EmpleadoController::class, 'getSastres']);
 });
-Route::apiResource('medidas', MedidaController::class);

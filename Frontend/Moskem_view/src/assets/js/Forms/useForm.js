@@ -35,11 +35,33 @@ export function useForm({ id, setForm, isOpen, onClose, ruta, estadoInicial }) {
   };
 
   // Manejador principal para Crear o Actualizar registros
+  // Manejador principal para Crear o Actualizar registros
   const handleSubmit = async (e, customData = null) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    const payload = customData || data;
-    const esFormData = payload instanceof FormData;
+    let payload = customData || data;
+    let esFormData = payload instanceof FormData;
+
+    // --- NUEVA LÓGICA: Conversión automática a FormData si hay archivos ---
+    // Si el payload no es FormData, verificamos si alguno de sus valores es un Archivo
+    if (!esFormData && typeof payload === "object" && payload !== null) {
+      const tieneArchivo = Object.values(payload).some(
+        (val) => val instanceof File || val instanceof Blob,
+      );
+
+      // Si encontramos un archivo, convertimos todo el objeto a FormData
+      if (tieneArchivo) {
+        const formData = new FormData();
+        for (const key in payload) {
+          if (payload[key] !== null && payload[key] !== undefined) {
+            formData.append(key, payload[key]);
+          }
+        }
+        payload = formData;
+        esFormData = true; // Actualizamos la bandera para activar tus validaciones de abajo
+      }
+    }
+    // ----------------------------------------------------------------------
 
     // Determinar URL y método
     const endpoint = id ? `${ruta}/${id}` : ruta;

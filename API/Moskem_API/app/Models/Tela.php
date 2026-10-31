@@ -16,8 +16,10 @@ class Tela extends Model
         'cantidad_stock',
         'categoria_tela',
         'id_proveedor',
-        'tipo_prenda', 
+        'tipo_prenda',
+        'imagen_telas',
         'codigo_tela_proveedor',
+        'fecha_ingreso_tela',
         'visibilidad_tela'
     ];
     public function detalle_pedidos()

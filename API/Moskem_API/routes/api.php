@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 // 1. Ruta Pública para Iniciar Sesión
 Route::post('login', [AuthController::class, 'login'])->name('login');
-Route::post('sendResetCode',[AuthController::class, 'sendResetCode']);
+Route::post('sendResetCode', [AuthController::class, 'sendResetCode']);
 Route::post('verifyResetCode', [AuthController::class, 'verifyResetCode']);
 Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 
@@ -37,18 +37,23 @@ Route::middleware('auth:api')->group(function () {
     // Métodos para el motor de búsqueda
     Route::get('clientes/buscar', [ClienteController::class, 'search']);
     Route::get('empleados/buscar', [EmpleadoController::class, 'search']);
-    Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
 
     // Métodos independientes
-    Route::get('renta_detalles/{id_renta}', [DetalleRentaController::class, 'cargarDetalleRenta']);
+    Route::post('renta_detalles', [DetalleRentaController::class, 'store']);
+    Route::put('renta_detalles', [DetalleRentaController::class, 'update']);
     Route::put('create_codigo_medida/{id}/{id_medida}', [MedidaController::class, 'createCodigo']);
+    Route::get('medidas_renta/{id_renta}', [MedidaController::class, 'buscarMedidasRenta']);
     Route::get('orden_trabajo/detalle/{id_detalle_pedido}', [OrdenTrabajoController::class, 'showByDetalle']);
     Route::get('getOrders/{id_pedido}', [OrdenTrabajoController::class, 'cargarOrdenes']);
     Route::get('getMedidas/{idDetallePedido}', [OrdenTrabajoController::class, 'getMedida']);
     Route::get('lista_merceria/{id}', [DetalleMerceriaController::class, 'getDetallePedidoMerceria']);
-    Route::get('sastres', [EmpleadoController::class, 'getSastres']);
+
     Route::get('medidas_prendas/{id_cliente}/{prenda}', [OrdenTrabajoController::class, 'cargarMedidas']);
     Route::get('getPaquete/{id_pedido}', [DetallePaqueteController::class, 'getPaquetePedido']);
+    //En está ruta cargamos todos los detalles de una renta
+    Route::get('renta_detalles/{id_renta}', [DetalleRentaController::class, 'cargarDetalleRenta']);
+    //En está ruta cargamos todos los detalles de un pedido
+    Route::get('detalles/{id_pedido}', [DetallePedidoController::class, 'getByPedido']);
 
     // Métodos pertenecientes a apiResource
     Route::apiResource('productos', ProductoController::class);
@@ -64,6 +69,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('prendas', PrendaController::class);
     Route::apiResource('detalle_mercerias', DetalleMerceriaController::class);
     Route::apiResource('orden_trabajo', OrdenTrabajoController::class);
-    Route::apiResource('medidas', MedidaController::class);
     Route::apiResource('rentas', RentaController::class);
+    Route::get('sastres', [EmpleadoController::class, 'getSastres']);
 });
+Route::apiResource('medidas', MedidaController::class);

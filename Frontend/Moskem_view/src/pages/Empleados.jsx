@@ -167,7 +167,7 @@ export function Empleados() {
 
       {/* MODAL 1 */}
       <ModalEmpleado
-        isOpen={modalActivo === "agregar"}
+        isOpen={modalActivo === "agregar" || modalActivo === "actualizar"}
         onClose={() => {
           setModalActivo(null);
           setIdEmpleado(null);

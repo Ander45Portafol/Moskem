@@ -22,7 +22,9 @@ return new class extends Migration
                   ->constrained('medidas', 'id_medidas')
                   ->onDelete('cascade');
             $table->boolean('visibilidad_ordentrabajo');
+
             $table->date('fecha_asignacion');
+            $table->enum('tipo_trabajo', ['Compra', 'Renta', 'Pedido']);
             $table->enum('estado_orden', ['Anotado','Revision','En proceso','Finalizado','Entregado']);
             $table->time('tiempo_sastre');
             $table->string('imagen_diseno',255)->nullable();

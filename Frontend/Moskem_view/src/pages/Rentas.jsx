@@ -2,10 +2,8 @@ import { useState } from "react";
 import {
   MagnifyingGlassIcon,
   PlusCircleIcon,
-  CalendarDaysIcon,
   DocumentTextIcon,
   InformationCircleIcon,
-  CalendarIcon,
   ArrowDownOnSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
@@ -18,35 +16,8 @@ export function Rentas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDetalleOpen, setIsModalDetalleOpen] = useState(false);
   const [idRenta, setIdRenta] = useState(null);
-  const { data, message, setData } = useGet("rentas");
-
-  // Datos de rentas basados exactamente en tu imagen (image_83cf0a.png)
-  const [rentas, setRentas] = useState([
-    {
-      id: 1,
-      cliente: "Anderson Aguilar",
-      producto: "Camisa ML",
-      fechaInicio: "20-10-2026",
-      estado: "En proceso",
-      fechaDevolucion: "20-10-2026",
-    },
-    {
-      id: 2,
-      cliente: "Diego Vasconcelos",
-      producto: "Pantalón",
-      fechaInicio: "20-10-2026",
-      estado: "Entregado",
-      fechaDevolucion: "20-10-2026",
-    },
-    {
-      id: 3,
-      cliente: "María Hernández",
-      producto: "Chaleco",
-      fechaInicio: "20-10-2026",
-      estado: "Finalizado",
-      fechaDevolucion: "20-10-2026",
-    },
-  ]);
+  const { data, setData } = useGet("rentas");
+  const rentas = Array.isArray(data) ? data : [];
 
   const renderEstadoBadge = (estado) => {
     switch (estado) {
@@ -81,7 +52,7 @@ export function Rentas() {
   };
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto bg-white flex flex-col gap-6">
+    <div className="flex-1 p-6 overflow-y-auto h-screen bg-white flex flex-col gap-6">
       {/* Título de la Sección exacto */}
       <div>
         <h1 className="text-5xl font-black text-[#004B57] tracking-tight uppercase">
@@ -114,7 +85,10 @@ export function Rentas() {
         </button>
         {/* Botón Añadir (+) */}
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIdRenta(null);
+            setIsModalOpen(true);
+          }}
           className="bg-[#004B57] hover:bg-[#00363E] text-white font-semibold p-3 rounded-xl flex items-center justify-center shadow-sm transition-all active:scale-95 h-14 w-18"
         >
           <PlusCircleIcon className="size-7" />
@@ -122,36 +96,30 @@ export function Rentas() {
       </div>
 
       {/* Tabla de Rentas */}
-      <div className="overflow-x-auto mt-4">
+      <div className="max-h-9/12 overflow-y-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b-2 border-gray-200 text-lg font-semibold text-black">
               <th className="py-4 pr-6 font-bold">ID</th>
               <th className="py-4 font-bold">Cliente</th>
-              <th className="py-4 font-bold">Producto</th>
+              <th className="py-4 font-bold">Tipo Paquete</th>
               <th className="py-4 pr-6 font-bold">Fecha Inicio</th>
               <th className="py-4 pr-8 font-bold">Estado Renta</th>
               <th className="py-4 font-bold">Fecha Devolución</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-md font-normal text-black">
-            {data.length !== 0 ? (
-              data.map((renta) => (
+            {rentas.length !== 0 ? (
+              rentas.map((renta) => (
                 <tr
-                  key={renta.id_detalle_renta}
+                  key={renta.id_renta}
                   className="hover:bg-gray-200 transition-colors"
                 >
                   <td className="py-4 pr-6 text-black">{renta.id_renta}</td>
                   <td className="py-4 text-black">
                     {renta.nombre_completo_cliente}
                   </td>
-                  <td className="py-4 text-black">
-                    {renta.producto.tipo_producto +
-                      " - " +
-                      renta.producto.color +
-                      " - " +
-                      renta.producto.talla}
-                  </td>
+                  <td className="py-4 text-black">{renta.tipo_paquete}</td>
                   <td className="py-4 pr-6 text-black">{renta.fecha_inicio}</td>
                   <td className="py-4 pr-8">
                     {renderEstadoBadge(renta.estado_renta)}
@@ -180,7 +148,7 @@ export function Rentas() {
               ))
             ) : (
               <tr className="h-14 text-md flex justify-center items-center font-semibold hover:bg-gray-200">
-                <td className="w-56 ml-2">
+                <td colSpan={7} className="w-56 ml-2 text-center">
                   <p>No existen registros</p>
                 </td>
               </tr>
@@ -195,12 +163,17 @@ export function Rentas() {
         }}
         id_renta={idRenta}
         setRenta={setData}
+        setIdRenta={setIdRenta}
         isModalDetalle={setIsModalDetalleOpen}
       />
       <ModalDetalleRenta
         isOpen={isModalDetalleOpen}
         onClose={() => {
           setIsModalDetalleOpen(false);
+        }}
+        onBack={() => {
+          setIsModalDetalleOpen(false);
+          setIsModalOpen(true);
         }}
         id_renta={idRenta}
         setRenta={setData}

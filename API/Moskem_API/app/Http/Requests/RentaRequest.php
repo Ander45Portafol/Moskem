@@ -31,6 +31,7 @@ class RentaRequest extends FormRequest
             'fecha_evento'=>'required|date',
             'monto_total'=>'nullable|numeric|min:0',
             'deposito'=>'nullable|numeric|min:0',
+            'tipo_paquete'=>'required',
             'estado_renta'=>'required',
             'notas_descripcion'=>'nullable|string'
         ];

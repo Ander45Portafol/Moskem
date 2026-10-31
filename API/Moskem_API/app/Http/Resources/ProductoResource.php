@@ -27,8 +27,11 @@ class ProductoResource extends JsonResource
                                         : $this->color,
             'talla'                => $this->talla,
             'costo'                => $this->costo,
+            'categoria_producto'=>$this->categoria_producto,
             'descripcion_producto' => $this->descripcion_producto,
-            'estado_producto'      => $this->estado_producto,
+            'cantidad_stock'=>$this->cantidad_stock,
+            'fecha_ingreso' => $this->fecha_ingreso_producto->format('d/m/Y'),            'estado_producto'      => $this->estado_producto,
+            'nombre_producto'=>$this->nombre_producto,
             'visibilidad_producto' => $this->visibilidad_producto,
             
             // Datos de la relación Tela (null en caso de Zapatos)

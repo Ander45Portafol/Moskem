@@ -1,18 +1,43 @@
-import React, { useState, useEffect } from "react"; // 1. Se importaron useState y useEffect
-import { SelectWD } from "./SelectWD";
-import { useGet } from "../assets/js/useGet";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import React, { useState, useEffect } from "react";
 import { DataList } from "./DataList";
 
-export function DetalleRenta({ renta, updateInputs }) {
-  const [previewImage, setPreviewImage] = useState(null);
-  const { data: productos } = useGet("productos");
+const normalizarTipoProducto = (tipo) =>
+  String(tipo || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 
-  const SelectProductos =
-    productos?.map((registro) => ({
-      id: registro.id_producto,
-      nombre: `${registro?.tipo_producto} - ${registro.telas?.codigo_tela ?? "Sin tela"}`,
-    })) || [];
+export function DetalleRenta({
+  renta,
+  productos = [],
+  tipoProducto,
+  categoriaProducto,
+  isDisabled = false,
+  helperText,
+  updateInputs,
+  onSave,
+  isSaving = false,
+}) {
+  const [previewImage, setPreviewImage] = useState(null);
+  const productosPermitidos = productos.filter(
+    (producto) => {
+      const coincideTipo =
+        !tipoProducto ||
+        normalizarTipoProducto(producto.tipo_producto) ===
+          normalizarTipoProducto(tipoProducto);
+      const coincideCategoria =
+        !categoriaProducto ||
+        normalizarTipoProducto(producto.categoria_producto) ===
+          normalizarTipoProducto(categoriaProducto);
+
+      return coincideTipo && coincideCategoria;
+    },
+  );
+  const SelectProductos = productosPermitidos.map((registro) => ({
+    id: registro.id_producto,
+    nombre: `${registro?.nombre_producto} - ${registro?.codigo_producto}`,
+  }));
 
   // 2. Corregido: se usa renta.id_producto en lugar de data.id_producto
   const productoSeleccionado = productos?.find(
@@ -34,13 +59,25 @@ export function DetalleRenta({ renta, updateInputs }) {
   return (
     <div className="grid grid-cols-1 w-[320px]">
       <DataList
-        text="Producto"
+        text={
+          tipoProducto
+            ? `Producto (${tipoProducto})`
+            : categoriaProducto
+              ? `Producto (${categoriaProducto})`
+              : "Producto"
+        }
         dataList={SelectProductos}
-        textId={renta.id_detalle_renta}
+        textId={renta.id_detalle_renta || renta.clientKey}
         nametag="id_producto"
         valueData={renta?.id_producto}
         updateData={updateInputs}
+        disabled={isDisabled || isSaving}
       />
+      {isDisabled && helperText && (
+        <p className="mt-1 text-sm font-medium text-[#004B57]/70">
+          {helperText}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-2 my-4">
         <div className="flex flex-col gap-1.5">
           <label className="text-md font-semibold text-[#004B57]">Talla:</label>
@@ -73,7 +110,12 @@ export function DetalleRenta({ renta, updateInputs }) {
         </div>
       </div>
 
-      <button className="mt-2 flex justify-center items-center rounded-lg h-10 bg-[#00A29B] hover:bg-[#008781] text-[#004053] transition-colors font-bold">
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!renta?.id_producto || isSaving || isDisabled}
+        className="mt-2 flex justify-center items-center rounded-lg h-10 bg-[#00A29B] hover:bg-[#008781] text-[#004053] transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         Guardar
       </button>
     </div>

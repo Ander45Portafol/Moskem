@@ -15,9 +15,12 @@ class Renta extends Model
         'id_empleado',
         'fecha_inicio',
         'fecha_devolucion',
+        'fecha_evento',
         'monto_total',
         'deposito',
         'estado_renta',
+        'tipo_paquete',
+        'tipo_traje',
         'notas_descripcion',
         'visibilidad_renta'
     ];

@@ -17,8 +17,9 @@ class OrdenTrabajo extends Model
         'visibilidad_ordentrabajo',
         'fecha_asignacion',
         'estado_orden',
+        'tipo_trabajo',
         'tiempo_sastre',
-        'imagen_diseño',
+        'imagen_diseno',
     ];
     public function detalle_pedido()
     {

@@ -3,8 +3,6 @@ import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { InputD } from "../InputD";
 import { SelectD } from "../SelectD";
-import { API } from "../../assets/js/global";
-import Swal from "sweetalert2";
 import { SelectWD } from "../SelectWD";
 import { useGet } from "../../assets/js/useGet";
 
@@ -25,10 +23,11 @@ export function ModalTelas({
     codigo_tela: "",
     cantidad_stock: "",
     id_proveedor: "",
+    tipo_prenda:"",
     codigo_tela_proveedor: "",
   };
 
-  const { data, setData } = useForm({
+  const { data, setData, handleSubmit } = useForm({
     id: id_tela,
     setForm: setTela,
     isOpen,
@@ -37,72 +36,22 @@ export function ModalTelas({
     estadoInicial,
   });
 
-   //Se usa para extraer los datos de los proveerdores que se cargaran en el select
-    const { data: proveedores } = useGet("proveedores");
-  
-    // Usamos el encadenamiento opcional (?.) por si 'clientes' aún está cargando (es undefined o null)
-    const SelectProveedores =
-      proveedores?.map((registro) => ({
-        id: registro.id_proveedor, // O el nombre exacto que tenga tu id en la base de datos
-        nombre: registro.nombre_proveedor,
-      })) || [];
+  // Se usa para extraer los datos de los proveedores que se cargarán en el select
+  const { data: proveedores } = useGet("proveedores");
 
-    const SelectCategoria =["Elite", "Elite +", "Premium"];
+  const SelectProveedores =
+    proveedores?.map((registro) => ({
+      id: registro.id_proveedor,
+      nombre: registro.nombre_proveedor,
+    })) || [];
+
+  const SelectCategoria = ["Elite", "Elite +", "Premium"];
+  const SelectTipoPrenda = ["Camisa", "Pantalon / Saco / Chaleco", "Accesorios"];
 
   // Captura el cambio de valor de cada input dinámicamente
   const inputsUpdate = (e) => {
     const { name, value } = e.target;
     setData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Función para guardar (POST) o actualizar (PUT)
-  const onSubmitForm = async (e) => {
-    e.preventDefault();
-
-    try {
-      const isEdit = tipo === "actualizar" && id_tela;
-      const url = isEdit ? `${API}telas/${id_tela}` : `${API}telas`;
-      const method = isEdit ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-
-        // Notificación de éxito
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          title: responseData.message || (isEdit ? "Registro actualizado" : "Registro creado"),
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-
-        // Actualizar el estado de la lista de telas en tiempo real
-        if (isEdit) {
-          setTela((prev) =>
-            prev.map((item) => (item.id === id_tela ? responseData.data || data : item))
-          );
-        } else {
-          setTela((prev) => [...prev, responseData.data || data]);
-        }
-
-        // Cerrar el modal
-        onClose();
-      } else {
-        Swal.fire("Error", "No se pudo guardar la información", "error");
-      }
-    } catch (error) {
-      console.error("Error al enviar el formulario:", error);
-      Swal.fire("Error", "Ocurrió un problema con el servidor", "error");
-    }
   };
 
   useEffect(() => {
@@ -155,7 +104,7 @@ export function ModalTelas({
 
         <form
           className="grid grid-cols-1 md:grid-cols-3 gap-y-5 gap-x-6"
-          onSubmit={onSubmitForm}
+          onSubmit={handleSubmit}
         >
           <SelectD
             text="Categoría"
@@ -164,7 +113,13 @@ export function ModalTelas({
             valueData={data.categoria_tela}
             updateData={inputsUpdate}
           />
-
+          <SelectD
+            text="TIpo Prenda"
+            textId="tipo_prenda"
+            options={SelectTipoPrenda}
+            valueData={data.tipo_prenda}
+            updateData={inputsUpdate}
+          />
           <InputD
             text="Color"
             type="text"
@@ -209,7 +164,7 @@ export function ModalTelas({
             view=""
             valueData={data?.codigo_tela_proveedor || ""}
             updateData={inputsUpdate}
-          />  
+          />
 
           <div className="hidden md:block"></div>
 

@@ -12,6 +12,7 @@ import {
   PercentBadgeIcon,
 } from "@heroicons/react/24/solid";
 import { Link, useLocation } from "react-router";
+import ProductosDropdown from "./DropDown";
 export function Sidebar() {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter(Boolean);

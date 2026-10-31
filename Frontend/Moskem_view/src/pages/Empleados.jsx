@@ -1,7 +1,4 @@
-import React, { useEffect, useState } from "react";
-// IMPORTAMOS TUS COMPONENTES EXTERNOS DE MODAL
-
-// Importación de los iconos exactos que manejas en tu barra lateral
+import React, { useEffect, useState, useRef } from "react";
 import {
   BriefcaseIcon,
   CreditCardIcon,
@@ -24,45 +21,56 @@ import { useDelete } from "../assets/js/useDelete";
 import { API } from "../assets/js/global";
 
 export function Empleados() {
-  // --- ESTADOS PARA MODAL 1: REGISTRO / EDICIÓN ---
   const [modalActivo, setModalActivo] = useState(null);
   const [idEmpleado, setIdEmpleado] = useState(null);
-  const { data, message, setData } = useGet("empleados");
+
+  // Manejamos el estado local de la lista
+  const [data, setData] = useState([]);
   const { deleteRecord } = useDelete({ ruta: "empleados", setData });
-  // --- ESTADOS PARA MODAL 2: VISTA DE PEDIDOS (INFORMACIÓN) ---
+
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const modalActualizar = (id) => {
-    setIdEmpleado(id);
-    setModalActivo("agregar");
-  };
+
+  // ÚNICO EFFECT: Maneja carga inicial Y búsquedas con debounce
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchEmpleados(searchQuery);
-    }, 400);
-    return () => clearTimeout(delayDebounceFn);
+    const controller = new AbortController();
+
+    const delayDebounceFn = setTimeout(
+      async () => {
+        try {
+          const query = searchQuery.trim();
+          const url = query
+            ? `${API}empleados/buscar?q=${encodeURIComponent(query)}`
+            : `${API}empleados`;
+
+          const response = await fetch(url, {
+            signal: controller.signal,
+            credentials: "include", // 🔑 Incluye las cookies HttpOnly en la solicitud
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          });
+          if (response.ok) {
+            const responseData = await response.json();
+            setData(responseData.data);
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            console.error("Error al traer los empleados:", error);
+          }
+        }
+      },
+      searchQuery ? 400 : 0,
+    ); // Búsqueda con debounce (400ms), carga inicial inmediata (0ms)
+
+    return () => {
+      clearTimeout(delayDebounceFn);
+      controller.abort();
+    };
   }, [searchQuery]);
-  //Función creada para el motor de busqueda
-  const fetchEmpleados = async (query = "") => {
-    try {
-      // Si hay query usamos la ruta de buscar, si no, traemos todos
-      const url = query
-        ? `${API}empleados/buscar?q=${encodeURIComponent(query)}`
-        : `${API}empleados`;
-      //Petición a la API
-      const response = await fetch(url);
-      //Validamos si la petición fue exitosa o si tuvo algun error
-      if (response.ok) {
-        //Al ser exitosa la petición la convertimos en formato JSON
-        const responseData = await response.json();
-        //Actualiza el estado de los datos
-        setData(responseData.data);
-      }
-    } catch (error) {
-      console.error("Error al traer los empleados:", error);
-    }
-  };
+
   return (
     <div className="flex-1 p-6 h-screen overflow-y-auto bg-white flex flex-col gap-6">
       {/* Título de la sección */}
@@ -77,7 +85,6 @@ export function Empleados() {
 
       {/* Barra superior: Buscador + Botón Agregar */}
       <div className="flex items-center gap-4 w-full mt-2">
-        {/* Buscador Gris */}
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
             <MagnifyingGlassIcon className="size-6" />
@@ -91,7 +98,6 @@ export function Empleados() {
           />
         </div>
 
-        {/* Botón Añadir (+) - Activa el Modal de Formulario */}
         <button
           onClick={() => setModalActivo("agregar")}
           className="bg-[#004B57] hover:bg-[#00363E] text-white font-semibold p-3 rounded-xl flex items-center justify-center shadow-sm transition-all active:scale-95 h-14 w-18"
@@ -113,8 +119,7 @@ export function Empleados() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 text-md font-normal text-gray-700">
-            {data.length != 0 ? (
-              data &&
+            {data && data.length > 0 ? (
               data.map((empleado) => (
                 <tr
                   key={empleado.id}
@@ -128,20 +133,17 @@ export function Empleados() {
                   </td>
                   <td className="py-4">
                     <div className="flex items-center justify-center gap-2">
-                      {/* 💡 Botón Info (Verde Limón) - AHORA ABRE EL MODAL DE PEDIDOS */}
                       <button
-                        onClick={() => modalActualizar(empleado.id)}
+                        onClick={() => { setIdEmpleado(empleado.id); setModalActivo("actualizar");}}
                         className="bg-[#B4D333] text-[#004B57] p-2 rounded-lg font-bold hover:bg-[#a3c02b] transition-all active:scale-95 flex items-center justify-center w-11 h-10"
                       >
                         <InformationCircleIcon className="size-7" />
                       </button>
 
-                      {/* Botón Editar/Ver Lista (Turquesa) */}
                       <button className="bg-[#009BAE] text-white p-2 rounded-lg hover:bg-[#008292] transition-colors flex items-center justify-center w-11 h-10">
                         <ClipboardDocumentListIcon className="size-7" />
                       </button>
 
-                      {/* Botón Eliminar (Gris Oscuro) */}
                       <button
                         className="bg-[#6B7280] text-white p-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center w-11 h-10"
                         onClick={() => deleteRecord(empleado.id)}
@@ -153,29 +155,29 @@ export function Empleados() {
                 </tr>
               ))
             ) : (
-              //Si no existen registros, solo mostramos ese mensaje
-              <tr className="h-14  text-md flex justify-center items-center font-semibold hover:bg-gray-200 ">
-                <td className="w-56 ml-2">
-                  <p>No existen registros</p>
+              <tr className="h-14 text-md font-semibold hover:bg-gray-200">
+                <td colSpan={5} className="text-center py-4">
+                  No existen registros
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      {/* MODAL 1: FORMULARIO REGISTRAR / EDICIÓN */}
+
+      {/* MODAL 1 */}
       <ModalEmpleado
-        isOpen={modalActivo === "agregar"}
+        isOpen={modalActivo === "agregar" || modalActivo === "actualizar"}
         onClose={() => {
           setModalActivo(null);
-          setIdEmpleado(null); 
+          setIdEmpleado(null);
         }}
         tipo={idEmpleado ? "actualizar" : "agregar"}
         id_empleado={idEmpleado}
         setEmpleado={setData}
       />
 
-      {/* MODAL 2: DETALLES DE PEDIDOS ASIGNADOS AL EMPLEADO */}
+      {/* MODAL 2 */}
       <ModalPedidosEmpleado
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RentaRequest;
 use App\Http\Resources\RentaResource;
 use App\Http\Responses\ApiResponse;
-use App\Models\DetalleRenta;
 use App\Models\Renta;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,9 +14,10 @@ class RentaController extends Controller
     public function index()
     {
         try {
-            $renta = DetalleRenta::with(['renta.cliente', 'producto'])->whereHas('renta', function ($query) {
-                $query->where('visibilidad_renta', true);
-            })->get();
+            $renta = Renta::with('cliente')
+                ->where('visibilidad_renta', true)
+                ->orderByDesc('fecha_inicio')
+                ->get();
             if ($renta->isEmpty()) {
                 return response()->json([
                     'message' => 'No existen registros',

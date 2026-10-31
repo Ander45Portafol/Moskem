@@ -12,10 +12,10 @@ export const AuthProvider = ({ children }) => {
   // Verificación de sesión al cargar o refrescar la app (F5)
   const checkAuth = async () => {
     try {
-      const userData = await apiFetch("me", { method: "GET" });
-      setUser(userData);
+      const response = await apiFetch("me", { method: "GET" });
+      // Normalización en caso de que la API devuelva { data: { user } } o el objeto directo
+      setUser(response?.data || response);
     } catch (error) {
-      // Si responde 401 o falla la conexión, la sesión no es válida
       setUser(null);
     } finally {
       setLoading(false);
@@ -26,9 +26,8 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Función para procesar el inicio de sesión desde el formulario
+  // Función para procesar el inicio de sesión
   const login = async (credentials) => {
-    // Alerta de carga mientras autentica con el servidor
     Swal.fire({
       title: "Iniciando sesión...",
       text: "Validando credenciales",
@@ -39,21 +38,19 @@ export const AuthProvider = ({ children }) => {
     });
 
     try {
-      // Petición POST a /login
       const response = await apiFetch("login", {
         method: "POST",
         body: JSON.stringify(credentials),
       });
 
-      // Guardamos la información del usuario en el estado
-      setUser(response.user);
+      const userObj = response.user || response.data || response;
+      setUser(userObj);
 
-      // Notificación tipo "Toast" rápida y elegante arriba a la derecha
       Swal.fire({
         toast: true,
         position: "top-end",
         icon: "success",
-        title: `Bienvenido/a, ${response.user?.usuario || "Usuario"}`,
+        title: `Bienvenido/a, ${userObj?.usuario || "Usuario"}`,
         showConfirmButton: false,
         timer: 2500,
         timerProgressBar: true,
@@ -61,7 +58,6 @@ export const AuthProvider = ({ children }) => {
 
       return response;
     } catch (error) {
-      // Manejo de error si las credenciales fallan o el servidor responde con error
       Swal.fire({
         icon: "error",
         title: "Error de autenticación",
@@ -74,7 +70,6 @@ export const AuthProvider = ({ children }) => {
 
   // Función para cerrar sesión
   const logout = async () => {
-    // Confirmación opcional previa a cerrar sesión
     const result = await Swal.fire({
       title: "¿Cerrar sesión?",
       text: "¿Estás seguro de que deseas salir del sistema?",
@@ -101,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Error al cerrar sesión en el servidor:", error);
     } finally {
-      setUser(null); // Limpiamos el estado en React
+      setUser(null);
 
       Swal.fire({
         icon: "success",
@@ -113,11 +108,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Bloqueo de renderizado durante la carga inicial para evitar que las rutas
+  // hagan redirecciones anticipadas mientras valida el token
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#004053] border-t-transparent" />
+          <p className="text-sm font-semibold text-[#004053]">
+            Cargando sesión...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user, // true si user existe, false si es null
+        isAuthenticated: !!user,
         loading,
         login,
         logout,

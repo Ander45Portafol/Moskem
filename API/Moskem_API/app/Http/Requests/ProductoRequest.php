@@ -29,16 +29,11 @@ class ProductoRequest extends FormRequest
         return [
             'tipo_producto' => [
                 'required',
-                'string',
-                Rule::in([
-                    'Traje_completo',
-                    'Saco',
-                    'Pantalon',
-                    'Camisa',
-                    'Traje_superior',
-                    'Corbata',
-                    'Zapatos'
-                ]),
+                'string'
+            ],
+            'categoria_producto' => [
+                'required',
+                'string'
             ],
             'codigo_producto' => [
                 'nullable',
@@ -48,6 +43,7 @@ class ProductoRequest extends FormRequest
             ],
             // Permite string (URL/ruta existente) o un archivo de imagen válido
             'imagen_producto' => 'nullable',
+            'nombre_producto'=>'required|string',
             
             // Color obligatorio SOLO si NO es un producto con tela (es decir, obligatorio si es Zapatos o no tiene tela seleccionada)
             'color' => 'nullable|required_if:tipo_producto,Zapatos|string|max:50',

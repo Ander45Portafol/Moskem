@@ -10,12 +10,13 @@ import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
 import { ModalMerceria } from "../components/Modals/ModalMerceria";
+import { apiFetch } from "../services/api";
 
 export function Mercerias() {
   const [modalActivo, setModalActivo] = useState(null);
   // Almacena el objeto completo del elemento seleccionado para actualizar
   const [registroEditar, setRegistroEditar] = useState(null);
-  
+
   const { data, setData } = useGet("mercerias");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -25,20 +26,22 @@ export function Mercerias() {
     }, 400);
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
-
+  // Función de busqueda en la API
   const fetchMerceria = async (query = "") => {
     try {
-      const url = query
-        ? `${API}mercerias/buscar?q=${encodeURIComponent(query)}`
-        : `${API}mercerias`;
+      // Usamos el endpoint limpio ya que apiFetch le concatena la API base
+      const endpoint = query
+        ? `mercerias/buscar?q=${encodeURIComponent(query)}`
+        : `mercerias`;
 
-      const response = await fetch(url);
-      if (response.ok) {
-        const responseData = await response.json();
-        setData(responseData.data);
-      }
+      // Utilizamos tu función apiFetch en lugar del fetch nativo
+      const responseData = await apiFetch(endpoint);
+
+      // apiFetch ya devuelve la data parseada, solo actualizamos el estado
+      setData(responseData.data);
     } catch (error) {
-      console.error("Error al traer los artículos de mercería:", error);
+      // Si el token expira, apiFetch lanzará un error 401 y te redirigirá automáticamente
+      console.error("Error al traer los registros de mercerias:", error);
     }
   };
 
@@ -50,7 +53,7 @@ export function Mercerias() {
 
   const deleteArticulo = async (id) => {
     try {
-      Swal.fire({
+      const result = await Swal.fire({
         title: "Eliminar Artículo",
         text: "¿Estás seguro de que deseas eliminar este artículo de mercería?",
         icon: "warning",
@@ -60,29 +63,35 @@ export function Mercerias() {
         confirmButtonColor: "#31b65c",
         confirmButtonText: "Eliminar",
         showConfirmButton: true,
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          const response = await fetch(`${API}mercerias/${id}`, {
-            method: "DELETE",
-          });
-          if (response.ok) {
-            const responseData = await response.json();
-            Swal.fire({
-              toast: true,
-              position: "top-end",
-              title: responseData.message || "Artículo eliminado correctamente",
-              icon: "success",
-              showConfirmButton: false,
-              timer: 3000,
-            });
-            setData((prevData) =>
-              prevData.filter((item) => (item.id || item.id_merceria) !== id)
-            );
-          }
-        }
       });
+      if (result.isConfirmed) {
+        const response = await apiFetch(`mercerias/${id}`, {
+          method: "DELETE",
+        });
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          title: response.message || "Artículo eliminado correctamente",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        setData((prevData) =>
+          prevData.filter((item) => (item.id || item.id_merceria) !== id),
+        );
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error al eliminar el articulo:", error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        // Si apiFetch lanza el error, usamos su mensaje
+        title: error.message || "Hubo un error al eliminar",
+        icon: "error",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
@@ -137,6 +146,8 @@ export function Mercerias() {
               <th className="pb-4 pt-4 font-bold">Stock</th>
               <th className="pb-4 pt-4 font-bold">Proveedor</th>
               <th className="pb-4 pt-4 font-bold">Tamaño</th>
+              <th className="pb-4 pt-4 font-bold">Fecha Ingreso</th>
+              <th className="pb-4 pt-4 font-bold">Imagen</th>
               <th></th>
             </tr>
           </thead>
@@ -156,10 +167,35 @@ export function Mercerias() {
                       {Number(item.stock) === 1 ? "Unidad" : "Unidades"}
                     </td>
                     <td className="py-4">
-                      {item.proveedor?.nombre_proveedor || item.nombre_proveedor || item.proveedor}
+                      {item.proveedor?.nombre_proveedor ||
+                        item.nombre_proveedor ||
+                        item.proveedor}
                     </td>
-                    <td className="py-4">{item.tamanio || item.tamanio_merceria}</td>
-
+                    <td className="py-4">
+                      {item.tamanio + " " + item.unidad_medida}
+                    </td>
+                    <td className="py-4">{item.fecha_ingreso}</td>
+                    <td className="py-4">
+                      {item.imagen ? (
+                        <img
+                          src={
+                            item.imagen.startsWith("http")
+                              ? item.imagen
+                              : `${API.replace(/\/api\/?$/, "")}/storage/${item.imagen}`
+                          }
+                          alt={`Tela ${item.codigo}`}
+                          className="w-16 h-16 object-cover rounded-lg shadow-sm border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-300">
+                          <span className="text-gray-400 text-xs text-center leading-tight">
+                            Sin
+                            <br />
+                            imagen
+                          </span>
+                        </div>
+                      )}
+                    </td>
                     <td className="py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -195,18 +231,20 @@ export function Mercerias() {
       </div>
 
       {/* Componente Modal */}
-<ModalMerceria
-  key={registroEditar ? `edit-${registroEditar.id_merceria}` : 'create-new'}
-  isOpen={modalActivo === "agregar"}
-  onClose={() => {
-    setModalActivo(null);
-    setRegistroEditar(null);
-  }}
-  tipo={registroEditar ? "actualizar" : "agregar"}
-  registroEditar={registroEditar}
-  id_merceria={registroEditar?.id_merceria}
-  setMerceria={setData}
-/>
+      <ModalMerceria
+        key={
+          registroEditar ? `edit-${registroEditar.id_merceria}` : "create-new"
+        }
+        isOpen={modalActivo === "agregar"}
+        onClose={() => {
+          setModalActivo(null);
+          setRegistroEditar(null);
+        }}
+        tipo={registroEditar ? "actualizar" : "agregar"}
+        registroEditar={registroEditar}
+        id_merceria={registroEditar?.id_merceria}
+        setMerceria={setData}
+      />
     </div>
   );
 }

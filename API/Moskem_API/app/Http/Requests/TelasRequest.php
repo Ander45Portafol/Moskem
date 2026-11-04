@@ -29,6 +29,7 @@ class TelasRequest extends FormRequest
             'categoria_tela' => 'required|string',
             'id_proveedor' => 'required|integer',
             'tipo_prenda' => 'required|string',
+            'fecha_ingreso_tela' => 'required|date',
             'imagen_telas' => 'nullable|file|image|mimes:jpg,jpeg,png,webp|max:8192',
             'codigo_tela_proveedor' => 'nullable|string'
         ];
@@ -44,6 +45,8 @@ class TelasRequest extends FormRequest
             'cantidad_stock.integer' => 'No es el formato correcto para el stock de la tela',
             'categoria_tela.required' => 'Debe colocar una categoría para la tela',
             'categoria_tela.string' => 'No es el formato correcto para la categoría de la tela',
+            'fecha_ingreso_tela.required' => 'Es obligatorio ingresar una fecha de ingreso.',
+            'fecha_ingreso_tela.date' => 'El formato para la fecha de ingreso no es el indicado.',
             'id_proveedor.required' => 'Es obligatorio que se defina el proveedor de la tela',
             'id_proveedor.integer' => 'No se pudo encontrar el proveedor',
             'codigo_tela_proveedor.string' => 'No es el formato correcto para el código de la tela del proveedor',

@@ -19,7 +19,9 @@ class Merceria extends Model
         'descripcion_merceria',
         'unidad_medida',
         'id_proveedor',
+        'fecha_ingreso_merceria',
         'codigo_merceria_proveedor',
+        'imagen_merceria',
         'visibilidad_merceria',
     ];
 

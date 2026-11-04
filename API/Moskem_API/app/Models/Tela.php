@@ -22,6 +22,10 @@ class Tela extends Model
         'fecha_ingreso_tela',
         'visibilidad_tela'
     ];
+
+    protected $casts = [
+        'fecha_ingreso_tela' => 'date'
+    ];
     public function detalle_pedidos()
     {
         return $this->hasMany(DetallePedido::class, 'id_tela', 'id_tela');

@@ -38,6 +38,7 @@ export function ModalTelas({
     id_proveedor: "",
     tipo_prenda: "",
     imagen_telas: "",
+    fecha_ingreso_tela: "",
     codigo_tela_proveedor: "",
   };
 
@@ -118,6 +119,7 @@ export function ModalTelas({
     formData.append("cantidad_stock", data.cantidad_stock || "");
     formData.append("id_proveedor", data.id_proveedor || "");
     formData.append("codigo_tela_proveedor", data.codigo_tela_proveedor || "");
+    formData.append("fecha_ingreso_tela", data.fecha_ingreso_tela || "");
 
     // Si la imagen es un archivo nuevo (File), la agregamos al FormData
     if (data.imagen_telas instanceof File) {
@@ -129,27 +131,30 @@ export function ModalTelas({
     await handleSubmit(e, formData);
   };
   useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => setIsAnimating(true), 30);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(() => {
-        setRender(false);
-        setIsAnimating(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+    let timer;
 
-  useEffect(() => {
+    if (isOpen) {
+      setRender(true);
+      timer = setTimeout(() => setIsAnimating(true), 30);
+    } else {
+      setIsAnimating(false);
+      timer = setTimeout(() => {
+        setRender(false);
+
+        if (previewUrlRef.current) {
+          URL.revokeObjectURL(previewUrlRef.current);
+          previewUrlRef.current = null;
+        }
+        setLocalPreviewImage(null);
+      }, 300);
+    }
     return () => {
+      clearTimeout(timer);
       if (previewUrlRef.current) {
         URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
       }
     };
   }, [isOpen]);
-
   if ((!isOpen && !render) || !data) return null;
 
   const handleFondoClick = (e) => {
@@ -188,7 +193,7 @@ export function ModalTelas({
 
         <form className="flex-col" onSubmit={onSubmit}>
           <div className="flex">
-            <div className="grid grid-cols-2 gap-x-2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -253,6 +258,14 @@ export function ModalTelas({
                 textId="codigo_tela_proveedor"
                 view=""
                 valueData={data?.codigo_tela_proveedor || ""}
+                updateData={inputsUpdate}
+              />
+              <InputD
+                text="Fecha Ingreso"
+                type="date"
+                textId="fecha_ingreso_tela"
+                view=""
+                valueData={data?.fecha_ingreso_tela || ""}
                 updateData={inputsUpdate}
               />
             </div>

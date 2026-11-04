@@ -23,6 +23,8 @@ class MerceriaResource extends JsonResource
             'color'=>$this->color,
             'descripcion'=>$this->descripcion_merceria,
             'tamanio'=>$this->tamanio_merceria,
+            'fecha_ingreso' => $this->fecha_ingreso_merceria,
+            'imagen' => $this->imagen_merceria,
             'proveedor'=>$this->proveedor->nombre_proveedor,
         ];
     }

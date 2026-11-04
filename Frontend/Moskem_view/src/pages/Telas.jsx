@@ -10,6 +10,7 @@ import { useGet } from "../assets/js/useGet";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
 import { ModalTelas } from "../components/Modals/ModalTelas";
+import { apiFetch } from "../services/api";
 
 export function Telas() {
   // Estado para manejar los futuros modales (agregar, proveedores, etc.)
@@ -32,16 +33,18 @@ export function Telas() {
   // Función de búsqueda en la API
   const fetchTelas = async (query = "") => {
     try {
-      const url = query
-        ? `${API}telas/buscar?q=${encodeURIComponent(query)}`
-        : `${API}telas`;
+      // Usamos el endpoint limpio ya que apiFetch le concatena la API base
+      const endpoint = query
+        ? `telas/buscar?q=${encodeURIComponent(query)}`
+        : `telas`;
 
-      const response = await fetch(url);
-      if (response.ok) {
-        const responseData = await response.json();
-        setData(responseData.data);
-      }
+      // Utilizamos tu función apiFetch en lugar del fetch nativo
+      const responseData = await apiFetch(endpoint);
+
+      // apiFetch ya devuelve la data parseada, solo actualizamos el estado
+      setData(responseData.data);
     } catch (error) {
+      // Si el token expira, apiFetch lanzará un error 401 y te redirigirá automáticamente
       console.error("Error al traer los registros de telas:", error);
     }
   };
@@ -55,7 +58,7 @@ export function Telas() {
   // Función para borrar una tela
   const deleteTela = async (id) => {
     try {
-      Swal.fire({
+      const result = await Swal.fire({
         title: "Eliminar Tela",
         text: "¿Estás seguro de que deseas eliminar este registro de tela?",
         icon: "warning",
@@ -64,28 +67,37 @@ export function Telas() {
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#31b65c",
         confirmButtonText: "Eliminar",
-        showConfirmButton: true,
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          const response = await fetch(`${API}telas/${id}`, {
-            method: "DELETE",
-          });
-          if (response.ok) {
-            const responseData = await response.json();
-            Swal.fire({
-              toast: true,
-              position: "top-end",
-              title: responseData.message || "Tela eliminada correctamente",
-              icon: "success",
-              showConfirmButton: false,
-              timer: 3000,
-            });
-            setData((prevData) => prevData.filter((item) => item.id !== id));
-          }
-        }
       });
+
+      if (result.isConfirmed) {
+        // apiFetch devuelve directamente la data JSON o lanza un error al catch
+        const responseData = await apiFetch(`telas/${id}`, {
+          method: "DELETE",
+        });
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          title: responseData.message || "Tela eliminada correctamente",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+
+        // Actualizamos la vista removiendo la tela eliminada
+        setData((prevData) => prevData.filter((item) => item.id !== id));
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error al eliminar la tela:", error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        // Si apiFetch lanza el error, usamos su mensaje
+        title: error.message || "Hubo un error al eliminar",
+        icon: "error",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
@@ -187,7 +199,7 @@ export function Telas() {
                         </span>
                       </div>
                     )}
-                  </td>{" "}
+                  </td>
                   {/* Acciones: Solo 2 botones (Información y Eliminar) */}
                   <td className="py-4">
                     <div className="flex items-center justify-center gap-2">

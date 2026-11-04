@@ -21,7 +21,8 @@ class TelasResource extends JsonResource
             'cantidad'=>$this->cantidad_stock,
             'categoria'=>$this->categoria_tela,
             'proveedor'=>$this->proveedor->nombre_proveedor,
-            'fecha_ingreso' => $this->created_at?->format('Y-m-d'),
+            'imagen_telas'=>$this->imagen_telas,
+            'fecha_ingreso' => $this->fecha_ingreso_tela?->format('d/m/Y'),
             'codigo_proveedor'=>$this->codigo_tela_proveedor,
         ];
     }

@@ -9,6 +9,7 @@ use App\Models\Merceria;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class MerseriaController extends Controller
@@ -44,10 +45,19 @@ class MerseriaController extends Controller
      */
     public function store(MerceriaRequest $request): JsonResponse
     {
+        $rutaImagen = null;
         try {
             $validate = $request->validated();
             $validate['visibilidad_merceria'] = true;
-
+            $archivoImagen = $validate['imagen_merceria'] ?? null;
+            unset($validate['imagen_merceria']);
+            if ($archivoImagen) {
+                $rutaImagen = $archivoImagen->store('mercerias', 'public');
+                if (!$rutaImagen) {
+                    throw new \RuntimeException('No se pudo guardar el archivo de imagen.');
+                }
+                $validate['imagen_merceria'] = $rutaImagen;
+            }
             $merceria = Merceria::create($validate);
 
             return ApiResponse::success('Mercería creada con éxito', 201, new MerceriaResource($merceria));
@@ -61,7 +71,7 @@ class MerseriaController extends Controller
     /**
      * Mostrar un registro específico por ID
      */
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         try {
             $merceria = Merceria::findOrFail($id);
@@ -76,26 +86,55 @@ class MerseriaController extends Controller
     /**
      * Actualizar un registro existente por ID
      */
-    public function update(MerceriaRequest $request, $id): JsonResponse
+    public function update(MerceriaRequest $request, int $id): JsonResponse
     {
+        $nuevaRutaImagen = null;
         try {
             $merceria = Merceria::findOrFail($id);
             $validate = $request->validated();
 
-            $merceria->update($validate);
+            $archivoImagen = $validate['imagen_merceria'] ?? null;
+            unset($validate['imagen_merceria']);
 
+            $validate['codigo_merceria_proveedor'] = $validate['codigo_merceria_proveedor'] ?? '';
+
+            $rutaImagenAnterior = $merceria->imagen_merceria;
+
+            if ($archivoImagen) {
+                $nuevaRutaImagen = $archivoImagen->store('mercerias', 'public');
+
+                if (!$nuevaRutaImagen) {
+                    throw new \RuntimeException('No se pudo guardar el archivo de imagen.');
+                }
+
+                // 2. Ahora sí guardará la ruta correcta en la DB
+                $merceria->imagen_merceria = $nuevaRutaImagen;
+            }
+
+            $merceria->fill($validate);
+            $merceria->save();
+
+            // 3. Esta validación ya funcionará y borrará la imagen vieja
+            if (
+                $nuevaRutaImagen &&
+                $rutaImagenAnterior &&
+                $rutaImagenAnterior !== $nuevaRutaImagen
+            ) {
+                Storage::disk('public')->delete($rutaImagenAnterior);
+            }
+
+            $merceria->load('proveedor');
             return ApiResponse::success('Mercería actualizada con éxito', 200, new MerceriaResource($merceria));
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('Error al intentar buscar el registro para actualizar', 404, $me->getMessage());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return ApiResponse::error('No se pudo realizar la acción', 500, $e->getMessage());
         }
     }
-
     /**
      * Deshabilitar (borrado lógico) de un registro por ID
      */
-    public function destroy($id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         try {
             $merceria = Merceria::findOrFail($id);

@@ -44,6 +44,8 @@ class MerceriaRequest extends FormRequest
             'tamanio_merceria' => 'required|integer|min:0',
             'id_proveedor' => 'required|integer|exists:proveedores,id_proveedor',
             'codigo_merceria_proveedor' => 'required|string|max:255',
+            'imagen_merceria' => 'nullable|file|image|mimes:jpg,jpeg,png,webp|max:8192',
+            'fecha_ingreso_merceria'=>'required|date',
             'unidad_medida' => [
                 'required',
                 'string',
@@ -69,6 +71,8 @@ class MerceriaRequest extends FormRequest
             'color.max' => 'El color no puede tener más de 30 caracteres.',
             'tamanio_merceria.required' => 'Debe colocar un tamaño para la mercería.',
             'tamanio_merceria.integer' => 'El tamaño de la mercería debe ser un número entero.',
+            'fecha_ingreso_merceria.required' => 'Es obligatorio ingresar una fecha de ingreso.',
+            'fecha_ingreso_merceria.date' => 'El formato para la fecha de ingreso no es el indicado.',
             'id_proveedor.required' => 'Es obligatorio que se defina el proveedor de la mercería.',
             'id_proveedor.integer' => 'No se pudo encontrar el proveedor.',
             'id_proveedor.exists' => 'El proveedor seleccionado no existe en el sistema.',

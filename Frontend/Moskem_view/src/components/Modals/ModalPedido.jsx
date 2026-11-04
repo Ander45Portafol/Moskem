@@ -19,7 +19,7 @@ import "yet-another-react-lightbox/styles.css";
 
 export function ModalPedido({
   isOpen,
-  onClose,
+  onClose, 
   id_pedido,
   setPedido,
   onPedidoGuardado,

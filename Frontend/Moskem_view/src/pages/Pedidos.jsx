@@ -176,9 +176,9 @@ export function Pedidos() {
           <CurrencyDollarIcon className="size-7" />
           Cotización
         </button>
-        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-12 py-2 w-38 rounded-xl flex items-center justify-center text-lg gap-2 transition-all active:scale-95">
-          <DocumentIcon className="size-7" />
-          Reportes
+        <button className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-bold h-12 py-2 w-38 rounded-xl flex items-center justify-center text-md gap-2 transition-all active:scale-95">
+          <DocumentIcon className="size-6" />
+          Catalogo
         </button>
 
         <button

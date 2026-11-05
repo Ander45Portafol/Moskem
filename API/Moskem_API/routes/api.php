@@ -9,6 +9,7 @@ use App\Http\Controllers\DetalleRentaController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\MedidaController;
 use App\Http\Controllers\MerseriaController;
+use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\OrdenTrabajoController;
 use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\PedidosController;
@@ -73,3 +74,4 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('rentas', RentaController::class);
     Route::get('sastres', [EmpleadoController::class, 'getSastres']);
 });
+Route::apiResource('orden_compras', OrdenCompraController::class);

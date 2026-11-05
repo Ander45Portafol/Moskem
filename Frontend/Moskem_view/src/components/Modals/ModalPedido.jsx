@@ -13,6 +13,7 @@ import {
 import { SelectWD } from "../SelectWD";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { API } from "../../assets/js/global";
+import { apiFetch } from "../../services/api";
 import Swal from "sweetalert2";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -28,6 +29,8 @@ export function ModalPedido({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDisabled, setIsDisabled] = useState(true);
   const [openLightbox, setOpenLightbox] = useState(false);
+  const [bloquearTipoEvento, setBloquearTipoEvento] = useState(Boolean(id_pedido));
+  const [idPedidoDetallesRevisado, setIdPedidoDetallesRevisado] = useState(null);
   // Estados y referencias para el control de imágenes
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -183,6 +186,40 @@ export function ModalPedido({
     }
   }, [isOpen, id_pedido, data?.imagen_referencia]);
 
+  useEffect(() => {
+    if (!isOpen || !id_pedido) {
+      setBloquearTipoEvento(false);
+      setIdPedidoDetallesRevisado(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setBloquearTipoEvento(true);
+    setIdPedidoDetallesRevisado(null);
+
+    apiFetch(`detalles/${id_pedido}`, { signal: controller.signal })
+      .then((response) => {
+        if (controller.signal.aborted) return;
+
+        const detalles = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+            ? response
+            : [];
+        setBloquearTipoEvento(detalles.length > 0);
+        setIdPedidoDetallesRevisado(id_pedido);
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") {
+          console.error("Error al revisar los detalles del pedido:", error);
+          // Si no se pudo revisar, mantenemos el tipo de evento protegido.
+          setBloquearTipoEvento(true);
+        }
+      });
+
+    return () => controller.abort();
+  }, [isOpen, id_pedido]);
+
   const guardarDatos = async (e) => {
     e.preventDefault();
     try {
@@ -206,8 +243,23 @@ export function ModalPedido({
 
       const pedidoCreado = await handleSubmit(e, formData);
 
-      if (pedidoCreado || id_pedido) {
-        const idActual = pedidoCreado?.id_pedido || id_pedido;
+      if (pedidoCreado) {
+        // apiFetch devuelve el ApiResponse de Laravel, cuyo pedido viene dentro de `data`.
+        const idActual =
+          pedidoCreado?.data?.id_pedido ??
+          pedidoCreado?.id_pedido ??
+          id_pedido;
+
+        if (!idActual) {
+          Swal.fire({
+            icon: "error",
+            title: "Pedido sin identificador",
+            text: "El pedido se guardó, pero no se recibió su ID. Vuelve a abrirlo antes de agregar detalles.",
+            confirmButtonColor: "#004053",
+          });
+          return false;
+        }
+
         setIsDisabled(false);
 
         Swal.fire({
@@ -291,6 +343,11 @@ export function ModalPedido({
                 textId="tipo_evento"
                 valueData={data.tipo_evento}
                 updateData={inputsUpdate}
+                disabled={
+                  Boolean(id_pedido) &&
+                  (Number(idPedidoDetallesRevisado) !== Number(id_pedido) ||
+                    bloquearTipoEvento)
+                }
               />
             </div>
             <div className="w-1/3">

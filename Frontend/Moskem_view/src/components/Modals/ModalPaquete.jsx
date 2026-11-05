@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGet } from "../../assets/js/useGet";
 import { SelectD } from "../SelectD";
 import { InputN } from "../InputN";
@@ -10,7 +10,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { Paquete } from "../Paquete";
-import { API } from "../../assets/js/global";
+import { apiFetch } from "../../services/api";
 
 export function ModalPaquetes({
   isOpen,
@@ -25,54 +25,68 @@ export function ModalPaquetes({
 }) {
   const [render, setRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const versionSeleccionRef = useRef(0);
 
-  const cargarPaquetes = async (id) => {
+  const cargarPaquetes = async (id, paqueteSeleccionado, signal) => {
+    const idPaqueteSeleccionado = paqueteSeleccionado || null;
+    const versionInicial = versionSeleccionRef.current;
+
+    const aplicarPaqueteSiNoCambioSeleccion = (idPaquete) => {
+      if (
+        !signal.aborted &&
+        versionSeleccionRef.current === versionInicial
+      ) {
+        setPaquete(idPaquete);
+      }
+    };
+
     try {
-      const responseDetalles = await fetch(`${API}detalles/${id}`);
+      const resDetalleData = await apiFetch(`detalles/${id}`, { signal });
+      const listaDetalles = Array.isArray(resDetalleData)
+        ? resDetalleData
+        : resDetalleData?.data || [];
 
-      if (responseDetalles.ok) {
-        const resDetalleData = await responseDetalles.json();
-        const listaDetalles = Array.isArray(resDetalleData)
-          ? resDetalleData
-          : resDetalleData?.data || [];
+      const detalleConPaquete = listaDetalles.find((d) => d.id_paquete);
 
-        const detalleConPaquete = listaDetalles.find((d) => d.id_paquete);
-
-        if (detalleConPaquete?.id_paquete) {
-          setPaquete(detalleConPaquete.id_paquete);
-          return;
-        }
+      if (detalleConPaquete?.id_paquete) {
+        aplicarPaqueteSiNoCambioSeleccion(detalleConPaquete.id_paquete);
+        return;
       }
+      if (signal.aborted) return;
 
-      const response = await fetch(`${API}getPaquete/${id}`);
-      if (response.ok) {
-        const responseData = await response.json();
-        if (responseData?.data?.id_paquete) {
-          setPaquete(responseData.data.id_paquete);
-        } else {
-          setPaquete(null);
-        }
-      } else {
-        setPaquete(null);
-      }
+      const responseData = await apiFetch(`getPaquete/${id}`, { signal });
+      aplicarPaqueteSiNoCambioSeleccion(
+        responseData?.data?.id_paquete || idPaqueteSeleccionado,
+      );
     } catch (error) {
-      console.error("Error al cargar el paquete del pedido:", error);
-      setPaquete(null);
+      if (error.name !== "AbortError") {
+        console.error("Error al cargar el paquete del pedido:", error);
+        aplicarPaqueteSiNoCambioSeleccion(idPaqueteSeleccionado);
+      }
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+    let timer;
+
     if (isOpen) {
-      if (id_pedido) cargarPaquetes(id_pedido);
+      if (id_pedido) {
+        cargarPaquetes(id_pedido, id_paquete, controller.signal);
+      }
       else setPaquete(null);
 
       setRender(true);
-      setTimeout(() => setIsAnimating(true), 10);
+      timer = setTimeout(() => setIsAnimating(true), 10);
     } else {
       setIsAnimating(false);
-      const timer = setTimeout(() => setRender(false), 300);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setRender(false), 300);
     }
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [isOpen, id_pedido]);
 
   if (!render) return null;
@@ -120,6 +134,7 @@ export function ModalPaquetes({
                     isDisabled={estaBloqueado}
                     guardarId={() => {
                       if (!estaBloqueado) {
+                        versionSeleccionRef.current += 1;
                         setPaquete(paquete.id_paquete);
                       }
                     }}

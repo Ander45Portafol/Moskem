@@ -3,7 +3,7 @@ import { useGet } from "../assets/js/useGet";
 import { DataList } from "./DataList";
 import { ChevronDownIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { ListaMerceria } from "./ListaMerceria";
-import { API } from "../assets/js/global";
+import { apiFetch } from "../services/api";
 import { SelectD } from "./SelectD";
 
 export function NuevoDetallePaquete({
@@ -78,8 +78,7 @@ export function NuevoDetallePaquete({
 
   const cargarListaMerceria = async (idDetallePedido) => {
     try {
-      const response = await fetch(`${API}lista_merceria/${idDetallePedido}`);
-      const result = await response.json();
+      const result = await apiFetch(`lista_merceria/${idDetallePedido}`);
 
       if (!result.data || !Array.isArray(result.data)) {
         return [];

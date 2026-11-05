@@ -13,6 +13,7 @@ export function DetalleRenta({
   productos = [],
   tipoProducto,
   categoriaProducto,
+  idsProductoUsados = [],
   isDisabled = false,
   helperText,
   updateInputs,
@@ -20,8 +21,20 @@ export function DetalleRenta({
   isSaving = false,
 }) {
   const [previewImage, setPreviewImage] = useState(null);
+  const idProductoActual =
+    typeof renta?.id_producto === "object"
+      ? renta.id_producto?.id_producto
+      : renta?.id_producto;
+  const idsUsadosPorOtrasFilas = new Set(idsProductoUsados.map(String));
   const productosPermitidos = productos.filter(
     (producto) => {
+      const estaDisponible =
+        normalizarTipoProducto(producto.estado_producto) === "disponible";
+      const esSeleccionActual =
+        String(producto.id_producto) === String(idProductoActual);
+      const noEstaUsadoEnOtraFila = !idsUsadosPorOtrasFilas.has(
+        String(producto.id_producto),
+      );
       const coincideTipo =
         !tipoProducto ||
         normalizarTipoProducto(producto.tipo_producto) ===
@@ -31,7 +44,10 @@ export function DetalleRenta({
         normalizarTipoProducto(producto.categoria_producto) ===
           normalizarTipoProducto(categoriaProducto);
 
-      return coincideTipo && coincideCategoria;
+      const puedeElegirse =
+        esSeleccionActual || (estaDisponible && noEstaUsadoEnOtraFila);
+
+      return puedeElegirse && coincideTipo && coincideCategoria;
     },
   );
   const SelectProductos = productosPermitidos.map((registro) => ({
@@ -41,7 +57,7 @@ export function DetalleRenta({
 
   // 2. Corregido: se usa renta.id_producto en lugar de data.id_producto
   const productoSeleccionado = productos?.find(
-    (p) => String(p.id_producto) === String(renta?.id_producto),
+    (p) => String(p.id_producto) === String(idProductoActual),
   );
 
   // 3. Corregido: sincronización correcta de la vista previa de imagen

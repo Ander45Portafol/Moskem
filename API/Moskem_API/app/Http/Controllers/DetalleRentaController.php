@@ -6,6 +6,8 @@ use App\Http\Responses\ApiResponse;
 use App\Models\DetalleRenta;
 use App\Models\Producto;
 use App\Models\Renta;
+use App\Services\EstadoProductoRentaService;
+use App\Services\MontoRentaService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -16,7 +18,10 @@ class DetalleRentaController extends Controller
 {
     public function cargarDetalleRenta( int $id_renta){
         try {
-            $detalle_rentas=DetalleRenta::with('producto')->where('id_renta',$id_renta)->get();
+            $detalle_rentas = DetalleRenta::with('producto')
+                ->where('id_renta', $id_renta)
+                ->orderBy('id_detalle_renta')
+                ->get();
             if ($detalle_rentas->isEmpty()) {
                 return response()->json([
                     'message' => 'No existen registros',
@@ -31,7 +36,11 @@ class DetalleRentaController extends Controller
             return ApiResponse::error('Error inesperado al listar los productos', 500, $to->getMessage());
         }
     }
-    public function store(Request $request)
+    public function store(
+        Request $request,
+        EstadoProductoRentaService $estadoProductoRentaService,
+        MontoRentaService $montoRentaService
+    )
     {
         $validated = $request->validate([
             'id_renta' => 'required|integer|exists:rentas,id_renta',
@@ -40,7 +49,7 @@ class DetalleRentaController extends Controller
             'detalles.*.id_detalle_renta' => 'nullable|integer|exists:detalle_rentas,id_detalle_renta|distinct',
             'detalles.*.id_producto' => 'required|integer|exists:productos,id_producto',
         ]);
-
+        //Buscamos informacion de la renta
         $renta = Renta::findOrFail($validated['id_renta']);
 
         if (
@@ -53,18 +62,17 @@ class DetalleRentaController extends Controller
                 ['tipo_traje' => $validated['tipo_traje']]
             );
         }
-
+        //Buscamos informacion de DetalleRenta que existan mediante la renta que extrajimos
         $existentes = DetalleRenta::where('id_renta', $renta->id_renta)
             ->get()
             ->keyBy('id_detalle_renta');
-
+        //Evaluamos y enviamos el tipo de traje que se seleccionara para la renta
         $tipoTraje = $validated['tipo_traje'] ?? $renta->tipo_traje;
         $limite = match ($renta->tipo_paquete) {
-            'Saco y Pantalón' => 2,
             'Paquete Full' => $tipoTraje === 'Traje Formal' ? 4 : 6,
             default => null,
         };
-
+        //Agrupamos los id
         $idsEnviados = collect($validated['detalles'])
             ->pluck('id_detalle_renta')
             ->filter();
@@ -108,24 +116,15 @@ class DetalleRentaController extends Controller
             $tiposPorProducto = Producto::whereIn('id_producto', $productosIds)
                 ->pluck('tipo_producto', 'id_producto');
 
-            // Construir mapa interactivo de id_detalle_renta => id_producto
-            $mapaResultante = $existentes->pluck('id_producto', 'id_detalle_renta')->all();
+            // Mantener las dos prendas base al inicio; las filas posteriores son adicionales.
+            $mapaResultante = $existentes
+                ->sortBy('id_detalle_renta')
+                ->pluck('id_producto', 'id_detalle_renta')
+                ->all();
             $nuevosProductos = [];
 
             foreach ($validated['detalles'] as $detalle) {
                 $idDetalle = $detalle['id_detalle_renta'] ?? null;
-                $tipoProducto = $tipoProductoNormalizado(
-                    $tiposPorProducto->get($detalle['id_producto'])
-                );
-
-                if (!in_array($tipoProducto, ['saco', 'pantalon'], true)) {
-                    return ApiResponse::error(
-                        'Para el paquete Saco y Pantalón solo se permiten productos de esos tipos.',
-                        422,
-                        ['tipo_producto' => $tipoProducto]
-                    );
-                }
-
                 if ($idDetalle) {
                     $mapaResultante[$idDetalle] = $detalle['id_producto'];
                 } else {
@@ -139,21 +138,17 @@ class DetalleRentaController extends Controller
                 fn($idProd) => $tipoProductoNormalizado($tiposPorProducto->get($idProd))
             );
 
-            $cantidadSacos = $tiposResultantes->filter(fn($t) => $t === 'saco')->count();
-            $cantidadPantalones = $tiposResultantes->filter(fn($t) => $t === 'pantalon')->count();
-
-            // Si intenta guardar un pantalón nuevo y el estado resultante no tiene Saco
-            if ($cantidadPantalones > 0 && $cantidadSacos === 0) {
+            if ($tiposResultantes->isNotEmpty() && $tiposResultantes->first() !== 'saco') {
                 return ApiResponse::error(
-                    'Primero debes guardar un producto de tipo Saco.',
+                    'La primera prenda del paquete debe ser un Saco.',
                     422,
                     ['tipo_producto' => 'Saco']
                 );
             }
 
-            if ($cantidadSacos > 1 || $cantidadPantalones > 1) {
+            if ($tiposResultantes->count() >= 2 && $tiposResultantes->get(1) !== 'pantalon') {
                 return ApiResponse::error(
-                    'La renta solo puede contener un Saco y un Pantalón.',
+                    'La segunda prenda del paquete debe ser un Pantalón.',
                     422,
                     ['orden' => ['Saco', 'Pantalón']]
                 );
@@ -243,7 +238,13 @@ class DetalleRentaController extends Controller
         }
 
         // 5. Procesar en transacción DB
-        $idsGuardados = DB::transaction(function () use ($validated, $renta, $existentes, $tipoTraje) {
+        $idsGuardados = DB::transaction(function () use (
+            $validated,
+            $renta,
+            $existentes,
+            $tipoTraje,
+            $montoRentaService
+        ) {
             if (array_key_exists('tipo_traje', $validated)) {
                 $renta->tipo_traje = $tipoTraje;
                 $renta->save();
@@ -270,13 +271,20 @@ class DetalleRentaController extends Controller
                 $ids[] = $registro->id_detalle_renta;
             }
 
+            $renta->monto_total = $montoRentaService->calcular($renta);
+            $renta->save();
+
             return $ids;
         });
+
+        $estadoProductoRentaService->actualizarEstados();
 
         // 6. Consulta unificada y retorno
         $todosLosDetalles = DetalleRenta::with('producto')
             ->where('id_renta', $renta->id_renta)
+            ->orderBy('id_detalle_renta')
             ->get();
+        $renta->refresh();
 
         $guardados = collect($idsGuardados)
             ->map(fn($id) => $todosLosDetalles->firstWhere('id_detalle_renta', $id))
@@ -285,7 +293,11 @@ class DetalleRentaController extends Controller
         return ApiResponse::success(
             'Prendas guardadas correctamente',
             200,
-            ['saved' => $guardados, 'details' => $todosLosDetalles]
+            [
+                'saved' => $guardados,
+                'details' => $todosLosDetalles,
+                'monto_total' => $renta->monto_total,
+            ]
         );
     }
     public function update(Request $request)

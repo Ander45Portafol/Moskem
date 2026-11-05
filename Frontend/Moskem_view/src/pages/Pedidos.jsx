@@ -96,7 +96,7 @@ export function Pedidos() {
 
   const deletePedidos = async (id) => {
     try {
-      Swal.fire({
+      const result = await Swal.fire({
         title: "Eliminar Pedido",
         text: "¿Estas seguro?",
         icon: "warning",
@@ -106,29 +106,34 @@ export function Pedidos() {
         confirmButtonColor: "#31b65c",
         confirmButtonText: "Eliminar",
         showConfirmButton: true,
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          const response = await fetch(`${API}pedidos/${id}`, {
-            method: "DELETE",
-          });
-          if (response.ok) {
-            const responseData = await response.json();
-            Swal.fire({
-              toast: true,
-              position: "top-end",
-              title: responseData.message,
-              icon: "success",
-              showConfirmButton: false,
-              timer: 3000,
-            });
-          }
-          setData((prevData) =>
-            prevData.filter((data) => data.id_pedido !== id),
-          );
-        }
       });
+
+      if (result.isConfirmed) {
+        const responseData = await apiFetch(`pedidos/${id}`, {
+          method: "DELETE",
+        });
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          title: responseData.message,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        setData((prevData) => prevData.filter((data) => data.id_pedido !== id));
+      }
     } catch (error) {
       console.log(error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        // Si apiFetch lanza el error, usamos su mensaje
+        title: error.message || "Hubo un error al eliminar",
+        icon: "error",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
@@ -368,7 +373,7 @@ export function Pedidos() {
         tipoEvento={tipoEvento}
         onRegresar={() => {
           setPaquetesModalAbierto(false);
-          setModalActivo("agregar"); 
+          setModalActivo("agregar");
         }}
         onSiguienteDetalle={() => setDetalleAbierto(true)}
       />

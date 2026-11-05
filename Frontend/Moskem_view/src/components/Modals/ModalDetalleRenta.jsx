@@ -17,6 +17,7 @@ const limitesPaquete = {
   "Saco y Pantalón": 2,
   "Paquete Full": 8,
 };
+const PRENDAS_INICIALES_SACO_PANTALON = 2;
 const PRENDAS_INICIALES_FULL = 4;
 const LIMITE_FORMAL = 4;
 
@@ -26,6 +27,11 @@ const normalizarTipoProducto = (tipo) =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+
+const obtenerIdProducto = (detalle) =>
+  typeof detalle?.id_producto === "object"
+    ? detalle.id_producto?.id_producto
+    : detalle?.id_producto;
 
 export default function ModalDetalleRenta({
   isOpen,
@@ -96,22 +102,14 @@ export default function ModalDetalleRenta({
           ? detallesResponse.data
           : [];
         const limite =
-          tipo === "Paquete Full" && trajeSeleccionado === "Traje Formal"
-            ? LIMITE_FORMAL
-            : limitesPaquete[tipo];
+          tipo === "Saco y Pantalón"
+            ? PRENDAS_INICIALES_SACO_PANTALON
+            : tipo === "Paquete Full" && trajeSeleccionado === "Traje Formal"
+              ? LIMITE_FORMAL
+              : limitesPaquete[tipo];
         const detallesOrdenados =
           tipo === "Saco y Pantalón"
-            ? [...detalles].sort((a, b) => {
-                const orden = (detalle) => {
-                  const tipoProducto = normalizarTipoProducto(
-                    detalle.producto?.tipo_producto,
-                  );
-                  if (tipoProducto === "saco") return 0;
-                  if (tipoProducto === "pantalon") return 1;
-                  return 2;
-                };
-                return orden(a) - orden(b);
-              })
+            ? [...detalles]
             : tipo === "Paquete Full"
               ? [...detalles].sort((a, b) => {
                   const orden = (detalle) => {
@@ -162,6 +160,17 @@ export default function ModalDetalleRenta({
               confirmButtonColor: "#004053",
             });
           }
+          setDetalleRenta(
+            Array.from(
+              { length: cantidadVisible },
+              (_, index) => detallesOrdenados[index] || crearDetalleVacio(),
+            ),
+          );
+          return;
+        }
+
+        if (tipo === "Saco y Pantalón") {
+          const cantidadVisible = Math.max(limite, detallesOrdenados.length);
           setDetalleRenta(
             Array.from(
               { length: cantidadVisible },
@@ -357,10 +366,12 @@ export default function ModalDetalleRenta({
         }
       }
 
+      const montoTotal = Number(response.data?.monto_total ?? 0);
       Swal.fire({
         toast: true,
         position: "top-end",
         title: response.message || "Prendas guardadas correctamente",
+        text: `Total de la renta: $${montoTotal.toFixed(2)}`,
         icon: "success",
         showConfirmButton: false,
         timer: 2500,
@@ -383,18 +394,11 @@ export default function ModalDetalleRenta({
     ? productos
     : productos?.data || [];
   const maximoPaquete =
-    tipoPaquete === "Paquete Full" && tipoTraje === "Traje Formal"
-      ? LIMITE_FORMAL
-      : limitesPaquete[tipoPaquete];
-  const productoPrimero = productosLista.find(
-    (producto) =>
-      String(producto.id_producto) ===
-      String(detalleRenta?.[0]?.id_producto || ""),
-  );
-  const sacoGuardadoPrimero =
-    Boolean(detalleRenta?.[0]?.id_detalle_renta) &&
-    normalizarTipoProducto(productoPrimero?.tipo_producto) === "saco";
-
+    tipoPaquete === "Saco y Pantalón"
+      ? null
+      : tipoPaquete === "Paquete Full" && tipoTraje === "Traje Formal"
+        ? LIMITE_FORMAL
+        : limitesPaquete[tipoPaquete];
   const obtenerProductoDetalle = (detalle) => {
     if (detalle?.producto) return detalle.producto;
     const idProducto =
@@ -405,6 +409,18 @@ export default function ModalDetalleRenta({
       (producto) => String(producto.id_producto) === String(idProducto),
     );
   };
+
+  const sacoGuardadoPrimero =
+    Boolean(detalleRenta?.[0]?.id_detalle_renta) &&
+    normalizarTipoProducto(
+      obtenerProductoDetalle(detalleRenta?.[0])?.tipo_producto,
+    ) === "saco";
+
+  const pantalonGuardadoSegundo =
+    Boolean(detalleRenta?.[1]?.id_detalle_renta) &&
+    normalizarTipoProducto(
+      obtenerProductoDetalle(detalleRenta?.[1])?.tipo_producto,
+    ) === "pantalon";
 
   const fullAnteriorGuardado = (index) => {
     if (index === 0) return true;
@@ -463,6 +479,8 @@ export default function ModalDetalleRenta({
                 : tipoPaquete === "Paquete Full" &&
                     tipoTraje === "Traje Smoking"
                   ? ` · ${PRENDAS_INICIALES_FULL} prendas iniciales, máximo ${limitesPaquete["Paquete Full"]}`
+                  : tipoPaquete === "Saco y Pantalón"
+                    ? " · Saco y Pantalón incluidos; puedes agregar productos extra"
                   : maximoPaquete
                     ? ` · Máximo ${maximoPaquete} prendas`
                     : " · Puedes agregar las prendas que necesites"}
@@ -489,17 +507,26 @@ export default function ModalDetalleRenta({
             )}
             {Array.isArray(detalleRenta) &&
               detalleRenta.map((detalle, index) => {
+                const idsProductoUsados = detalleRenta
+                  .filter((_, otroIndex) => otroIndex !== index)
+                  .map(obtenerIdProducto)
+                  .filter((idProducto) => idProducto !== null && idProducto !== undefined && idProducto !== "")
+                  .map(String);
                 const esSacoYPantalon = tipoPaquete === "Saco y Pantalón";
                 const esPaqueteFull = tipoPaquete === "Paquete Full";
                 const tipoProducto = esPaqueteFull
                   ? ["Saco", "Pantalón", "Camisa"][index]
                   : esSacoYPantalon
-                    ? ["Saco", "Pantalón"][index] || "Sin productos"
+                    ? ["Saco", "Pantalón"][index]
                     : undefined;
                 const categoriaProducto =
                   esPaqueteFull && index >= 3 ? "Accesorios" : undefined;
                 const segundoPendiente =
                   esSacoYPantalon && index === 1 && !sacoGuardadoPrimero;
+                const extrasSacoPantalonPendientes =
+                  esSacoYPantalon &&
+                  index >= PRENDAS_INICIALES_SACO_PANTALON &&
+                  !pantalonGuardadoSegundo;
                 const fullPendiente =
                   esPaqueteFull && index > 0 && !fullAnteriorGuardado(index);
                 const ayudaOrdenFull = {
@@ -516,16 +543,19 @@ export default function ModalDetalleRenta({
                     <DetalleRenta
                       renta={detalle}
                       productos={productosLista}
+                      idsProductoUsados={idsProductoUsados}
                       tipoProducto={tipoProducto}
                       categoriaProducto={categoriaProducto}
                       isDisabled={
                         segundoPendiente ||
-                        (esSacoYPantalon && index > 1) ||
+                        extrasSacoPantalonPendientes ||
                         fullPendiente
                       }
                       helperText={
                         segundoPendiente
                           ? "Primero selecciona y guarda el Saco."
+                          : extrasSacoPantalonPendientes
+                            ? "Primero selecciona y guarda el Saco y el Pantalón."
                           : fullPendiente
                             ? ayudaOrdenFull[index] ||
                               "Primero selecciona y guarda el accesorio anterior."
@@ -542,6 +572,9 @@ export default function ModalDetalleRenta({
                 );
               })}
             {(tipoPaquete === "Prenda" ||
+              (tipoPaquete === "Saco y Pantalón" &&
+                sacoGuardadoPrimero &&
+                pantalonGuardadoSegundo) ||
               (tipoPaquete === "Paquete Full" &&
                 tipoTraje === "Traje Smoking" &&
                 detalleRenta?.length < limitesPaquete["Paquete Full"])) &&

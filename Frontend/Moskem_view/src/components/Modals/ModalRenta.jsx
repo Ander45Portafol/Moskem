@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  CheckCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/solid";
+import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { InputD } from "../InputD";
 import { useForm } from "../../assets/js/Forms/useForm";
 import { SelectD } from "../SelectD";
@@ -41,11 +38,11 @@ export default function ModalRenta({
     fecha_inicio: "",
     fecha_devolucion: "",
     fecha_evento: "",
-    monto_total: "",
+    monto_total: "0.00",
     deposito: "",
     estado_renta: "",
     notas_descripcion: "",
-    tipo_paquete:"",
+    tipo_paquete: "",
     visibilidad_renta: "",
   };
 
@@ -281,9 +278,14 @@ export default function ModalRenta({
               </div>
             </div>
           </div>
-
           {/* BOTÓN GUARDAR SIN onClick INLINE */}
-          <div className="flex justify-end mt-4 gap-4">
+          <div className="flex justify-between mt-4 gap-4">
+            <p className="text-[#BCCF00] font-semibold">
+              Fecha registro:{" "}
+              {data.created_at
+                ? new Date(data.created_at).toLocaleDateString()
+                : new Date().toLocaleDateString()}
+            </p>
             <button
               type="submit"
               className="bg-[#B4D333] hover:bg-[#a3c02b] text-[#004B57] font-bold px-5 py-2 rounded-2xl flex items-center gap-2 shadow-md transition-all active:scale-95"

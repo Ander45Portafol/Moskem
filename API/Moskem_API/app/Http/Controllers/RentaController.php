@@ -6,6 +6,7 @@ use App\Http\Requests\RentaRequest;
 use App\Http\Resources\RentaResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Renta;
+use App\Services\EstadoProductoRentaService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -46,13 +47,14 @@ class RentaController extends Controller
         }
     }
 
-    public function update(RentaRequest $request, int $id)
+    public function update(RentaRequest $request, int $id, EstadoProductoRentaService $estadoProductoRentaService)
     {
         try {
             $renta = Renta::findOrFail($id);
             $validaciones = $request->validated();
 
             $renta->update($validaciones);
+            $estadoProductoRentaService->actualizarEstados();
             return ApiResponse::success('Renta actualizada con éxito', 200, new RentaResource($renta));
         } catch (ModelNotFoundException $me) {
             return ApiResponse::error('No se encontró el detalle', 404, $me->getMessage());

@@ -1,16 +1,24 @@
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
-export function SelectD({ text, textId, options, updateData, valueData }) {
+export function SelectD({
+  text,
+  textId,
+  options,
+  updateData,
+  valueData,
+  disabled = false,
+}) {
   return (
     <div className="flex flex-col gap-1.5 relative w-full">
       <label className="text-md font-semibold text-[#004B57] ">{text}</label>
       <div className="relative">
         <select
-          className="w-full bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all appearance-none pr-10"
+          className={`w-full bg-[#D9D9D9]/50 border-none rounded-lg p-2 text-gray-700 font-medium focus:ring-2 focus:ring-[#009BAE] outline-none transition-all appearance-none pr-10 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
           id={textId}
           name={textId}
           onChange={updateData}
           value={valueData}
+          disabled={disabled}
         >
           <option value="">Seleccione una opción</option>
           {options &&

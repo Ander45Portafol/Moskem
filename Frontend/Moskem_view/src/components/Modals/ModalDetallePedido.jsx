@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useForm } from "../../assets/js/Forms/useForm";
 import {
   ArrowLeftCircleIcon,
@@ -6,7 +6,7 @@ import {
   PlusCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
-import { API } from "../../assets/js/global";
+import { apiFetch } from "../../services/api";
 import { DetallePaquete } from "../DetallePaquete";
 import Swal from "sweetalert2";
 import { NuevoDetallePaquete } from "../NuevoDetallePaquete";
@@ -30,17 +30,15 @@ export function ModalDetallePedido({
   const [render, setRender] = useState(isOpen);
   const [tipoPedido, setTipoPedido] = useState(false);
   const [catalogoPrendas, setCatalogoPrendas] = useState([]);
+  const contextoCargadoRef = useRef(null);
 
   // Carga del catálogo base
   const obtenerCatalogoPrendas = useCallback(async (signal) => {
     try {
-      const response = await fetch(`${API}prendas`, { signal });
-      if (response.ok) {
-        const res = await response.json();
-        const lista = Array.isArray(res) ? res : res?.data || [];
-        setCatalogoPrendas(lista);
-        return lista;
-      }
+      const res = await apiFetch("prendas", { signal });
+      const lista = Array.isArray(res) ? res : res?.data || [];
+      setCatalogoPrendas(lista);
+      return lista;
     } catch (e) {
       if (e.name !== "AbortError") console.error("Error al cargar prendas:", e);
     }
@@ -77,6 +75,18 @@ export function ModalDetallePedido({
   const guardarPrenda = useCallback(
     async (index, idPaqueteDirecto) => {
       const registro = formsData[index] || {};
+      const idPedidoFinal = registro?.id_pedido || id_pedido;
+      const idPedidoNumero = Number(idPedidoFinal);
+
+      if (!idPedidoNumero || !Number.isFinite(idPedidoNumero)) {
+        Swal.fire({
+          icon: "error",
+          title: "Pedido no identificado",
+          text: "No se encontró un ID válido para este pedido. Guarda o vuelve a abrir el pedido antes de agregar detalles.",
+          confirmButtonColor: "#004053",
+        });
+        return false;
+      }
 
       if (!registro?.id_tela || isNaN(Number(registro.id_tela))) {
         Swal.fire({
@@ -113,7 +123,7 @@ export function ModalDetallePedido({
       }
 
       const payload = {
-        id_pedido: Number(registro?.id_pedido || id_pedido),
+        id_pedido: idPedidoNumero,
         id_tela: Number(registro.id_tela),
         id_empleado: Number(registro?.id_empleado || 1),
         id_paquete: esPrendaUnica ? null : idPaqueteFinal,
@@ -130,65 +140,57 @@ export function ModalDetallePedido({
 
       try {
         const esActualizacion = !!registro?.id_detalle_pedido;
-        const url = esActualizacion
-          ? `${API}${RUTA_API}/${registro.id_detalle_pedido}`
-          : `${API}${RUTA_API}`;
+        const endpoint = esActualizacion
+          ? `${RUTA_API}/${registro.id_detalle_pedido}`
+          : RUTA_API;
         const metodo = esActualizacion ? "PUT" : "POST";
 
-        const response = await fetch(url, {
+        const responseData = await apiFetch(endpoint, {
           method: metodo,
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
-        if (response.ok) {
-          const responseData = await response.json();
+        setFormsData((prev) => {
+          const copy = [...prev];
+          copy[index] = {
+            ...copy[index],
+            id_detalle_pedido:
+              registro?.id_detalle_pedido ||
+              responseData?.data?.id_detalle_pedido,
+            id_paquete: esPrendaUnica ? null : idPaqueteFinal,
+            tipo_pedido: esPrendaUnica ? "Prenda unica" : "Paquete",
+            precio_detalle: String(precioFinal),
+          };
+          return copy;
+        });
 
-          setFormsData((prev) => {
-            const copy = [...prev];
-            copy[index] = {
-              ...copy[index],
-              id_detalle_pedido:
-                registro?.id_detalle_pedido ||
-                responseData?.data?.id_detalle_pedido,
-              id_paquete: esPrendaUnica ? null : idPaqueteFinal,
-              tipo_pedido: esPrendaUnica ? "Prenda unica" : "Paquete",
-              precio_detalle: String(precioFinal),
-            };
-            return copy;
-          });
+        setGuardados((prev) => {
+          const copy = [...prev];
+          copy[index] = true;
+          return copy;
+        });
 
-          setGuardados((prev) => {
-            const copy = [...prev];
-            copy[index] = true;
-            return copy;
-          });
-
-          if (!esActualizacion && index < (prendas?.length || 0) - 1) {
-            setPasoActivo(index + 1);
-          }
-
-          Swal.fire({
-            icon: "success",
-            title: esActualizacion ? "Detalle actualizado" : "Detalle guardado",
-            text: `La prenda "${registro.prenda || "seleccionada"}" se guardó correctamente.`,
-            timer: 2000,
-            showConfirmButton: false,
-          });
-
-          return true;
-        } else {
-          const errorData = await response.json();
-          Swal.fire({
-            icon: "error",
-            title: "Error al guardar",
-            text: errorData?.message || "No se pudo guardar el detalle.",
-            confirmButtonColor: "#004053",
-          });
-          return false;
+        if (!esActualizacion && index < (prendas?.length || 0) - 1) {
+          setPasoActivo(index + 1);
         }
+
+        Swal.fire({
+          icon: "success",
+          title: esActualizacion ? "Detalle actualizado" : "Detalle guardado",
+          text: `La prenda "${registro.prenda || "seleccionada"}" se guardó correctamente.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        return true;
       } catch (error) {
         console.error("Error al guardar el detalle:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error al guardar",
+          text: error?.message || "No se pudo guardar el detalle.",
+          confirmButtonColor: "#004053",
+        });
         return false;
       }
     },
@@ -227,45 +229,39 @@ export function ModalDetallePedido({
       };
 
       try {
-        const response = await fetch(`${API}detalle_mercerias`, {
+        const responseData = await apiFetch("detalle_mercerias", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
-        if (response.ok) {
-          const responseData = await response.json();
-          const nuevoRegistro = responseData?.data || payload;
+        const nuevoRegistro = responseData?.data || payload;
 
-          setFormsData((prev) => {
-            const copy = [...prev];
-            const merceriasPrevias = copy[indexPrenda]?.mercerias || [];
-            copy[indexPrenda] = {
-              ...copy[indexPrenda],
-              mercerias: [...merceriasPrevias, nuevoRegistro],
-            };
-            return copy;
-          });
+        setFormsData((prev) => {
+          const copy = [...prev];
+          const merceriasPrevias = copy[indexPrenda]?.mercerias || [];
+          copy[indexPrenda] = {
+            ...copy[indexPrenda],
+            mercerias: [...merceriasPrevias, nuevoRegistro],
+          };
+          return copy;
+        });
 
-          Swal.fire({
-            icon: "success",
-            title: "Mercería agregada",
-            timer: 1500,
-            showConfirmButton: false,
-          });
+        Swal.fire({
+          icon: "success",
+          title: "Mercería agregada",
+          timer: 1500,
+          showConfirmButton: false,
+        });
 
-          return true;
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error al guardar",
-            text: "No se pudo registrar el insumo de mercería.",
-            confirmButtonColor: "#004053",
-          });
-          return false;
-        }
+        return true;
       } catch (error) {
         console.error("Error al guardar mercería:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error al guardar",
+          text: error?.message || "No se pudo registrar el insumo de mercería.",
+          confirmButtonColor: "#004053",
+        });
         return false;
       }
     },
@@ -274,12 +270,8 @@ export function ModalDetallePedido({
 
   const cargarDetallesExistentes = async (pedido_id, signal) => {
     try {
-      const response = await fetch(`${API}detalles/${pedido_id}`, { signal });
-      if (response.ok) {
-        const responseData = await response.json();
-        return responseData?.data || [];
-      }
-      return [];
+      const responseData = await apiFetch(`detalles/${pedido_id}`, { signal });
+      return responseData?.data || [];
     } catch (error) {
       if (error.name !== "AbortError") console.log(error);
       return [];
@@ -301,10 +293,11 @@ export function ModalDetallePedido({
           ]);
           setGuardados([false]);
           setPasoActivo(0);
-          return;
+          return true;
         }
 
         const resData = await cargarDetallesExistentes(targetPedidoId, signal);
+        if (signal?.aborted) return false;
         const detallesExistentes = Array.isArray(resData)
           ? resData
           : resData?.data || [];
@@ -343,6 +336,7 @@ export function ModalDetallePedido({
           setFormsData(nuevosFormsData);
           setGuardados(nuevosGuardados);
           setPasoActivo(0);
+          return true;
         } else {
           setPrendas([{ esExtra: true }]);
           setFormsData([
@@ -355,10 +349,12 @@ export function ModalDetallePedido({
           ]);
           setGuardados([false]);
           setPasoActivo(0);
+          return true;
         }
       } catch (e) {
         if (e.name !== "AbortError")
           console.error("Error al cargar detalles:", e);
+        return false;
       }
     },
     [estadoInicialDetallePedido],
@@ -368,7 +364,7 @@ export function ModalDetallePedido({
     async (indexPrenda, idDetalleMerceria, indexItem) => {
       try {
         if (idDetalleMerceria) {
-          await fetch(`${API}detalle_mercerias/${idDetalleMerceria}`, {
+          await apiFetch(`detalle_mercerias/${idDetalleMerceria}`, {
             method: "DELETE",
           });
         }
@@ -401,116 +397,116 @@ export function ModalDetallePedido({
   const cargarPrendasPaquete = useCallback(
     async (paquete_id, targetPedidoId, signal, catalogo) => {
       try {
-        const response = await fetch(`${API}paquetes/${paquete_id}`, {
+        const responseData = await apiFetch(`paquetes/${paquete_id}`, {
           signal,
         });
+        if (signal?.aborted) return false;
 
-        if (response.ok) {
-          const responseData = await response.json();
+        const listaPrendasPaquete = (
+          responseData?.data?.detalle_paquete || []
+        )
+          .filter((item) => item && item.prenda)
+          .map((item) => item.prenda);
 
-          const listaPrendasPaquete = (
-            responseData?.data?.detalle_paquete || []
-          )
-            .filter((item) => item && item.prenda)
-            .map((item) => item.prenda);
+        const detallesExistentes = targetPedidoId
+          ? await cargarDetallesExistentes(targetPedidoId, signal)
+          : [];
+        if (signal?.aborted) return false;
 
-          const detallesExistentes = targetPedidoId
-            ? await cargarDetallesExistentes(targetPedidoId, signal)
-            : [];
+        const nuevosGuardados = [];
+        const nuevosFormsData = [];
+        const nuevasPrendas = [];
 
-          const nuevosGuardados = [];
-          const nuevosFormsData = [];
-          const nuevasPrendas = [];
+        const detallesProcesadosIds = new Set();
 
-          const detallesProcesadosIds = new Set();
+        // 1. Prendas asociadas al paquete
+        listaPrendasPaquete.forEach((p) => {
+          const nombrePrenda =
+            p?.prenda_paquete || (typeof p === "string" ? p : "");
 
-          // 1. Prendas asociadas al paquete
-          listaPrendasPaquete.forEach((p) => {
-            const nombrePrenda =
-              p?.prenda_paquete || (typeof p === "string" ? p : "");
-
-            const detalleGuardado = detallesExistentes.find(
-              (d) =>
-                d.prenda === nombrePrenda &&
-                !detallesProcesadosIds.has(d.id_detalle_pedido),
-            );
-
-            nuevasPrendas.push(p);
-
-            if (detalleGuardado) {
-              detallesProcesadosIds.add(detalleGuardado.id_detalle_pedido);
-              nuevosGuardados.push(true);
-              nuevosFormsData.push({
-                id_pedido: detalleGuardado.id_pedido,
-                id_tela: detalleGuardado.id_tela,
-                id_empleado: detalleGuardado.id_empleado,
-                id_paquete: Number(paquete_id),
-                cantidad_tela: detalleGuardado.cantidad_tela,
-                prenda: detalleGuardado.prenda,
-                tipo_pedido: "Paquete",
-                precio_detalle: detalleGuardado.precio_detalle || "0.00",
-                categoria_pedido: detalleGuardado.categoria_pedido,
-                numero_pedido: detalleGuardado.numero_pedido,
-                id_detalle_pedido: detalleGuardado.id_detalle_pedido,
-                categoria_tela: detalleGuardado.telas?.categoria_tela || "",
-                mercerias: detalleGuardado.mercerias || [],
-              });
-            } else {
-              nuevosGuardados.push(false);
-              nuevosFormsData.push({
-                ...estadoInicialDetallePedido,
-                id_pedido: targetPedidoId || id_pedido,
-                id_paquete: Number(paquete_id),
-                prenda: nombrePrenda,
-                tipo_pedido: "Paquete",
-                precio_detalle: "0.00",
-              });
-            }
-          });
-
-          // 2. Prendas extras (se fijan con id_paquete = null y tipo_pedido = "Prenda unica")
-          const detallesExtras = detallesExistentes.filter(
-            (d) => !detallesProcesadosIds.has(d.id_detalle_pedido),
+          const detalleGuardado = detallesExistentes.find(
+            (d) =>
+              d.prenda === nombrePrenda &&
+              !detallesProcesadosIds.has(d.id_detalle_pedido),
           );
 
-          detallesExtras.forEach((detalleExtra) => {
-            const matchPrenda = catalogo.find(
-              (p) => p.prenda_paquete === detalleExtra.prenda,
-            );
+          nuevasPrendas.push(p);
 
-            nuevasPrendas.push({ esExtra: true });
+          if (detalleGuardado) {
+            detallesProcesadosIds.add(detalleGuardado.id_detalle_pedido);
             nuevosGuardados.push(true);
             nuevosFormsData.push({
-              id_pedido: detalleExtra.id_pedido,
-              id_tela: detalleExtra.id_tela || "",
-              id_empleado: detalleExtra.id_empleado || 1,
-              id_paquete: null,
-              cantidad_tela: detalleExtra.cantidad_tela || "",
-              prenda: detalleExtra.prenda,
-              tipo_pedido: "Prenda unica",
-              precio_detalle:
-                detalleExtra.precio_detalle ||
-                matchPrenda?.precio_unitario ||
-                "0.00",
-              categoria_pedido: detalleExtra.categoria_pedido || "Adulto",
-              numero_pedido: detalleExtra.numero_pedido || 1,
-              id_detalle_pedido: detalleExtra.id_detalle_pedido,
-              categoria_tela: detalleExtra.telas?.categoria_tela || "",
-              mercerias: detalleExtra.mercerias || [],
+              id_pedido: detalleGuardado.id_pedido,
+              id_tela: detalleGuardado.id_tela,
+              id_empleado: detalleGuardado.id_empleado,
+              id_paquete: Number(paquete_id),
+              cantidad_tela: detalleGuardado.cantidad_tela,
+              prenda: detalleGuardado.prenda,
+              tipo_pedido: "Paquete",
+              precio_detalle: detalleGuardado.precio_detalle || "0.00",
+              categoria_pedido: detalleGuardado.categoria_pedido,
+              numero_pedido: detalleGuardado.numero_pedido,
+              id_detalle_pedido: detalleGuardado.id_detalle_pedido,
+              categoria_tela: detalleGuardado.telas?.categoria_tela || "",
+              mercerias: detalleGuardado.mercerias || [],
             });
-          });
+          } else {
+            nuevosGuardados.push(false);
+            nuevosFormsData.push({
+              ...estadoInicialDetallePedido,
+              id_pedido: targetPedidoId || id_pedido,
+              id_paquete: Number(paquete_id),
+              prenda: nombrePrenda,
+              tipo_pedido: "Paquete",
+              precio_detalle: "0.00",
+            });
+          }
+        });
 
-          setPrendas(nuevasPrendas);
-          setFormsData(nuevosFormsData);
-          setGuardados(nuevosGuardados);
+        // 2. Prendas extras (se fijan con id_paquete = null y tipo_pedido = "Prenda unica")
+        const detallesExtras = detallesExistentes.filter(
+          (d) => !detallesProcesadosIds.has(d.id_detalle_pedido),
+        );
 
-          const indexPendiente = nuevosGuardados.findIndex((g) => !g);
-          setPasoActivo(
-            indexPendiente === -1 ? nuevosGuardados.length - 1 : indexPendiente,
+        detallesExtras.forEach((detalleExtra) => {
+          const matchPrenda = catalogo.find(
+            (p) => p.prenda_paquete === detalleExtra.prenda,
           );
-        }
+
+          nuevasPrendas.push({ esExtra: true });
+          nuevosGuardados.push(true);
+          nuevosFormsData.push({
+            id_pedido: detalleExtra.id_pedido,
+            id_tela: detalleExtra.id_tela || "",
+            id_empleado: detalleExtra.id_empleado || 1,
+            id_paquete: null,
+            cantidad_tela: detalleExtra.cantidad_tela || "",
+            prenda: detalleExtra.prenda,
+            tipo_pedido: "Prenda unica",
+            precio_detalle:
+              detalleExtra.precio_detalle ||
+              matchPrenda?.precio_unitario ||
+              "0.00",
+            categoria_pedido: detalleExtra.categoria_pedido || "Adulto",
+            numero_pedido: detalleExtra.numero_pedido || 1,
+            id_detalle_pedido: detalleExtra.id_detalle_pedido,
+            categoria_tela: detalleExtra.telas?.categoria_tela || "",
+            mercerias: detalleExtra.mercerias || [],
+          });
+        });
+
+        setPrendas(nuevasPrendas);
+        setFormsData(nuevosFormsData);
+        setGuardados(nuevosGuardados);
+
+        const indexPendiente = nuevosGuardados.findIndex((g) => !g);
+        setPasoActivo(
+          indexPendiente === -1 ? nuevosGuardados.length - 1 : indexPendiente,
+        );
+        return true;
       } catch (e) {
         if (e.name !== "AbortError") console.log(e);
+        return false;
       }
     },
     [estadoInicialDetallePedido, id_pedido],
@@ -621,32 +617,49 @@ export function ModalDetallePedido({
 
   useEffect(() => {
     const controller = new AbortController();
+    let timer;
 
     if (isOpen) {
-      obtenerCatalogoPrendas(controller.signal).then((catalogo) => {
-        if (id_paquete) {
-          cargarPrendasPaquete(
-            id_paquete,
-            id_pedido,
-            controller.signal,
-            catalogo,
-          );
-        } else {
-          cargarDetallesSinPaquete(id_pedido, controller.signal, catalogo);
-        }
-      });
+      const contextoActual = `${id_pedido ?? ""}:${id_paquete ?? ""}`;
+
+      if (contextoCargadoRef.current !== contextoActual) {
+        const cargarContexto = async () => {
+          const catalogo = await obtenerCatalogoPrendas(controller.signal);
+          if (controller.signal.aborted) return;
+
+          const cargaExitosa = id_paquete
+            ? await cargarPrendasPaquete(
+                id_paquete,
+                id_pedido,
+                controller.signal,
+                catalogo,
+              )
+            : await cargarDetallesSinPaquete(
+                id_pedido,
+                controller.signal,
+                catalogo,
+              );
+
+          if (!controller.signal.aborted && cargaExitosa) {
+            contextoCargadoRef.current = contextoActual;
+          }
+        };
+
+        cargarContexto();
+      }
 
       setRender(true);
-      const timer = setTimeout(() => setIsAnimating(true), 10);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setIsAnimating(true), 10);
     } else {
+      if (!id_pedido) contextoCargadoRef.current = null;
       setIsAnimating(false);
-      const timer = setTimeout(() => setRender(false), 300);
-      return () => {
-        clearTimeout(timer);
-        controller.abort();
-      };
+      timer = setTimeout(() => setRender(false), 300);
     }
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [
     isOpen,
     id_paquete,

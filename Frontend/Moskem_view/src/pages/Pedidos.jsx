@@ -16,6 +16,7 @@ import { ModalPaquetes } from "../components/Modals/ModalPaquete";
 import Swal from "sweetalert2";
 import { API } from "../assets/js/global";
 import { ModalMedidas } from "../components/Modals/ModalMedidas";
+import { apiFetch } from "../services/api";
 
 export function Pedidos() {
   // Estado para gestionar el modal principal
@@ -40,6 +41,9 @@ export function Pedidos() {
 
   const modalActualizar = (id) => {
     setIdPedido(id);
+    setIdPaquete(null);
+    setPaquetesModalAbierto(false);
+    setDetalleAbierto(false);
     setModalActivo("agregar");
   };
 
@@ -129,24 +133,87 @@ export function Pedidos() {
   };
 
   // Callback ejecutado desde ModalPedido al guardar o presionar Siguiente
-  const handlePedidoGuardado = ({
+  const handlePedidoGuardado = async ({
     id_pedido,
     tipo_evento,
     paquetesDisponibles,
     tienePaquetes,
   }) => {
-    setIdPedido(id_pedido);
-    setTipoEvento(tipo_evento);
-    setPaquetesFiltrados(paquetesDisponibles);
+    let paquetesParaMostrar = Array.isArray(paquetesDisponibles)
+      ? paquetesDisponibles
+      : [];
+    const idPedidoGuardado = Number(id_pedido);
+    if (!idPedidoGuardado || Number.isNaN(idPedidoGuardado)) {
+      Swal.fire({
+        icon: "error",
+        title: "Pedido sin identificador",
+        text: "No se recibió un ID válido para cargar o guardar sus detalles.",
+        confirmButtonColor: "#004053",
+      });
+      return;
+    }
 
-    // Cerramos el modal inicial de pedido
+    setIdPedido(idPedidoGuardado);
+    setTipoEvento(tipo_evento);
+    setPaquetesFiltrados(paquetesParaMostrar);
     setModalActivo(null);
 
-    // Evaluamos si el tipo_evento tiene paquetes en la base de datos
-    if (tienePaquetes) {
-      setPaquetesModalAbierto(true);
-    } else {
-      setDetalleAbierto(true);
+    try {
+      const response = await apiFetch(`detalles/${idPedidoGuardado}`);
+      const detallesPedido = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+
+      if (detallesPedido.length > 0) {
+        const detalleConPaquete = detallesPedido.find(
+          (detalle) => detalle?.id_paquete,
+        );
+        const idPaqueteExistente = detalleConPaquete?.id_paquete
+          ? Number(detalleConPaquete.id_paquete)
+          : null;
+
+        if (
+          idPaqueteExistente &&
+          !paquetesParaMostrar.some(
+            (paquete) => Number(paquete.id_paquete) === idPaqueteExistente,
+          )
+        ) {
+          const responsePaquete = await apiFetch(
+            `paquetes/${idPaqueteExistente}`,
+          );
+          const paqueteExistente = responsePaquete?.data ?? responsePaquete;
+
+          if (paqueteExistente?.id_paquete) {
+            paquetesParaMostrar = [...paquetesParaMostrar, paqueteExistente];
+            setPaquetesFiltrados(paquetesParaMostrar);
+          }
+        }
+
+        setIdPaquete(idPaqueteExistente);
+        // Si el pedido ya tiene paquete, mostrarlo seleccionado antes de continuar al detalle.
+        setPaquetesModalAbierto(Boolean(idPaqueteExistente));
+        setDetalleAbierto(!idPaqueteExistente);
+        return;
+      }
+
+      // Sin detalles registrados, se conserva el flujo inicial de selección.
+      const paqueteSeleccionadoValido = paquetesParaMostrar.some(
+        (paquete) => Number(paquete.id_paquete) === Number(idPaquete),
+      );
+      setIdPaquete(paqueteSeleccionadoValido ? Number(idPaquete) : null);
+      setDetalleAbierto(!tienePaquetes);
+      setPaquetesModalAbierto(Boolean(tienePaquetes));
+    } catch (error) {
+      console.error("Error al consultar los detalles del pedido:", error);
+      Swal.fire({
+        icon: "error",
+        title: "No se pudieron cargar los detalles",
+        text: error?.message || "Intenta guardar o abrir el pedido nuevamente.",
+        confirmButtonColor: "#004053",
+      });
+      setModalActivo("agregar");
     }
   };
 
@@ -185,6 +252,8 @@ export function Pedidos() {
           onClick={() => {
             setIdPedido(null);
             setIdPaquete(null);
+            setDetalleAbierto(false);
+            setPaquetesModalAbierto(false);
             setModalActivo("agregar");
           }}
           className="bg-[#004B57] hover:bg-[#00363E] text-[#B2B2B2] font-semibold h-12 w-18 rounded-xl flex items-center justify-center transition-all active:scale-95"

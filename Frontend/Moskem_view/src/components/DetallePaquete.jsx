@@ -3,7 +3,7 @@ import { useGet } from "../assets/js/useGet";
 import { DataList } from "./DataList";
 import { ChevronDownIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { ListaMerceria } from "./ListaMerceria";
-import { API } from "../assets/js/global";
+import { apiFetch } from "../services/api";
 import Swal from "sweetalert2";
 
 // Apartado para variables y constantes de configuración inicial
@@ -60,10 +60,9 @@ export const DetallePaquete = memo(function DetallePaquete({
   // Función para extraer la lista de mercerías desde la BD
   const cargarListaMerceria = useCallback(async (idDetallePedido, signal) => {
     try {
-      const response = await fetch(`${API}lista_merceria/${idDetallePedido}`, {
+      const result = await apiFetch(`lista_merceria/${idDetallePedido}`, {
         signal,
       });
-      const result = await response.json();
 
       if (!result.data || !Array.isArray(result.data)) {
         return [];
@@ -142,42 +141,31 @@ export const DetallePaquete = memo(function DetallePaquete({
           cantidad_merceria: Number(item.cantidad),
         };
 
-        return fetch(`${API}detalle_mercerias/${item.id_detalle_merceria}`, {
+        return apiFetch(`detalle_mercerias/${item.id_detalle_merceria}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       });
 
-      const respuestas = await Promise.all(peticiones);
-      const todasExitosas = respuestas.every((res) => res.ok);
+      await Promise.all(peticiones);
 
-      if (todasExitosas) {
-        // Recargar lista desde el servidor para renovar las referencias de cantidadOriginal
-        const listaActualizada = await cargarListaMerceria(idDetallePedido);
-        setItemsMerceriaLista(listaActualizada);
+      // Recargar lista desde el servidor para renovar las referencias de cantidadOriginal
+      const listaActualizada = await cargarListaMerceria(idDetallePedido);
+      setItemsMerceriaLista(listaActualizada);
 
-        Swal.fire({
-          icon: "success",
-          title: "Mercería actualizada",
-          text: `Se actualizaron ${itemsModificados.length} registro(s) correctamente.`,
-          timer: 1800,
-          showConfirmButton: false,
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error al actualizar",
-          text: "Ocurrió un problema al procesar las peticiones en el servidor.",
-          confirmButtonColor: "#004053",
-        });
-      }
+      Swal.fire({
+        icon: "success",
+        title: "Mercería actualizada",
+        text: `Se actualizaron ${itemsModificados.length} registro(s) correctamente.`,
+        timer: 1800,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error al actualizar la mercería:", error);
       Swal.fire({
         icon: "error",
-        title: "Error de conexión",
-        text: "Ocurrió un problema al conectar con el servidor.",
+        title: "Error al actualizar",
+        text: error?.message || "Ocurrió un problema al actualizar la mercería.",
         confirmButtonColor: "#004053",
       });
     }
@@ -283,46 +271,34 @@ export const DetallePaquete = memo(function DetallePaquete({
         });
 
         if (result.isConfirmed) {
-          const response = await fetch(
-            `${API}detalle_mercerias/${idDetalleMerceria}`,
-            {
-              method: "DELETE",
-            },
-          );
+          await apiFetch(`detalle_mercerias/${idDetalleMerceria}`, {
+            method: "DELETE",
+          });
 
-          if (response.ok) {
-            if (detalle?.id_detalle_pedido) {
-              const listaActualizada = await cargarListaMerceria(
-                detalle.id_detalle_pedido,
-              );
-              setItemsMerceriaLista(listaActualizada);
-            } else {
-              setItemsMerceriaLista((prev) =>
-                prev.filter((_, i) => i !== indexItem),
-              );
-            }
-
-            Swal.fire({
-              icon: "success",
-              title: "Mercería eliminada",
-              timer: 1500,
-              showConfirmButton: false,
-            });
+          if (detalle?.id_detalle_pedido) {
+            const listaActualizada = await cargarListaMerceria(
+              detalle.id_detalle_pedido,
+            );
+            setItemsMerceriaLista(listaActualizada);
           } else {
-            Swal.fire({
-              icon: "error",
-              title: "Error al eliminar",
-              text: "No se pudo eliminar el registro en la base de datos.",
-              confirmButtonColor: "#004053",
-            });
+            setItemsMerceriaLista((prev) =>
+              prev.filter((_, i) => i !== indexItem),
+            );
           }
+
+          Swal.fire({
+            icon: "success",
+            title: "Mercería eliminada",
+            timer: 1500,
+            showConfirmButton: false,
+          });
         }
       } catch (error) {
         console.error("Error al eliminar mercería:", error);
         Swal.fire({
           icon: "error",
-          title: "Error de conexión",
-          text: "Ocurrió un problema al conectar con el servidor.",
+          title: "Error al eliminar",
+          text: error?.message || "No se pudo eliminar el registro en la base de datos.",
           confirmButtonColor: "#004053",
         });
       }
